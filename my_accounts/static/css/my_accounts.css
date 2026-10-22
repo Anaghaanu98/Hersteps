@@ -1,0 +1,331 @@
+
+
+.my-account-page {
+    --account-bg: #fff8f4;
+    --account-card: #fff0e5;
+    --account-text: #281c17;
+    --account-muted: #897b72;
+    --account-primary: #a94f0c;
+
+    background: var(--account-bg);
+    color: var(--account-text);
+    padding: 52px 0 55px;
+    min-height: 650px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* Breadcrumb */
+
+.account-breadcrumb {
+    width: min(100% - 64px, 832px);
+    margin: 0 auto 43px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 10px;
+    letter-spacing: 0.3px;
+    color: var(--account-muted);
+}
+
+.account-breadcrumb a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.account-breadcrumb .current-page {
+    color: var(--account-text);
+    font-weight: 600;
+}
+
+/* Welcome Section */
+
+.account-welcome {
+    width: min(100% - 64px, 816px);
+    min-height: 142px;
+    margin: 0 auto 33px;
+    padding: 27px 29px;
+    border: 1px solid rgba(169, 79, 12, 0.045);
+    border-radius: 17px;
+    background: linear-gradient(
+        110deg,
+        #fff8f4 0%,
+        #fff2e9 100%
+    );
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.welcome-heading h1 {
+    margin: 0 0 9px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -1px;
+}
+
+.welcome-heading p {
+    margin: 0;
+    color: #75645b;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 17px;
+    font-style: italic;
+}
+
+.welcome-details {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 17px;
+}
+
+.email-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 11px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(169, 79, 12, 0.06);
+    border-radius: 20px;
+    color: #786b62;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.email-icon {
+    color: var(--account-primary);
+    font-size: 13px;
+}
+
+.member-since {
+    color: #92837a;
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+/* Account Cards */
+
+.account-grid {
+    width: min(100% - 64px, 816px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 19px;
+}
+
+.account-card {
+    position: relative;
+    min-height: 162px;
+    padding: 23px 24px 20px;
+    border-radius: 13px;
+    background: var(--account-card);
+    text-decoration: none;
+    color: inherit;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.account-card:hover {
+    background: #fbe8d9;
+    transform: translateY(-3px);
+}
+
+.card-icon {
+    width: 41px;
+    height: 41px;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    background: #f0e1d5;
+    color: var(--account-primary);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.card-arrow {
+    position: absolute;
+    right: 23px;
+    bottom: 23px;
+    color: #d9bca9;
+    font-size: 19px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.account-card:hover .card-arrow {
+    transform: translateX(4px);
+}
+
+.card-title {
+    margin-bottom: 5px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.card-description {
+    color: var(--account-muted);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.logout-icon {
+    color: #776c64;
+}
+
+/* Customer Assistance */
+
+.account-assistance {
+    margin: 72px auto 0;
+    padding: 0 20px;
+    text-align: center;
+    color: var(--account-muted);
+    font-size: 10px;
+    line-height: 1.8;
+}
+
+.account-assistance a {
+    margin-left: 4px;
+    color: var(--account-primary);
+    text-decoration: none;
+}
+
+.account-assistance a:hover {
+    text-decoration: underline;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+    .account-welcome,
+    .account-grid {
+        width: min(100% - 48px, 680px);
+    }
+
+    .account-breadcrumb {
+        width: min(100% - 48px, 680px);
+    }
+
+    .account-welcome {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .welcome-details {
+        justify-content: flex-start;
+    }
+
+    .account-grid {
+        gap: 14px;
+    }
+
+    .account-card {
+        padding: 20px;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+    .my-account-page {
+        padding-top: 30px;
+    }
+
+    .account-breadcrumb {
+        width: calc(100% - 36px);
+        margin-bottom: 25px;
+    }
+
+    .account-welcome,
+    .account-grid {
+        width: calc(100% - 36px);
+    }
+
+    .account-welcome {
+        padding: 24px 20px;
+        margin-bottom: 22px;
+    }
+
+    .welcome-heading h1 {
+        font-size: 34px;
+    }
+
+    .welcome-details {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .email-badge {
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .account-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .account-card {
+        min-height: 155px;
+        padding: 16px;
+    }
+
+    .card-icon {
+        width: 37px;
+        height: 37px;
+        margin-bottom: 24px;
+    }
+
+    .card-title {
+        font-size: 19px;
+    }
+
+    .card-description {
+        font-size: 10px;
+        padding-right: 3px;
+    }
+
+    .card-arrow {
+        right: 14px;
+        bottom: 16px;
+    }
+
+    .account-assistance {
+        margin-top: 45px;
+    }
+}
+
+@media (max-width: 360px) {
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .account-card {
+        min-height: 145px;
+    }
+}

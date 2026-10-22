@@ -1,0 +1,61 @@
+
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}Logout | HerSteps{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/logout.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="logout-overlay">
+    <div class="logout-modal" role="dialog"
+         aria-modal="true" aria-labelledby="logoutTitle">
+
+        <button type="button" class="logout-close"
+                aria-label="Close"
+                onclick="window.history.back()">
+            &times;
+        </button>
+
+        <div class="logout-symbol">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 4H5v16h5"/>
+                <path d="M13 8l4 4-4 4"/>
+                <path d="M8 12h9"/>
+            </svg>
+        </div>
+
+        <h2 id="logoutTitle">Log Out?</h2>
+
+        <p class="logout-question">
+            Are you sure you want to log out of your HerSteps account?
+        </p>
+
+        <p class="logout-note">
+            You will need to sign back in to access your orders and saved
+            addresses.
+        </p>
+
+        <div class="logout-buttons">
+            <button type="button" class="stay-logged-in"
+                    onclick="window.history.back()">
+                Stay Logged In
+            </button>
+
+            <form method="post" action="{% url 'my_accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="confirm-logout">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M10 5H5v14h5"/>
+                        <path d="M13 8l4 4-4 4M8 12h9"/>
+                    </svg>
+                    Yes, Log Out
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

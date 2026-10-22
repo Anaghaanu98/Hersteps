@@ -1,0 +1,119 @@
+
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}My Account | hersteps{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="{% static 'css/my_accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="my-account-page">
+
+    <!-- Breadcrumb -->
+    <div class="account-breadcrumb">
+        <a href="/">HOME</a>
+        <span>/</span>
+        <span class="current-page">MY ACCOUNT</span>
+    </div>
+
+    <!-- Welcome Section -->
+    <section class="account-welcome">
+        <div class="welcome-heading">
+            <h1>My Account</h1>
+            <p>Welcome back, {{ user.fullname|default:user.username }}</p>
+        </div>
+
+        <div class="welcome-details">
+            <span class="email-badge">
+                <span class="email-icon">✉</span>
+                {{ user.email }}
+            </span>
+
+            
+        </div>
+    </section>
+
+    <!-- Account Options -->
+    <section class="account-grid">
+
+        <a href="{% url 'my_accounts:profile' %}" class="account-card">
+            <span class="card-icon">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="8" r="3"/>
+                    <path d="M5.5 19a6.5 6.5 0 0 1 13 0"/>
+                </svg>
+            </span>
+            <span class="card-arrow">→</span>
+            <span class="card-title">Profile</span>
+            <span class="card-description">Manage your profile</span>
+        </a>
+
+        <a href="#" class="account-card">
+            <span class="card-icon">
+                <svg viewBox="0 0 24 24">
+                    <rect x="6" y="8" width="12" height="13" rx="1"/>
+                    <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+                </svg>
+            </span>
+            <span class="card-arrow">→</span>
+            <span class="card-title">Orders</span>
+            <span class="card-description">View your orders</span>
+        </a>
+
+        <a href="#" class="account-card">
+            <span class="card-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 7h16v13H4z"/>
+                    <path d="M4 10h16M8 14h3"/>
+                    <path d="M7 7V4h10v3"/>
+                </svg>
+            </span>
+            <span class="card-arrow">→</span>
+            <span class="card-title">Coupons</span>
+            <span class="card-description">View available coupons</span>
+        </a>
+
+        <a href="#" class="account-card">
+            <span class="card-icon">
+                <svg viewBox="0 0 24 24">
+                    <rect x="4" y="6" width="16" height="13" rx="2"/>
+                    <path d="M8 10h8M8 14h4"/>
+                </svg>
+            </span>
+            <span class="card-arrow">→</span>
+            <span class="card-title">Wallet</span>
+            <span class="card-description">Manage your wallet</span>
+        </a>
+
+        <a href="#" class="account-card">
+            <span class="card-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/>
+                    <circle cx="12" cy="10" r="2.5"/>
+                </svg>
+            </span>
+            <span class="card-arrow">→</span>
+            <span class="card-title">Addresses</span>
+            <span class="card-description">Manage saved addresses</span>
+        </a>
+
+        <a href="{% url 'my_accounts:logout' %}" class="account-card logout-card">
+            <span class="card-icon logout-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M10 5H5v14h5"/>
+                    <path d="M13 8l4 4-4 4M8 12h9"/>
+                </svg>
+            </span>
+            <span class="card-arrow">→</span>
+            <span class="card-title">Logout</span>
+            <span class="card-description">Sign out of your account</span>
+        </a>
+
+    </section>
+
+
+</main>
+{% endblock %}

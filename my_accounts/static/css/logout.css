@@ -1,0 +1,177 @@
+
+/* Logout confirmation overlay */
+.logout-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(48, 31, 27, 0.56);
+    box-sizing: border-box;
+}
+
+/* Confirmation modal */
+.logout-modal {
+    position: relative;
+    width: 100%;
+    max-width: 392px;
+    min-height: 304px;
+    padding: 31px 30px 28px;
+    box-sizing: border-box;
+    text-align: center;
+    background: #FFFFFF;
+    border: 1px solid #F0E7DF;
+    border-radius: 14px;
+    box-shadow: 0 18px 45px rgba(35, 23, 20, 0.16);
+}
+
+/* Close icon */
+.logout-close {
+    position: absolute;
+    top: 14px;
+    right: 17px;
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #A79D97;
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.logout-close:hover {
+    color: #39271F;
+}
+
+/* Round logout icon */
+.logout-symbol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: #FCEDE1;
+}
+
+.logout-symbol svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #C76226;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Heading */
+.logout-modal h2 {
+    margin: 0 0 8px;
+    color: #28211E;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* Supporting text */
+.logout-question {
+    margin: 0 0 12px;
+    color: #6D625D;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+.logout-note {
+    max-width: 285px;
+    margin: 0 auto 25px;
+    color: #AA9F99;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 10px;
+    line-height: 1.7;
+}
+
+/* Buttons side by side */
+.logout-buttons {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.logout-buttons form {
+    flex: 1;
+    min-width: 0;
+}
+
+.stay-logged-in,
+.confirm-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 39px;
+    padding: 10px 8px;
+    box-sizing: border-box;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.stay-logged-in {
+    flex: 1;
+    background: #F6EEE8;
+    color: #3E332E;
+}
+
+.stay-logged-in:hover {
+    background: #EDE0D6;
+}
+
+.confirm-logout {
+    background: #C76226;
+    color: #FFFFFF;
+}
+
+.confirm-logout:hover {
+    background: #A94F1D;
+}
+
+.confirm-logout svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Small screens */
+@media (max-width: 420px) {
+    .logout-modal {
+        padding: 32px 20px 25px;
+    }
+
+    .logout-buttons {
+        gap: 8px;
+    }
+
+    .stay-logged-in,
+    .confirm-logout {
+        font-size: 10px;
+    }
+}

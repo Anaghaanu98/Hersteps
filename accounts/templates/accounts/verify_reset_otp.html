@@ -1,0 +1,50 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Verify OTP | HerSteps{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <h2>Verify Your Email</h2>
+    <p>Enter the six-digit code sent to your email address.</p>
+
+    <p>{{ email }}</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="message {{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" >
+        {% csrf_token %}
+
+        <label for="otp">Verification Code</label>
+        <input
+            type="text"
+            id="otp"
+            name="otp"
+            placeholder="Enter 6-digit OTP"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            minlength="6"
+            maxlength="6"
+            autocomplete="one-time-code"
+            required
+        >
+
+        <button type="submit">Verify OTP →</button>
+    </form>
+
+    <p>
+        Didn't receive the code?
+    </p>
+    <form method="POST">
+    {% csrf_token %}
+
+    <button type="submit" name="action" value="resend">
+        Resend OTP
+    </button>
+</form>
+    <a href="{% url 'forgot_password' %}">Back</a>
+</div>
+{% endblock %}

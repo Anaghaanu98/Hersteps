@@ -1,0 +1,178 @@
+
+{% extends "accounts/base.html" %}
+{% load static %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+{% block title %}HerSteps | Footwear for Women{% endblock %}
+
+{% block content %}
+<div class="home-page">
+
+    <!-- HEADER -->
+    <header class="home-header">
+        <a href="{% url 'home' %}" class="logo">
+            <span class="logo-mark">◖</span>
+            <span>
+                <strong>hersteps</strong>
+                <small>FOOTWEAR FOR WOMEN</small>
+            </span>
+        </a>
+
+        <nav class="main-nav" aria-label="Main navigation">
+            <a href="{% url 'home' %}" class="active">HOME</a>
+            <a href="#sale">SHOP</a>
+            <a href="#categories">CATEGORIES</a>
+            <a href="#sale">OFFERS</a>
+            <a href="#footer">ABOUT</a>
+        </nav>
+
+        <div class="header-actions">
+            <button type="button" aria-label="Search" class="icon-button">
+                <svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+            </button>
+            <a href="#wishlist" aria-label="Wishlist" class="icon-button">
+                <svg viewBox="0 0 24 24"><path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/></svg>
+            </a>
+            <a href="#cart" aria-label="Shopping bag" class="icon-button bag-icon">
+                <svg viewBox="0 0 24 24"><path d="M5 8h14l1 13H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+                <span class="cart-count">2</span>
+            </a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'my_accounts:my_account' %}" aria-label="My account" class="account-icon">
+                    {{ user.fullname|default:user.username|first|upper }}
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" aria-label="Login" class="account-icon">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/></svg>
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-copy">
+            <p class="eyebrow">NEW SEASON COLLECTION</p>
+            <h1>Walk in Timeless Elegance</h1>
+            <p class="hero-description">
+                Thoughtfully sculpted women’s footwear, crafted for
+                effortless grace and comfort.
+            </p>
+            <a href="#categories" class="primary-button">
+                EXPLORE COLLECTION <span>→</span>
+            </a>
+        </div>
+
+        <div class="hero-image">
+            <img
+                src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1200&q=85"
+                alt="Elegant women's footwear collection"
+            >
+        </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="category-section" id="categories">
+        <p class="eyebrow">CURATED SILHOUETTES</p>
+        <h2>Shop by Category</h2>
+
+        <div class="category-grid">
+            <a href="#sale" class="category-card">
+                <img src="https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?auto=format&fit=crop&w=500&q=85" alt="Women's heels">
+                <span>Heels <b>→</b></span>
+            </a>
+            <a href="#sale" class="category-card">
+                <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=500&q=85" alt="Women's flats">
+                <span>Flats <b>→</b></span>
+            </a>
+            <a href="#sale" class="category-card">
+                <img src="https://images.unsplash.com/photo-1603487742131-4160ec999306?auto=format&fit=crop&w=500&q=85" alt="Women's sandals">
+                <span>Sandals <b>→</b></span>
+            </a>
+            <a href="#sale" class="category-card">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=500&q=85" alt="Women's sneakers">
+                <span>Sneakers <b>→</b></span>
+            </a>
+            <a href="#sale" class="category-card">
+                <img src="https://images.unsplash.com/photo-1562273138-f46be4ebdf33?auto=format&fit=crop&w=500&q=85" alt="Women's wedges">
+                <span>Wedges <b>→</b></span>
+            </a>
+        </div>
+    </section>
+
+    <!-- SALE PRODUCTS -->
+    <section class="sale-section" id="sale">
+        <p class="sale-label">◇ SEASONAL ARCHIVE</p>
+        <h2>Curated Archive Sale</h2>
+
+        <div class="product-grid">
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=85" alt="Elena sculpted wedge">
+                    <span class="offer-badge">SAVE 30%</span>
+                </div>
+                <p class="product-color">COLOR: SAND BEIGE</p>
+                <h3>Elena Sculpted Wedge</h3>
+                <div class="product-bottom">
+                    <p class="price">₹3,499 <del>₹4,999</del></p>
+                    <a href="{% url 'login' %}" class="claim-button">CLAIM SIZE</a>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1531310197839-ccf54634509e?auto=format&fit=crop&w=800&q=85" alt="Serena knot mule">
+                    <span class="offer-badge">LIMITED OFFER</span>
+                </div>
+                <p class="product-color">COLOR: FOREST GREEN</p>
+                <h3>Serena Knot Mule</h3>
+                <div class="product-bottom">
+                    <p class="price">₹2,999 <del>₹4,499</del></p>
+                    <a href="{% url 'login' %}" class="claim-button">CLAIM SIZE</a>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?auto=format&fit=crop&w=800&q=85" alt="Camille ankle strap flat">
+                    <span class="offer-badge">SAVE 30%</span>
+                </div>
+                <p class="product-color">COLOR: BLUSH NUDE</p>
+                <h3>Camille Ankle-Strap Flat</h3>
+                <div class="product-bottom">
+                    <p class="price">₹2,699 <del>₹3,899</del></p>
+                    <a href="{% url 'login' %}" class="claim-button">CLAIM SIZE</a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="home-footer" id="footer">
+        <div class="footer-brand">
+            <a href="{% url 'home' %}" class="footer-logo">hersteps</a>
+            <p class="footer-tagline">FOOTWEAR FOR WOMEN</p>
+            <p class="footer-location">♧ Mumbai · Bengaluru, India</p>
+        </div>
+
+        <div class="footer-column">
+            <h4>SHOP</h4>
+            <a href="#sale">Shop all</a>
+        </div>
+
+        <div class="footer-column">
+            <h4>CUSTOMER CARE</h4>
+            <a href="#footer">Size &amp; Fit Guide</a>
+            <a href="#footer">Returns &amp; Exchanges</a>
+            <a href="#footer">FAQs</a>
+        </div>
+
+        <div class="footer-column">
+            <h4>CONTACT</h4>
+            <a href="mailto:care@hersteps.com">✉ care@hersteps.com</a>
+        </div>
+    </footer>
+
+</div>
+{% endblock %}

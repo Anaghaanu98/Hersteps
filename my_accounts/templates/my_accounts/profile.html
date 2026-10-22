@@ -1,0 +1,210 @@
+
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}My Profile | HerSteps{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="profile-page">
+
+    <!-- Breadcrumb and Account Settings -->
+    <div class="profile-topbar">
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">HOME</a>
+            <span>/</span>
+            <a href="{% url 'my_accounts:my_account' %}">MY ACCOUNT</a>
+            <span>/</span>
+            <span class="current">PROFILE</span>
+        </div>
+
+        <span class="settings-label">
+            <span class="status-dot"></span>
+            Account Settings
+        </span>
+    </div>
+
+    <!-- Page Heading -->
+    <h1 class="profile-heading">My Profile</h1>
+
+    <!-- Profile Layout -->
+    <div class="profile-layout">
+
+        <!-- Left Profile Card -->
+        <aside class="profile-sidebar">
+
+            <div class="avatar-wrapper">
+                <div class="profile-avatar">
+                    {% if user.fullname %}
+                        {{ user.fullname|slice:":1"|upper }}{% if " " in user.fullname %}{{ user.fullname|cut:user.fullname|default:"" }}{% endif %}
+                    {% else %}
+                        {{ user.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+
+                <span class="avatar-badge" title="Profile">
+                    &#10003;
+                </span>
+            </div>
+
+            <h2 class="profile-name">
+                {{ user.fullname|default:user.username }}
+            </h2>
+
+            <div class="verified-badge">
+                <span class="status-dot"></span>
+                {% if user.is_valid %}
+                    Verified Account
+                {% else %}
+                    Account Not Verified
+                {% endif %}
+            </div>
+
+            <div class="member-since">
+                <span>Member Since</span>
+                <strong>
+                    {{ user.created_at|date:"F Y" }}
+                </strong>
+            </div>
+           {% if not is_google_user %}
+            <a href="{% url 'my_accounts:change_password' %}"
+               class="change-password-btn">
+                <span>&#8635;</span>
+                Change Password
+            </a>
+            {% else %}
+              <div class="change-passowrd-btn disabled-btn"
+                   title="Password is managed through your Google account">
+                   <span>&#8635;</span>
+                     Change Password
+
+              </div>
+            {% endif %}
+        </aside>
+
+        <!-- Right Personal Information Card -->
+        <section class="personal-card">
+
+            <div class="personal-card-header">
+                <h2>Personal Information</h2>
+
+                <button type="button"
+                        class="edit-details-btn"
+                        id="editDetailsBtn">
+                    <span>&#9998;</span>
+                    Edit Details
+                </button>
+            </div>
+
+            <form method="POST"
+                  action="{% url 'my_accounts:profile' %}"
+                  id="profileForm">
+                {% csrf_token %}
+                 {% if form.non_field_errors %}
+                     <div class="form-errors">
+                         {{ form.non_field_errors }}
+                     </div>
+                 {% endif %}
+                <div class="profile-fields">
+
+                    <!-- Full Name -->
+                    <div class="field-group">
+                        <label for="fullname">FULL NAME</label>
+
+                        <div class="input-wrapper">
+                            <span class="field-icon">&#9818;</span>
+                            <input type="text"
+                               id="fullname"
+                               name="fullname"
+                               value="{{ user.fullname|default_if_none:'' }}"
+                               {% if not is_google_user %}readonly{% else %}readonly{% endif %}>
+
+                         {% for error in form.fullname.errors %}
+                            <small class="field-error">{{ error }}</small>
+                         {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="field-group">
+                        <label for="username">USERNAME</label>
+
+                        <div class="input-wrapper">
+                            <span class="field-icon">@</span>
+                            <input type="text"
+                                   id="username"
+                                   name="username"
+                                   value="{{ user.username|default_if_none:'' }}"
+                                   readonly>
+
+                                   {% for error in form.username.errors %}
+                                       <small class="field-error">{{ error }}</small>
+                                   {% endfor %} 
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field-group">
+                        <label for="email">EMAIL ADDRESS</label>
+
+                        <div class="input-wrapper">
+                            <span class="field-icon">&#9993;</span>
+                            <input type="email"
+                                   id="email"
+                                   name="email"
+                                   value="{{ user.email }}"
+                                   {% if is_google_user %}
+                                        disabled
+                                        title="Email is managed through your Google account."
+                                   {% else %}
+                                        readonly
+                                        title="Email changes require verification."
+                                   {% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="field-group">
+                        <label for="phone_number">PHONE NUMBER</label>
+
+                        <div class="input-wrapper">
+                            <span class="field-icon">&#9742;</span>
+                            <input type="tel"
+                                   id="phone_number"
+                                   name="phone_number"
+                                   value="{{ user.phone_number|default_if_none:'' }}"
+                                   placeholder="Enter your phone number"
+                                   readonly>
+                            {% for error in form.phone_number.errors %}
+                                <small class="field-error">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="save-row">
+                    <button type="submit"
+                            class="save-changes-btn"
+                            id="saveChangesBtn"
+                            disabled>
+                        Save Changes
+                        <span>&rarr;</span>
+                    </button>
+                </div>
+
+            </form>
+
+        </section>
+
+    </div>
+
+</main>
+
+<script src="{% static 'js/profile.js' %}"></script>
+
+{% endblock %}

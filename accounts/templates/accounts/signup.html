@@ -1,0 +1,66 @@
+
+{% extends "accounts/base.html" %}
+
+{% block title %}Create Account | HerSteps{% endblock %}
+
+{% block back_link %}
+<a class="back-link" href="/">← Back to Store</a>
+{% endblock %}
+
+{% block content %}
+<section class="auth-card">
+    <div class="brand">
+        <span class="brand-mark">◖</span>
+        <span class="brand-name">hersteps</span>
+        <span class="brand-tagline">FOOTWEAR FOR WOMEN</span>
+    </div>
+
+    <p class="eyebrow">JOIN THE ATELIER</p>
+    <h1>Create Your Account</h1>
+
+    <a href="{% url 'google_login' %}" class="secondary-btn"
+       style="display:block; text-align:center; text-decoration:none;">
+    Continue with Google
+    </a>
+
+    <div class="divider">OR WITH DETAILS</div>
+
+    <form method="POST" action="{% url 'signup' %}">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="form-group">
+                <label class="form-label" for="{{ field.id_for_label }}">
+                    {% if field.name == "fullname" %}Full Name
+                    {% elif field.name == "username" %}Username
+                    {% elif field.name == "email" %}Email Address
+                    {% elif field.name == "password" %}Password
+                    {% else %}Confirm Password
+                    {% endif %}
+                </label>
+
+                {{ field }}
+
+                {% for error in field.errors %}
+                    <span class="field-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <button class="primary-btn" type="submit">
+            Create Account →
+        </button>
+    </form>
+
+    <div class="bottom-note">
+        Already have an account?
+        <a class="text-link" href="{% url 'login' %}">Login ↗</a>
+    </div>
+</section>
+{% endblock %}

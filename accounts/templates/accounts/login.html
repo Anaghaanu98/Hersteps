@@ -1,0 +1,77 @@
+
+{% extends "accounts/base.html" %}
+{% load socialaccount %}
+
+{% block title %}Login | HerSteps{% endblock %}
+
+{% block content %}
+<section class="auth-card">
+    <div class="brand">
+        <span class="brand-mark">◖</span>
+        <span class="brand-name">hersteps</span>
+        <span class="brand-tagline">FOOTWEAR FOR WOMEN</span>
+    </div>
+
+    <h1>Welcome Back</h1>
+
+    <p class="subtitle">
+        Sign in to access your saved orders, wishlist and account.
+    </p>
+
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label" for="identifier">
+                EMAIL / USERNAME
+            </label>
+
+            <input
+                class="form-input"
+                type="text"
+                id="identifier"
+                name="identifier"
+                placeholder="Email or username"
+                autocomplete="username"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <div class="password-row">
+                <label class="form-label" for="password">PASSWORD</label>
+                <a class="text-link" href="{% url 'forgot_password' %}">
+                    Forgot Password?
+                </a>
+            </div>
+
+            <input
+                class="form-input"
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+            >
+        </div>
+
+        <button class="primary-btn" type="submit">
+            Sign In to Account →
+        </button>
+    </form>
+
+    <div class="divider">OR</div>
+
+    <a class="secondary-btn"
+       style="display:block; text-align:center; text-decoration:none;"
+       href="{% url 'google_login' %}">
+         Continue with Google
+    </a>
+
+    <div class="bottom-note">
+        Don't have an account?
+        <a class="text-link" href="{% url 'signup' %}">Sign Up</a>
+    </div>
+</section>
+{% endblock %}
