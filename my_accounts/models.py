@@ -18,7 +18,7 @@ class Address(models.Model):
     pincode=models.CharField(max_length=10)
     address_type=models.CharField(max_length=10,choices=ADDRESS_CHOICES,default='Home')
     created_at=models.DateTimeField(auto_now_add=True)
-
+    is_default=models.BooleanField(default=False)
     def __str__(self):
         return f"{self.full_name} - (self.city)"
 # Create your models here.

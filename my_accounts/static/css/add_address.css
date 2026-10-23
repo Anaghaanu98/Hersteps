@@ -1,0 +1,236 @@
+
+.address-form-page {
+    max-width: 800px;
+    margin: 24px auto 50px;
+    padding: 0 24px;
+    color: #30241d;
+}
+
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.back-link {
+    color: #59483d;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.back-link:hover {
+    color: #9f4809;
+}
+
+.breadcrumb {
+    color: #927b6c;
+    font-size: 11px;
+    margin: 0;
+}
+
+.address-form-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 36px 40px;
+    box-shadow: 0 5px 25px rgba(80, 49, 29, 0.05);
+}
+
+.form-heading {
+    padding-bottom: 22px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid #f1e6de;
+}
+
+.section-label {
+    display: inline-block;
+    background: #f9ede3;
+    color: #9f4809;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+}
+
+.form-heading h1 {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 34px;
+    font-weight: 500;
+    margin: 12px 0 5px;
+}
+
+.form-heading p {
+    color: #806b5e;
+    font-size: 13px;
+    margin: 0;
+}
+
+.address-form .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 22px;
+    min-width: 0;
+}
+
+.address-form .form-group > label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 9px;
+    color: #59483d;
+}
+
+.address-form input:not([type="radio"]):not([type="checkbox"]),
+.address-form select,
+.address-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: #fcf0e6;
+    color: #30241d;
+    padding: 13px 14px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+}
+
+.address-form input::placeholder {
+    color: #b09b8d;
+}
+
+.address-form input:focus,
+.address-form select:focus,
+.address-form textarea:focus {
+    border-color: #c78356;
+    background: #fffaf6;
+}
+
+.address-type-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.address-type-options .radio-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 15px;
+    border: 1px solid #e6cbb9;
+    border-radius: 22px;
+    color: #59483d;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+    accent-color: #9f4809;
+    margin: 0;
+}
+
+.radio-option:has(input:checked) {
+    background: #9f4809;
+    color: #fff;
+    border-color: #9f4809;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.default-address-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 2px 0 30px;
+}
+
+.default-address-option input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    accent-color: #9f4809;
+    cursor: pointer;
+}
+
+.default-address-option label {
+    color: #59483d;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.form-actions .primary-button {
+    min-width: 145px;
+    padding: 14px 22px;
+    box-shadow: 0 3px 8px rgba(100, 54, 23, 0.12);
+}
+
+.cancel-button {
+    display: inline-block;
+    padding: 14px 22px;
+    background: #f8ece2;
+    color: #59483d;
+    border-radius: 7px;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.cancel-button:hover {
+    background: #f1dfd1;
+}
+
+.field-error,
+.form-errors {
+    color: #b33a2b;
+    font-size: 12px;
+    margin: 7px 0 0;
+}
+
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 25px 5px;
+    color: #987f70;
+    font-size: 11px;
+}
+
+.form-footer span:last-child {
+    font-size: 9px;
+    letter-spacing: 1.3px;
+}
+
+@media (max-width: 650px) {
+    .address-form-page {
+        padding: 0 14px;
+    }
+
+    .address-form-card {
+        padding: 25px 20px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .form-heading h1 {
+        font-size: 30px;
+    }
+
+    .breadcrumb {
+        display: none;
+    }
+}

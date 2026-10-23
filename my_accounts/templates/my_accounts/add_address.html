@@ -1,0 +1,184 @@
+
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} | HerSteps{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/add_address.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="address-form-page">
+
+    <div class="form-navigation">
+        <a href="{% url 'my_accounts:address_list' %}" class="back-link">
+            &larr; Back to Addresses
+        </a>
+
+        <p class="breadcrumb">
+            Home / My Account / Addresses / {{ page_title }}
+        </p>
+    </div>
+
+    <div class="address-form-card">
+
+        <div class="form-heading">
+            <span class="section-label">DELIVERY DETAILS</span>
+            <h1>{{ page_title }}</h1>
+            <p>
+                Enter the details for your delivery address.
+            </p>
+        </div>
+
+        <form method="POST" class="address-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.full_name.id_for_label }}">
+                    Full Name
+                </label>
+
+                {{ form.full_name }}
+
+                {% for error in form.full_name.errors %}
+                    <p class="field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}">
+                    Phone Number
+                </label>
+
+                {{ form.phone }}
+
+                {% for error in form.phone.errors %}
+                    <p class="field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label>Address Type</label>
+
+                <div class="address-type-options">
+                    {% for radio in form.address_type %}
+                        <label class="radio-option"
+                               for="{{ radio.id_for_label }}">
+                            {{ radio.tag }}
+                            <span>{{ radio.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+
+                {% for error in form.address_type.errors %}
+                    <p class="field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.house_name.id_for_label }}">
+                    Street Address
+                </label>
+
+                {{ form.house_name }}
+
+                {% for error in form.house_name.errors %}
+                    <p class="field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.locality.id_for_label }}">
+                    Locality / Area
+                </label>
+
+                {{ form.locality }}
+
+                {% for error in form.locality.errors %}
+                    <p class="field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label for="{{ form.city.id_for_label }}">
+                        City
+                    </label>
+
+                    {{ form.city }}
+
+                    {% for error in form.city.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.state.id_for_label }}">
+                        State
+                    </label>
+
+                    {{ form.state }}
+
+                    {% for error in form.state.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.pincode.id_for_label }}">
+                        Pincode
+                    </label>
+
+                    {{ form.pincode }}
+
+                    {% for error in form.pincode.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <div class="default-address-option">
+                {{ form.is_default }}
+
+                <label for="{{ form.is_default.id_for_label }}">
+                    Set as default address
+                </label>
+            </div>
+
+            {% for error in form.is_default.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="primary-button">
+                    {{ button_text }}
+                </button>
+
+                <a href="{% url 'my_accounts:address_list' %}"
+                   class="cancel-button">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="form-footer">
+        <span>Secure profile information</span>
+        <span>HERSTEPS ATELIER</span>
+    </div>
+
+</div>
+
+{% endblock %}

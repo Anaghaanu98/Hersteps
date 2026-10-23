@@ -1,0 +1,133 @@
+
+.delete-page {
+    min-height: 65vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background: #FAF6F0;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    color: #352820;
+}
+
+.delete-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 32px;
+    background: #FFFFFF;
+    border: 1px solid #EDE1D6;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.delete-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background: #F8E8E3;
+    color: #A13F3F;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.delete-card h2 {
+    margin: 0 0 10px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.description {
+    margin: 0 0 22px;
+    color: #78675C;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.address-details {
+    padding: 16px;
+    margin-bottom: 22px;
+    border-radius: 7px;
+    background: #FFF3E9;
+    text-align: left;
+}
+
+.address-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.address-heading strong {
+    font-size: 12px;
+}
+
+.address-heading span {
+    padding: 5px 8px;
+    border-radius: 12px;
+    background: #F0E0D4;
+    color: #78665A;
+    font-size: 9px;
+}
+
+.address-details p {
+    margin: 5px 0;
+    color: #6D5B50;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.keep-btn,
+.delete-btn {
+    flex: 1;
+    min-height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 11px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.keep-btn {
+    background: #F8EADF;
+    color: #59473B;
+}
+
+.delete-btn {
+    background: #A13F3F;
+    color: #FFFFFF;
+}
+
+.keep-btn:hover {
+    background: #F0DDCF;
+}
+
+.delete-btn:hover {
+    background: #883232;
+}
+
+@media (max-width: 480px) {
+    .delete-card {
+        padding: 24px 18px;
+    }
+
+    .delete-actions {
+        flex-direction: column;
+    }
+}

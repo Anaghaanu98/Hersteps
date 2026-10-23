@@ -9,6 +9,8 @@ urlpatterns = [
     path('change-password/', views.change_password_view, name='change_password'),
     path('logout/', views.logout_view, name='logout'),
     path('address-list/',views.address_list_view,name='address_list'),
-    path('add-address'/views.add_address_view, name='add_address'),
-    path('address/<int:address_id>/edit/',views.edit_address_view,name='edit_address')
+    path('add-address/',views.add_address_view, name='add_address'),
+    path('address/<int:address_id>/edit/',views.edit_address_view,name='edit_address'),
+    path('addresses/<int:address_id>/default/',views.set_default_address_view, name='set_default_address'),
+    path('addresses/<int:address_id>/delete/',views.delete_address_view,name='delete_address')
 ]
