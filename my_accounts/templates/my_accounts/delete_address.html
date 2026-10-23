@@ -1,0 +1,56 @@
+
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}Delete Address | HerSteps{% endblock %}
+
+{% block content %}
+<link rel="stylesheet"
+      href="{% static 'css/delete_address.css' %}">
+
+<div class="delete-page">
+
+    <div class="delete-card">
+
+        <div class="delete-icon">!</div>
+
+        <h2>Delete Address?</h2>
+
+        <p class="description">
+            Are you sure you want to delete this address?
+            <br>
+            This action cannot be undone.
+        </p>
+
+        <div class="address-details">
+            <div class="address-heading">
+                <strong>{{ address.full_name }}</strong>
+                <span>{{ address.address_type|upper }}</span>
+            </div>
+
+            <p>{{ address.house_street }}</p>
+
+            <p>
+                {{ address.locality }}, {{ address.city }},
+                {{ address.state }} {{ address.pincode }}
+            </p>
+
+            <p>Phone: {{ address.phone }}</p>
+        </div>
+
+        <form method="post" class="delete-actions">
+            {% csrf_token %}
+
+            <a href="{% url 'my_accounts:address_list' %}" class="keep-btn">
+                Keep Address
+            </a>
+
+            <button type="submit" class="delete-btn">
+                Yes, Delete
+            </button>
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}

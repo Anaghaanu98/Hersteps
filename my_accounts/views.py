@@ -94,10 +94,10 @@ def add_address_view(request):
             address.save()
 
             messages.success(request,'Address saved successfully')
-            return redirect('address_list')
+            return redirect('my_accounts:address_list')
     else:
         form=AddressForm()
-
+   
     return render(request,'my_accounts/add_address.html',{'form':form,'page_title':'Add new Address'})
 
 @login_required
@@ -108,13 +108,56 @@ def edit_address_view(request,address_id):
         form=AddressForm(request.POST,instance=address)
 
         if form.is_valid():
-            form.save()
+             if form.is_valid():
+              updated_address = form.save(commit=False)
 
-            messages.success(request,'Address updated successfully')
-            return redirect('address_list')
+             if updated_address.is_default:
+                Address.objects.filter(
+                    user=request.user
+                ).exclude(id=address.id).update(
+                    is_default=False
+                )
+
+             updated_address.save()
+
+             messages.success(request,'Address updated successfully')
+             return redirect('my_accounts:address_list')
         else:
             form= AddressForm()
+        return render(request,"my_accounts/add_address.html",{"form":form,"page_title":"Edit Address"})
+@login_required
+def delete_address_view(request,address_id):
+    address=get_object_or_404(Address,id=address_id,user=request.user)
+
+    if request.method=="POST":
+        address.delete()
+
+        messages.success(request,"Address deleted successfully")
+        return redirect("my_accounts:address_list")
+
+    return render(request,"my_accounts/delete_address.html",{'address':address})
+@login_required
+def set_default_address_view(request, address_id):
+    if request.method == "POST":
+        address = get_object_or_404(
+            Address,
+            id=address_id,
+            user=request.user
+        )
+
+        Address.objects.filter(user=request.user).update(
+            is_default=False
+        )
+
+        address.is_default = True
+        address.save(update_fields=["is_default"])
+
+        messages.success(request, "Default address updated.")
+
+    return redirect("my_accounts:address_list")
+
 def logout_view(request):
+
 
     if request.method == "POST":
 

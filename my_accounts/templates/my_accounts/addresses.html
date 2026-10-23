@@ -1,0 +1,128 @@
+
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}My Addresses | HerSteps{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/addresses.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="address-page">
+
+    <div class="address-heading">
+        <div>
+            <p class="eyebrow">ACCOUNT / LOGISTICS</p>
+            <h1>My Addresses</h1>
+            <p class="heading-description">
+                Manage your delivery addresses.
+            </p>
+        </div>
+
+        <a href="{% url 'my_accounts:add_address' %}" class="primary-button">
+            + Add New Address
+        </a>
+    </div>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="message {{ message.tags }}">
+                    {{ message }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="address-list">
+
+        {% for address in addresses %}
+
+            <div class="address-card">
+
+                <div class="address-card-heading">
+                    <div>
+                        <div class="name-row">
+                            <h2>{{ address.full_name }}</h2>
+
+                            <span class="address-type">
+                                {{ address.get_address_type_display }}
+                            </span>
+                        </div>
+
+                        <p class="address-subtitle">
+                            {% if address.address_type == 'home' %}
+                                HOME ADDRESS
+                            {% elif address.address_type == 'work' %}
+                                WORK ADDRESS
+                            {% else %}
+                                DELIVERY ADDRESS
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    {% if address.is_default %}
+                        <span class="default-badge">
+                            Default Address
+                        </span>
+                    {% else %}
+                        <form method="POST"
+                              action="{% url 'my_accounts:set_default_address' address.id %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="text-button">
+                                Set as Default
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="address-details">
+                    <p>{{ address.house_name }}</p>
+                    <p>{{ address.locality }}</p>
+                    <p>
+                        {{ address.city }}, {{ address.state }}
+                        - {{ address.pincode }}
+                    </p>
+                    <p class="phone-number">
+                        Phone: {{ address.phone }}
+                    </p>
+                </div>
+
+                <div class="address-actions">
+
+                    <a href="{% url 'my_accounts:edit_address' address.id %}"
+                       class="secondary-button">
+                        Edit
+                    </a>
+
+                    <a href="{% url 'my_accounts:delete_address' address.id %}"
+                       class="delete-button">
+                        Delete
+                    </a>
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="empty-address">
+                <h2>No addresses saved yet</h2>
+                <p>Add a delivery address to make checkout easier.</p>
+
+                <a href="{% url 'my_accounts:add_address' %}"
+                   class="primary-button">
+                    Add Your First Address
+                </a>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

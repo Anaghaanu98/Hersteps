@@ -37,4 +37,30 @@ class AddressForm(forms.ModelForm):
     class Meta:
         model=Address
         fields=['full_name','phone','house_name','locality','city','state','pincode','address_type',]
-        widgets={'address_type':forms.RadioSelect(),}
+        widgets = {
+            "full_name": forms.TextInput(attrs={
+                "placeholder": "Enter full name",
+            }),
+            "phone": forms.TextInput(attrs={
+                "placeholder": "+91 XXXXX XXXXX",
+            }),
+            "address_type": forms.RadioSelect(),
+            "house_name": forms.TextInput(attrs={
+                "placeholder": "House number, street name",
+            }),
+            "locality": forms.TextInput(attrs={
+                "placeholder": "Area or locality",
+            }),
+            "city": forms.TextInput(attrs={
+                "placeholder": "City",
+            }),
+            "state": forms.TextInput(attrs={
+                "placeholder": "State",
+            }),
+            "pincode": forms.TextInput(attrs={
+                "placeholder": "PIN code",
+                "maxlength": "10",
+                "inputmode": "numeric",
+            }),
+            "is_default": forms.CheckboxInput(),
+        }
