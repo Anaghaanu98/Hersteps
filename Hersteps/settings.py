@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'accounts',
     'my_accounts',
+    'admin_panel',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',

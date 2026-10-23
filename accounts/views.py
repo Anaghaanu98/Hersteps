@@ -257,7 +257,11 @@ def verify_email_view(request):
 
 @require_http_methods(["GET", "POST"])
 def login_view(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and (
+        request.user.is_staff or request.user.is_superuser
+    ):
+        return redirect('admin_panel:admin_dashboard')
+    if (request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser):
         return redirect("home")
 
 
@@ -590,5 +594,9 @@ def reset_password_view(request):
 
     return render(request, "accounts/reset_password.html")
 def home_view(request):
-    return render(request, "accounts/home.html")
+    if request.user.is_authenticated:
+     if request.user.is_staff or request.user.is_superuser:
+        return render(request, "admin_panel/dashboard.html")
+    else:
+        return render(request, "accounts/home.html")
 # Create your views here.

@@ -22,5 +22,6 @@ urlpatterns = [
     path('hersteps/', include('accounts.urls')),
     path('my-accounts/', include('my_accounts.urls')),
     path("accounts/", include("allauth.urls")),
+    path('custom-admin/',include("admin_panel.urls")),
 
 ]
