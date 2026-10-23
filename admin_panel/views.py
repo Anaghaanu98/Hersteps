@@ -38,3 +38,45 @@ def admin_required(view_func):
 @admin_required
 def admin_dashboard_view(request):
     return render(request,'admin_panel/dashboard.html')
+
+@admin_required
+def user_list_view(request):
+
+    user=User.objects.filter(is_staff=False,is_superuser=False)
+
+    search_query=request.GET.get('q','').strip()
+    if search_query:
+        users=user.filer(Q(username__icontauns=search_query)| Q(email__icontains=search_query)
+                         | Q(full_name__icontains=search_query))
+
+        users=users.order_by('-date_joined','-pk')
+
+        paginator=Paginator(users,10)
+        page_obj=paginator.get_page(request.GET.get('page'))
+
+        context={'page_obj':page_obj,
+                 'search_query': search_query,}
+
+        return render(request,'admin_panel/users.html',context)
+
+@admin_required
+@require_POST
+def toggle_user_status_view(request,user_id):
+
+    customer=get_object_or_404(User,pk=user_id,is_staff=False,is_superuser=False)
+
+    customer.is_active=not customer.is_active
+    customer.save(update_fields=['is_active'])
+
+    if customer.is_active:
+        messages.success(request,f'{customer.username} has been unblocked')
+
+    else:
+        messages.success(request,f'{customer.username} has been blocked')
+    return redirect('admin_panel:user_list')
+
+@admin_required
+@require_POST
+def admin_logout_view(request):
+    logout(request)
+    return redirect('admin_panel:admin_login')
