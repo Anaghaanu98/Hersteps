@@ -46,7 +46,7 @@ def user_list_view(request):
 
     search_query=request.GET.get('q','').strip()
     if search_query:
-           users=user.filer(Q(username__icontauns=search_query)| Q(email__icontains=search_query)
+           users=users.filer(Q(username__icontauns=search_query)| Q(email__icontains=search_query)
                          | Q(full_name__icontains=search_query))
 
            users=users.order_by('-date_joined','-pk')
