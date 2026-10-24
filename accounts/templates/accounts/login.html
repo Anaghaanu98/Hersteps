@@ -17,7 +17,15 @@
     <p class="subtitle">
         Sign in to access your saved orders, wishlist and account.
     </p>
-
+    {% if messages %}
+     <div class="form-messages" role="alert">
+        {% for message in messages %}
+            <p class="message {{ message.tags }}">
+                {{ message }}
+            </p>
+        {% endfor %}
+     </div>
+    {% endif %}
     <form method="POST" action="{% url 'login' %}">
         {% csrf_token %}
 

@@ -10,6 +10,19 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from .forms import AddressForm
 from .models import Address
+from .models import EmailChangeVerification
+import secrets
+from django.contrib.auth.hashers import make_password,check_password
+from datetime import timedelta
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth import get_user_model
+import logging
+logger = logging.getLogger(__name__)
+User = get_user_model()
+
+
 def my_account_view(request):
     return render(request, "my_accounts/my_account.html")
 
@@ -33,9 +46,241 @@ def profile_view(request):
     else:
         form=ProfileUpdateForm(instance=user)
     context ={"user":user, "is_google_user":is_google_user, "form":form}
-    return render(request, "my_accounts/profile.html")
+    return render(request, "my_accounts/profile.html",context)
+
+@login_required
+@require_POST
+def start_email_change_view(request):
+    user = request.user
+    is_google_user = SocialAccount.objects.filter(
+        user=user,
+        provider="google"
+    ).exists()
+
+    if is_google_user:
+        messages.error(
+            request,
+            "Your email is managed through your Google account."
+        )
+        return redirect("my_accounts:profile")
+
+    new_email = request.POST.get("new_email", "").strip().lower()
+
+    if not new_email:
+        messages.error(request, "Please enter your new email address.")
+        return redirect("my_accounts:profile")
+
+    if new_email == user.email.lower():
+        messages.error(
+            request,
+            "Your new email must be different from your current email."
+        )
+        return redirect("my_accounts:profile")
+
+    # Check whether another account already uses this email.
+    if User.objects.filter(email__iexact=new_email).exclude(
+        pk=user.pk
+    ).exists():
+        messages.error(
+            request,
+            "This email address is already registered."
+        )
+        return redirect("my_accounts:profile")
+
+    # Validate the email format.
+    from django import forms
+
+    try:
+        new_email = forms.EmailField().clean(new_email)
+    except forms.ValidationError:
+        messages.error(request, "Please enter a valid email address.")
+        return redirect("my_accounts:profile")
+
+    otp = f"{secrets.randbelow(1_000_000):06d}"
+
+    EmailChangeVerification.objects.update_or_create(
+        user=user,
+        defaults={
+            "new_email": new_email,
+            "otp_hash": make_password(otp),
+            "expires_at": timezone.now() + timedelta(minutes=5),
+            "attempts": 0,
+        }
+    )
+
+    try:
+        send_mail(
+            subject="Verify your new HerSteps email",
+            message=(
+                f"Hi {user.fullname or user.username},\n\n"
+                f"Your OTP to change your HerSteps email is: {otp}\n\n"
+                "This OTP is valid for 5 minutes.\n"
+                "If you did not request this change, please ignore this email."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[new_email],
+            fail_silently=False,
+        )
+    except Exception:
+        EmailChangeVerification.objects.filter(user=user).delete()
+        messages.error(
+            request,
+            "We couldn't send the verification email. Please try again."
+        )
+        return redirect("my_accounts:profile")
+
+    messages.success(
+        request,
+        "An OTP has been sent to your new email address."
+    )
+    return redirect("my_accounts:verify_email_change")
 
 
+@login_required
+def verify_email_change_view(request):
+    user = request.user
+
+    is_google_user = SocialAccount.objects.filter(
+        user=user,
+        provider="google"
+    ).exists()
+
+    if is_google_user:
+        messages.error(
+            request,
+            "Your email is managed through your Google account."
+        )
+        return redirect("my_accounts:profile")
+
+    verification = EmailChangeVerification.objects.filter(
+        user=user
+    ).first()
+
+    if verification is None:
+        messages.error(
+            request,
+            "No pending email change was found. Please try again."
+        )
+        return redirect("my_accounts:profile")
+
+    if request.method == "POST":
+          action = request.POST.get("action", "verify")
+
+          if action == "resend":
+              now = timezone.now()
+
+              if now < verification.expires_at:
+                messages.error(
+                  request,
+                 "You can request a new OTP after the current one expires."
+                )
+                return redirect("my_accounts:verify_email_change")
+
+              otp = f"{secrets.randbelow(1_000_000):06d}"
+
+              verification.otp_hash = make_password(otp)
+              verification.expires_at = now + timedelta(minutes=5)
+              verification.attempts = 0
+              verification.save(
+                  update_fields=["otp_hash", "expires_at", "attempts"]
+               )
+
+              try:
+               send_mail(
+               subject="Verify your new HerSteps email",
+                message=(
+                f"Your OTP to change your HerSteps email is: {otp}\n\n"
+                "This OTP is valid for 5 minutes."
+                 ),
+               from_email=settings.DEFAULT_FROM_EMAIL,
+               recipient_list=[verification.new_email],
+                fail_silently=False,
+           )
+              except Exception:
+               logger.exception("Email-change OTP resend failed")
+               verification.delete()
+               messages.error(
+                 request,
+               "We couldn't send the email. Please start the email change again."
+        )
+               return redirect("my_accounts:profile")
+
+              messages.success(request, "A new OTP has been sent.")
+              return redirect("my_accounts:verify_email_change")
+       
+          otp = request.POST.get("otp", "").strip()
+
+          if verification.expires_at <= timezone.now():
+            messages.error(
+                request,
+                "Your OTP has expired. You can request a new one below."
+            )
+            return render(
+                request,
+                "my_accounts/verify_email_change.html",
+                {
+                    "new_email": verification.new_email,
+                    "expires_at_timestamp": int(
+                        verification.expires_at.timestamp() * 1000
+                    ),
+                },
+            )
+
+          if verification.attempts >= 5:
+            verification.delete()
+            messages.error(
+                request,
+                "Too many incorrect attempts. Please request a new OTP."
+            )
+            return redirect("my_accounts:profile")
+
+          if not check_password(otp, verification.otp_hash):
+            verification.attempts += 1
+            verification.save(update_fields=["attempts"])
+
+            messages.error(request, "Invalid OTP. Please try again.")
+            return render(
+                request,
+                "my_accounts/verify_email_change.html",
+                {"new_email": verification.new_email}
+            )
+
+        # Check again in case another user registered this email meanwhile.
+          if User.objects.filter(
+            email__iexact=verification.new_email
+        ).exclude(pk=user.pk).exists():
+            verification.delete()
+            messages.error(
+                request,
+                "This email address is now registered to another account."
+            )
+            return redirect("my_accounts:profile")
+
+        # Update the database only after successful OTP verification.
+          user.email = verification.new_email
+          user.save(update_fields=["email"])
+
+          verification.delete()
+
+         # Require the user to sign in again using the new email.
+          logout(request)
+
+          messages.success(
+            request,
+            "Your email has been updated successfully. Please log in with your new email."
+        )
+          return redirect("login")
+
+    return render(
+      request,
+      "my_accounts/verify_email_change.html",
+     {
+        "new_email": verification.new_email,
+        "expires_at_timestamp": int(
+            verification.expires_at.timestamp() * 1000
+        ),
+     },
+ )
 @login_required
 def change_password_view(request):
     if request.method == "POST":
@@ -43,20 +288,20 @@ def change_password_view(request):
         new_password = request.POST.get("new_password", "")
         confirm_password = request.POST.get("confirm_password", "")
 
-        # 1. Validate the current password
+        
         if not request.user.check_password(current_password):
             messages.error(request, "Your current password is incorrect.")
 
-        # 2. Check whether the new password and confirmation match
+       
         elif new_password != confirm_password:
             messages.error(request, "New password and confirm password do not match.")
 
-        # 3. Prevent reusing the current password
+        
         elif request.user.check_password(new_password):
             messages.error(request, "Your new password must be different from your current password.")
 
         else:
-            # 4. Validate the new password using Django's validators
+            
             try:
                 validate_password(new_password, user=request.user)
 
@@ -65,11 +310,11 @@ def change_password_view(request):
                     messages.error(request, message)
 
             else:
-                # 5. Set and save the new password securely
+               
                 request.user.set_password(new_password)
                 request.user.save()
 
-                # 6. Keep the user logged in after changing the password
+                
                 update_session_auth_hash(request, request.user)
 
                 messages.success(request, "Your password has been changed successfully.")
@@ -98,7 +343,7 @@ def add_address_view(request):
     else:
         form=AddressForm()
    
-    return render(request,'my_accounts/add_address.html',{'form':form,'page_title':'Add new Address'})
+    return render(request,'my_accounts/add_address.html',{'form':form,'page_title':'Add new Address',"button_text": "Save Address",})
 
 @login_required
 def edit_address_view(request,address_id):
@@ -122,9 +367,9 @@ def edit_address_view(request,address_id):
 
              messages.success(request,'Address updated successfully')
              return redirect('my_accounts:address_list')
-        else:
-            form= AddressForm()
-        return render(request,"my_accounts/add_address.html",{"form":form,"page_title":"Edit Address"})
+    else:
+        form= AddressForm(instance=address)
+    return render(request,"my_accounts/add_address.html",{"form":form,"page_title":"Edit Address","button_text": "Save Address",})
 @login_required
 def delete_address_view(request,address_id):
     address=get_object_or_404(Address,id=address_id,user=request.user)

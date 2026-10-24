@@ -55,21 +55,7 @@
                 {{ user.fullname|default:user.username }}
             </h2>
 
-            <div class="verified-badge">
-                <span class="status-dot"></span>
-                {% if user.is_valid %}
-                    Verified Account
-                {% else %}
-                    Account Not Verified
-                {% endif %}
-            </div>
-
-            <div class="member-since">
-                <span>Member Since</span>
-                <strong>
-                    {{ user.created_at|date:"F Y" }}
-                </strong>
-            </div>
+            
            {% if not is_google_user %}
             <a href="{% url 'my_accounts:change_password' %}"
                class="change-password-btn">
@@ -198,11 +184,46 @@
                 </div>
 
             </form>
+             {% if not is_google_user %}
+    <div class="email-change-section">
+        <h3>Change Email Address</h3>
+        <p>
+            We'll send a verification code to your new email address.
+            Your current email will remain unchanged until verification.
+        </p>
 
-        </section>
+        <form method="POST"
+              action="{% url 'my_accounts:start_email_change' %}">
+            {% csrf_token %}
 
+            <div class="field-group">
+                <label for="new_email">NEW EMAIL ADDRESS</label>
+                <div class="input-wrapper">
+                    <span class="field-icon">&#9993;</span>
+                    <input type="email"
+                           id="new_email"
+                           name="new_email"
+                           placeholder="Enter your new email address"
+                           required>
+                </div>
+            </div>
+
+            <button type="submit" class="save-changes-btn">
+                Verify New Email
+                <span>&rarr;</span>
+            </button>
+        </form>
     </div>
-
+{% else %}
+    <div class="email-change-section">
+        <h3>Change Email Address</h3>
+        <p>Your email is managed through your Google account.</p>
+    </div>
+{% endif %}
+        </section>
+    
+    </div>
+    
 </main>
 
 <script src="{% static 'js/profile.js' %}"></script>

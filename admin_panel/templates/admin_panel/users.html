@@ -181,15 +181,16 @@
                             <td class="date-cell">{{ customer.date_joined|date:"d M Y" }}</td>
 
                             <td>
-                                {% if customer.is_active %}
-                                    <span class="status-pill active-status">
-                                        <i class="dot green"></i> Active
-                                    </span>
-                                {% else %}
-                                    <span class="status-pill blocked-status">
-                                        <i class="dot red"></i> Blocked
-                                    </span>
-                                {% endif %}
+                            {% if customer.is_blocked %}
+                                <span class="status-pill blocked-status">
+                                    <i class="dot red"></i> Blocked
+                                </span>
+                            {% elif customer.is_active %}
+                                <span class="status-pill active-status">
+                                    <i class="dot green"></i> Active
+                                </span>
+                            
+                            {% endif %}
                             </td>
 
                             <td>

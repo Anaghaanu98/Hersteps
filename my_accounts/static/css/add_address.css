@@ -168,12 +168,48 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
+    margin-top: 10px;
 }
 
 .form-actions .primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 145px;
     padding: 14px 22px;
+    background-color: #9f4809;
+    color: #ffffff;
+    border: 1px solid #9f4809;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
     box-shadow: 0 3px 8px rgba(100, 54, 23, 0.12);
+}
+
+.form-actions .primary-button:hover {
+    background-color: #7f3907;
+    border-color: #7f3907;
+}
+
+.form-actions .cancel-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: 14px 22px;
+    background: #f8ece2;
+    color: #59483d;
+    border: 1px solid #f8ece2;
+    border-radius: 7px;
+    text-decoration: none;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.form-actions .cancel-button:hover {
+    background: #f1dfd1;
 }
 
 .cancel-button {

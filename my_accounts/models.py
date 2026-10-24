@@ -21,4 +21,18 @@ class Address(models.Model):
     is_default=models.BooleanField(default=False)
     def __str__(self):
         return f"{self.full_name} - (self.city)"
-# Create your models here.
+
+class EmailChangeVerification(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="email_change_verification"
+    )
+    new_email = models.EmailField()
+    otp_hash = models.CharField(max_length=128)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Email change for {self.user.username}"

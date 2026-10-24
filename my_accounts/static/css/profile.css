@@ -12,7 +12,21 @@
 .profile-page * {
     box-sizing: border-box;
 }
+.email-change-section h3 {
+    margin-bottom: 8px;
+    color: #3d3028;
+}
 
+.email-change-section p {
+    margin-bottom: 18px;
+    color: #76685e;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.email-change-section .field-group {
+    margin-bottom: 18px;
+}
 .profile-page {
     --profile-primary: #a84e0c;
     --profile-muted: #8b7c72;
@@ -66,7 +80,20 @@
     white-space: nowrap;
     color: #63554a;
 }
+.otp-timer {
+    margin: 12px 0;
+    color: #8b4b2b;
+    font-size: 14px;
+}
 
+#resendOtpBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#resendOtpBtn:not(:disabled) {
+    cursor: pointer;
+}
 .status-dot {
     width: 5px;
     height: 5px;

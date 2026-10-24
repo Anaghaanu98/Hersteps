@@ -2,6 +2,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 import re
+from django.contrib.auth.password_validation import validate_password
 User = get_user_model()
 
 class SignupForm(forms.Form):
@@ -93,6 +94,11 @@ class SignupForm(forms.Form):
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
 
+        if password:
+            try:
+                validate_password(password)
+            except forms.ValidationError as error:
+                self.add_error('password',error)
         if password and confirm_password:
             if password != confirm_password:
                 self.add_error(

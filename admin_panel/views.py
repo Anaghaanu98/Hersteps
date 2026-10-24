@@ -46,18 +46,19 @@ def user_list_view(request):
 
     search_query=request.GET.get('q','').strip()
     if search_query:
-           users=users.filer(Q(username__icontauns=search_query)| Q(email__icontains=search_query)
-                         | Q(full_name__icontains=search_query))
+           users=users.filter(Q(username__icontains=search_query)| Q(email__icontains=search_query)
+                         | Q(fullname__icontains=search_query))
 
-           users=users.order_by('-date_joined','-pk')
+           
 
     status_filter=request.GET.get('status','all')
 
     if status_filter=='active':
-            users=users.filter(is_active=True)
+            users=users.filter(is_active=True,is_blocked=False)
 
     elif status_filter=='blocked':
-            users=users.filter(is_active=False)
+            users=users.filter(is_blocked=True)
+    users=users.order_by('-date_joined','-pk')
     paginator=Paginator(users,10)
     page_obj=paginator.get_page(request.GET.get('page'))
 
@@ -74,14 +75,19 @@ def toggle_user_status_view(request,user_id):
 
     customer=get_object_or_404(User,pk=user_id,is_staff=False,is_superuser=False)
 
-    customer.is_active=not customer.is_active
-    customer.save(update_fields=['is_active'])
 
-    if customer.is_active:
-        messages.success(request,f'{customer.username} has been unblocked')
+    if customer.is_blocked:
+        customer.is_blocked=False
 
+        customer.is_active=(customer.is_verified or customer.is_google_user)
+        message= f"{customer.username} has been unblocked"
     else:
-        messages.success(request,f'{customer.username} has been blocked')
+        customer.is_blocked=True
+        customer.is_active=False
+        message=f"{customer.username} has been blocked"
+    
+    customer.save(update_fields=["is_blocked","is_active"])
+    messages.success(request,message)
     return redirect('admin_panel:user_list')
 
 @admin_required
