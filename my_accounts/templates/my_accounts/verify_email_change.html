@@ -59,6 +59,7 @@
                 Resend OTP
             </button>
         </form>
+       
         <p>
             <a href="{% url 'my_accounts:profile' %}">
                 Cancel and return to profile
@@ -66,4 +67,22 @@
         </p>
     </section>
 </main>
+ <script>
+    const expiresAt = Number("{{ expires_at_timestamp|default:0 }}");
+    const resendButton = document.getElementById("resendOtpBtn");
+
+    function updateResendButton() {
+        const currentTime = Date.now();
+
+        if (currentTime >= expiresAt) {
+            resendButton.disabled = false;
+        } else {
+            resendButton.disabled = true;
+        }
+    }
+
+    updateResendButton();
+
+    setInterval(updateResendButton, 1000);
+</script>
 {% endblock %}

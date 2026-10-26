@@ -14,7 +14,20 @@ class ProfileUpdateForm(forms.ModelForm):
             "username",
             "phone_number",
         ]
+    def clean_fullname(self):
+        fullname = self.cleaned_data.get("fullname", "").strip()
 
+        if not fullname:
+            raise forms.ValidationError(
+                "Full name is required."
+            )
+
+        if len(fullname) < 2:
+            raise forms.ValidationError(
+                "Full name must contain at least 2 characters."
+            )
+
+        return fullname
     def clean_username(self):
         username = self.cleaned_data["username"].strip()
 
@@ -60,7 +73,7 @@ class AddressForm(forms.ModelForm):
             "pincode": forms.TextInput(attrs={
                 "placeholder": "PIN code",
                 "maxlength": "10",
-                "inputmode": "numeric",
+                
             }),
             "is_default": forms.CheckboxInput(),
         }

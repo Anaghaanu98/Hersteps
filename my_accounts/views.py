@@ -19,16 +19,22 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import get_user_model
 import logging
+from django import forms
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
+OTP_EXPIRY_MINUTES = 2
+MAX_OTP_ATTEMPTS = 5
 
+
+
+@login_required
 def my_account_view(request):
     return render(request, "my_accounts/my_account.html")
 
+
+@login_required
 def profile_view(request):
-
-
     user=request.user
 
     is_google_user=SocialAccount.objects.filter(user=user, provider='google').exists()
@@ -77,7 +83,7 @@ def start_email_change_view(request):
         )
         return redirect("my_accounts:profile")
 
-    # Check whether another account already uses this email.
+    
     if User.objects.filter(email__iexact=new_email).exclude(
         pk=user.pk
     ).exists():
@@ -87,8 +93,6 @@ def start_email_change_view(request):
         )
         return redirect("my_accounts:profile")
 
-    # Validate the email format.
-    from django import forms
 
     try:
         new_email = forms.EmailField().clean(new_email)
@@ -165,9 +169,9 @@ def verify_email_change_view(request):
 
     if request.method == "POST":
           action = request.POST.get("action", "verify")
-
+          now = timezone.now()
           if action == "resend":
-              now = timezone.now()
+              
 
               if now < verification.expires_at:
                 messages.error(
@@ -179,7 +183,7 @@ def verify_email_change_view(request):
               otp = f"{secrets.randbelow(1_000_000):06d}"
 
               verification.otp_hash = make_password(otp)
-              verification.expires_at = now + timedelta(minutes=5)
+              verification.expires_at = now + timedelta(minutes=OTP_EXPIRY_MINUTES)
               verification.attempts = 0
               verification.save(
                   update_fields=["otp_hash", "expires_at", "attempts"]
@@ -187,13 +191,13 @@ def verify_email_change_view(request):
 
               try:
                send_mail(
-               subject="Verify your new HerSteps email",
+                subject="Verify your new HerSteps email",
                 message=(
                 f"Your OTP to change your HerSteps email is: {otp}\n\n"
-                "This OTP is valid for 5 minutes."
+                "This OTP is valid for {OTP_EXPIRY_MINUTES} minutes."
                  ),
-               from_email=settings.DEFAULT_FROM_EMAIL,
-               recipient_list=[verification.new_email],
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[verification.new_email],
                 fail_silently=False,
            )
               except Exception:
@@ -210,7 +214,7 @@ def verify_email_change_view(request):
        
           otp = request.POST.get("otp", "").strip()
 
-          if verification.expires_at <= timezone.now():
+          if verification.expires_at <= now:
             messages.error(
                 request,
                 "Your OTP has expired. You can request a new one below."
@@ -226,7 +230,7 @@ def verify_email_change_view(request):
                 },
             )
 
-          if verification.attempts >= 5:
+          if verification.attempts >= MAX_OTP_ATTEMPTS:
             verification.delete()
             messages.error(
                 request,
@@ -242,10 +246,11 @@ def verify_email_change_view(request):
             return render(
                 request,
                 "my_accounts/verify_email_change.html",
-                {"new_email": verification.new_email}
+                {"new_email": verification.new_email,
+                 "expires_at_timestamp":int(verification.expires_at.timestamp()*1000),}
             )
 
-        # Check again in case another user registered this email meanwhile.
+        
           if User.objects.filter(
             email__iexact=verification.new_email
         ).exclude(pk=user.pk).exists():
@@ -256,13 +261,11 @@ def verify_email_change_view(request):
             )
             return redirect("my_accounts:profile")
 
-        # Update the database only after successful OTP verification.
+        
           user.email = verification.new_email
           user.save(update_fields=["email"])
 
           verification.delete()
-
-         # Require the user to sign in again using the new email.
           logout(request)
 
           messages.success(
