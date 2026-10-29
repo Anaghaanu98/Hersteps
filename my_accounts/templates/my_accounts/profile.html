@@ -1,11 +1,445 @@
-
 {% extends "accounts/base.html" %}
 {% load static %}
 
 {% block title %}My Profile | HerSteps{% endblock %}
 
+{% block page_class %}page--full{% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<style>
+    /* My Profile page. Styles are inline here, so css/profile.css is no longer needed.
+       Header, footer, fonts and colour variables come from base.html. */
+
+    .profile-page {
+        width: 100%;
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 36px 40px 84px;
+        color: var(--text);
+    }
+
+    /* ---------- Top bar ---------- */
+    .profile-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        animation: fadeUp .5s ease both;
+    }
+    .breadcrumb {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+        letter-spacing: 1.4px;
+        color: var(--muted);
+    }
+    .breadcrumb a { color: #5b4a40; text-decoration: none; transition: color .2s ease; }
+    .breadcrumb a:hover { color: var(--brown); }
+    .breadcrumb span { color: #cdbdb2; }
+    .breadcrumb .current { color: var(--brown); font-weight: 700; }
+
+    .settings-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 18px;
+        border-radius: 999px;
+        background: #f3e8e0;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .settings-pill::before {
+        content: "";
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: var(--brown);
+        box-shadow: 0 0 0 4px rgba(153, 66, 10, .15);
+        animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    .profile-heading {
+        margin: 34px 0 40px;
+        text-align: left;
+        font-family: var(--font-serif);
+        font-size: clamp(44px, 6vw, 68px);
+        font-weight: 500;
+        line-height: 1.02;
+        letter-spacing: -1px;
+        color: var(--heading);
+        animation: fadeUp .55s .05s ease both;
+    }
+
+    /* ---------- Layout ---------- */
+    .profile-layout {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 40px;
+        align-items: start;
+    }
+
+    /* ---------- Sidebar card ---------- */
+    .profile-sidebar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 32px 32px;
+        border: 1px solid rgba(240, 225, 216, .8);
+        border-radius: 26px;
+        background: linear-gradient(180deg, #fdf0e6 0%, #fcece1 100%);
+        box-shadow: 0 18px 40px -28px rgba(70, 42, 25, .3);
+        animation: cardIn .6s .05s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .avatar-wrapper { position: relative; margin-bottom: 22px; }
+    .profile-avatar {
+        width: 160px;
+        height: 160px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 25%, #f6ebe3, #ecdcd0);
+        border: 6px solid rgba(255, 255, 255, .55);
+        box-shadow: 0 16px 30px -18px rgba(70, 42, 25, .5);
+        color: var(--brown);
+        font-family: var(--font-serif);
+        font-size: 56px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        transition: transform .4s cubic-bezier(.2, .8, .2, 1);
+    }
+    .profile-sidebar:hover .profile-avatar { transform: scale(1.03) rotate(-2deg); }
+
+    .avatar-badge {
+        position: absolute;
+        right: 4px;
+        bottom: 8px;
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #fcece1;
+        box-shadow: 0 8px 16px -8px rgba(70, 42, 25, .45);
+        color: var(--brown);
+    }
+    .avatar-badge svg { width: 24px; height: 24px; }
+
+    .profile-name {
+        margin: 0 0 14px;
+        text-align: center;
+        font-family: var(--font-serif);
+        font-size: 34px;
+        font-weight: 600;
+        line-height: 1.1;
+        color: var(--heading);
+        overflow-wrap: anywhere;
+    }
+
+    .verified-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: #fff;
+        box-shadow: 0 6px 14px -10px rgba(70, 42, 25, .4);
+        color: var(--brown);
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .verified-pill::before {
+        content: "";
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: var(--brown);
+    }
+
+    .member-box {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 28px;
+        padding: 20px 22px;
+        border-radius: 16px;
+        background: rgba(240, 225, 213, .6);
+        font-size: 14.5px;
+        color: #6f6159;
+    }
+    .member-box strong { color: var(--heading); font-weight: 700; }
+
+    .change-password-btn {
+        width: 100%;
+        margin-top: 34px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 8px 18px -12px rgba(70, 42, 25, .35);
+        border: 1.5px solid transparent;
+        color: var(--text);
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .change-password-btn svg { width: 19px; height: 19px; color: var(--brown); flex: none; transition: transform .5s ease; }
+    .change-password-btn:hover { transform: translateY(-2px); border-color: #efd9c9; box-shadow: 0 14px 24px -14px rgba(70, 42, 25, .4); }
+    .change-password-btn:hover svg { transform: rotate(-200deg); }
+    .change-password-btn:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
+    .change-password-btn.disabled-btn,
+    .change-passowrd-btn.disabled-btn {
+        opacity: .55;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .change-password-btn.disabled-btn:hover { transform: none; border-color: transparent; box-shadow: none; }
+    .change-password-btn.disabled-btn:hover svg { transform: none; }
+
+    /* ---------- Personal information card ---------- */
+    .personal-card {
+        padding: 44px 48px 48px;
+        border: 1px solid rgba(240, 225, 216, .8);
+        border-radius: 26px;
+        background: #fff;
+        box-shadow: 0 18px 40px -26px rgba(70, 42, 25, .25);
+        animation: cardIn .6s .12s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .personal-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 38px;
+    }
+    .personal-card-header h2 {
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: 36px;
+        font-weight: 500;
+        letter-spacing: -.3px;
+        color: var(--heading);
+    }
+
+    .edit-details-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 12px 20px;
+        border: 0;
+        border-radius: 12px;
+        background: #f6ebe3;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 14.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+    .edit-details-btn svg { width: 17px; height: 17px; flex: none; }
+    .edit-details-btn:hover { background: var(--brown); color: #fff; transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(153, 66, 10, .7); }
+    .edit-details-btn:active { transform: translateY(0); }
+    .edit-details-btn:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
+
+    /* ---------- Fields ---------- */
+    .profile-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 26px 24px;
+    }
+    .field-group { min-width: 0; }
+    .field-group label {
+        display: block;
+        margin-bottom: 9px;
+        font-size: 12.5px;
+        font-weight: 600;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+        color: #5a463b;
+    }
+
+    .input-wrapper { position: relative; }
+    .field-icon {
+        position: absolute;
+        top: 27px;
+        left: 18px;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        display: block;
+        color: #a8978c;
+        pointer-events: none;
+        transition: color .2s ease;
+    }
+    .field-icon svg { width: 100%; height: 100%; display: block; }
+    .input-wrapper:focus-within .field-icon { color: var(--brown); }
+
+    .input-wrapper input {
+        width: 100%;
+        height: 54px;
+        padding: 0 16px 0 52px;
+        border: 1.5px solid transparent;
+        border-radius: var(--radius);
+        background: #fdf4ed;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 15.5px;
+        text-overflow: ellipsis;
+        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .input-wrapper input::placeholder { color: #b5a79d; }
+    .input-wrapper input[readonly] { cursor: default; }
+    .input-wrapper input[disabled] { cursor: not-allowed; opacity: .75; }
+
+    /* editable state (when the Edit Details script removes readonly) */
+    .input-wrapper input:not([readonly]):not([disabled]) {
+        background: #fff;
+        border-color: #ecd6c6;
+    }
+    .input-wrapper input:not([readonly]):not([disabled]):hover { border-color: #d9b79d; }
+    .input-wrapper input:focus {
+        outline: none;
+        background: #fff;
+        border-color: var(--brown);
+        box-shadow: 0 0 0 4px rgba(153, 66, 10, .12);
+    }
+
+    .input-wrapper .field-error { margin-top: 7px; }
+    .field-group:has(.field-error) input { border-color: rgba(163, 45, 34, .55); background: #fff6f5; }
+
+    .form-errors { margin-bottom: 22px; }
+    .form-errors ul { margin: 0; padding: 0; list-style: none; }
+    .form-errors li {
+        margin-bottom: 8px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border-left: 4px solid var(--danger);
+        background: #fdeceb;
+        color: #7d2119;
+        font-size: 13.5px;
+    }
+
+    /* ---------- Buttons ---------- */
+    .save-row { display: flex; justify-content: flex-end; margin-top: 34px; }
+
+    .save-changes-btn {
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 190px;
+        padding: 16px 30px;
+        border: 0;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #a8480d 0%, var(--brown-dark) 100%);
+        box-shadow: 0 12px 22px -10px rgba(153, 66, 10, .6);
+        color: #fff;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .25s ease, background .25s ease, opacity .2s ease;
+    }
+    .save-changes-btn::before {
+        content: "";
+        position: absolute;
+        top: 0; left: -60%;
+        width: 40%; height: 100%;
+        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .25), transparent);
+        transform: skewX(-20deg);
+        transition: left .6s ease;
+    }
+    .save-changes-btn span { transition: transform .25s ease; }
+    .save-changes-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 16px 28px -10px rgba(153, 66, 10, .65); }
+    .save-changes-btn:hover:not(:disabled)::before { left: 120%; }
+    .save-changes-btn:hover:not(:disabled) span { transform: translateX(4px); }
+    .save-changes-btn:active:not(:disabled) { transform: translateY(0); }
+    .save-changes-btn:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
+    .save-changes-btn:disabled {
+        background: #c9a68c;
+        box-shadow: none;
+        cursor: not-allowed;
+        opacity: .85;
+    }
+
+    /* ---------- Change email section ---------- */
+    .email-change-section {
+        margin-top: 46px;
+        padding-top: 34px;
+        border-top: 1px solid var(--border);
+    }
+    .email-change-section h3 {
+        margin: 0 0 8px;
+        font-family: var(--font-serif);
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--heading);
+    }
+    .email-change-section > p {
+        max-width: 560px;
+        margin: 0 0 24px;
+        color: #75675e;
+        font-size: 14.5px;
+        line-height: 1.65;
+    }
+    .email-change-section form .save-changes-btn { margin-top: 20px; }
+    .email-change-section form { display: flex; flex-direction: column; align-items: flex-end; }
+    .email-change-section form .field-group { width: 100%; }
+
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 4px rgba(153, 66, 10, .15); }
+        50%      { box-shadow: 0 0 0 7px rgba(153, 66, 10, .05); }
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1100px) {
+        .profile-page { padding: 28px 28px 64px; }
+        .profile-layout { grid-template-columns: 300px minmax(0, 1fr); gap: 24px; }
+        .personal-card { padding: 36px 32px 40px; }
+        .profile-sidebar { padding: 34px 22px 26px; }
+        .profile-avatar { width: 140px; height: 140px; font-size: 48px; }
+    }
+
+    @media (max-width: 900px) {
+        .profile-layout { grid-template-columns: 1fr; }
+        .profile-sidebar { max-width: 520px; width: 100%; margin: 0 auto; }
+        .personal-card { max-width: 760px; width: 100%; margin: 0 auto; }
+    }
+
+    @media (max-width: 640px) {
+        .profile-page { padding: 18px 16px 52px; }
+        .breadcrumb { font-size: 11.5px; letter-spacing: 1px; gap: 8px; }
+        .settings-pill { padding: 7px 12px; font-size: 11.5px; }
+        .profile-heading { margin: 22px 0 26px; }
+        .profile-sidebar { padding: 30px 18px 22px; border-radius: 22px; }
+        .personal-card { padding: 26px 18px 30px; border-radius: 22px; }
+        .personal-card-header { margin-bottom: 26px; }
+        .personal-card-header h2 { font-size: 28px; }
+        .edit-details-btn { padding: 10px 14px; font-size: 13.5px; }
+        .profile-fields { grid-template-columns: 1fr; gap: 20px; }
+        .input-wrapper input { font-size: 16px; }   /* stops iOS zoom on focus */
+        .save-row { justify-content: stretch; }
+        .save-changes-btn, .email-change-section form .save-changes-btn { width: 100%; }
+        .email-change-section h3 { font-size: 24px; }
+    }
+
+    @media (max-width: 420px) {
+        .settings-pill { display: none; }
+        .personal-card-header { flex-wrap: wrap; }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -22,10 +456,7 @@
             <span class="current">PROFILE</span>
         </div>
 
-        <span class="settings-label">
-            <span class="status-dot"></span>
-            Account Settings
-        </span>
+        <span class="settings-pill">Account Settings</span>
     </div>
 
     <!-- Page Heading -->
@@ -40,14 +471,17 @@
             <div class="avatar-wrapper">
                 <div class="profile-avatar">
                     {% if user.fullname %}
-                        {{ user.fullname|slice:":1"|upper }}{% if " " in user.fullname %}{{ user.fullname|cut:user.fullname|default:"" }}{% endif %}
+                        {% with words=user.fullname.split %}{{ words.0|first|upper }}{% if words|length > 1 %}{{ words|last|first|upper }}{% endif %}{% endwith %}
                     {% else %}
                         {{ user.username|slice:":1"|upper }}
                     {% endif %}
                 </div>
 
                 <span class="avatar-badge" title="Profile">
-                    &#10003;
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M12 2l2.4 1.9 3-.2 1.2 2.8 2.6 1.5-.7 3 1.1 2.8-2 2.3-.2 3-2.9.8-2 2.3L12 21.4 9.5 22.2l-2-2.3-2.9-.8-.2-3-2-2.3L3.5 11 2.8 8l2.6-1.5 1.2-2.8 3 .2L12 2Z"/>
+                        <path fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m8.6 12.2 2.4 2.4 4.4-4.8"/>
+                    </svg>
                 </span>
             </div>
 
@@ -55,17 +489,25 @@
                 {{ user.fullname|default:user.username }}
             </h2>
 
-            
+            <span class="verified-pill">Verified Account</span>
+
+            {% if user.date_joined %}
+            <div class="member-box">
+                <span>Member Since</span>
+                <strong>{{ user.date_joined|date:"F Y" }}</strong>
+            </div>
+            {% endif %}
+
            {% if not is_google_user %}
             <a href="{% url 'my_accounts:change_password' %}"
                class="change-password-btn">
-                <span>&#8635;</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v4.5H8"/><rect x="9.2" y="11" width="5.6" height="4.4" rx="1"/><path d="M10.4 11V9.9a1.6 1.6 0 0 1 3.2 0V11"/></svg>
                 Change Password
             </a>
             {% else %}
-              <div class="change-passowrd-btn disabled-btn"
+              <div class="change-password-btn change-passowrd-btn disabled-btn"
                    title="Password is managed through your Google account">
-                   <span>&#8635;</span>
+                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v4.5H8"/><rect x="9.2" y="11" width="5.6" height="4.4" rx="1"/><path d="M10.4 11V9.9a1.6 1.6 0 0 1 3.2 0V11"/></svg>
                      Change Password
 
               </div>
@@ -81,7 +523,7 @@
                 <button type="button"
                         class="edit-details-btn"
                         id="editDetailsBtn">
-                    <span>&#9998;</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>
                     Edit Details
                 </button>
             </div>
@@ -102,7 +544,7 @@
                         <label for="fullname">FULL NAME</label>
 
                         <div class="input-wrapper">
-                            <span class="field-icon">&#9818;</span>
+                            <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/></svg></span>
                             <input type="text"
                                id="fullname"
                                name="fullname"
@@ -120,7 +562,7 @@
                         <label for="username">USERNAME</label>
 
                         <div class="input-wrapper">
-                            <span class="field-icon">@</span>
+                            <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></span>
                             <input type="text"
                                    id="username"
                                    name="username"
@@ -129,16 +571,17 @@
 
                                    {% for error in form.username.errors %}
                                        <small class="field-error">{{ error }}</small>
-                                   {% endfor %} 
+                                   {% endfor %}
                         </div>
                     </div>
+
 
                     <!-- Email -->
                     <div class="field-group">
                         <label for="email">EMAIL ADDRESS</label>
 
                         <div class="input-wrapper">
-                            <span class="field-icon">&#9993;</span>
+                            <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6.5L20.5 7"/></svg></span>
                             <input type="email"
                                    id="email"
                                    name="email"
@@ -158,7 +601,7 @@
                         <label for="phone_number">PHONE NUMBER</label>
 
                         <div class="input-wrapper">
-                            <span class="field-icon">&#9742;</span>
+                            <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h3.5l1.8 4.5-2.2 1.4a11 11 0 0 0 5.9 5.9l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A15.5 15.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4Z"/></svg></span>
                             <input type="tel"
                                    id="phone_number"
                                    name="phone_number"
@@ -199,7 +642,7 @@
             <div class="field-group">
                 <label for="new_email">NEW EMAIL ADDRESS</label>
                 <div class="input-wrapper">
-                    <span class="field-icon">&#9993;</span>
+                    <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6.5L20.5 7"/></svg></span>
                     <input type="email"
                            id="new_email"
                            name="new_email"
@@ -221,9 +664,9 @@
     </div>
 {% endif %}
         </section>
-    
+
     </div>
-    
+
 </main>
 
 <script src="{% static 'js/profile.js' %}"></script>

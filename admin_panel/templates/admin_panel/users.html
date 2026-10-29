@@ -1,262 +1,674 @@
 
-{% extends "accounts/base.html" %}
-{% load static %}
+{% extends "admin_panel/admin_base.html" %}
 
 {% block title %}Customers | HerSteps Admin{% endblock %}
+{% block nav_active %}customers{% endblock %}
+{% block breadcrumb %}Customers{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/users.css' %}">
+<style>
+    .customer-page {
+        padding-top: 24px;
+    }
+
+    .customer-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 28px;
+    }
+
+    .customer-heading h1 {
+        margin: 0;
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: 42px;
+        font-weight: 600;
+        line-height: 1.15;
+    }
+
+    .customer-description {
+        margin: 8px 0 0;
+        color: #6b5b52;
+        font-size: 14px;
+    }
+
+    .customer-count {
+        display: inline-block;
+        margin-left: 10px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background: #f8e4d4;
+        color: #99420a;
+        font-size: 12px;
+        font-weight: 700;
+        vertical-align: middle;
+    }
+
+    .customer-summary {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        color: #6b5b52;
+        font-size: 13px;
+    }
+
+    .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+
+    .dot-green { background: #3d8b50; }
+    .dot-red { background: #c7463b; }
+
+    .customer-card {
+        background: #fff;
+        border: 1px solid #f3e3d7;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 10px 28px -14px rgba(70, 42, 25, .16);
+    }
+
+    .customer-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+    .status-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .status-tab {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 16px;
+        border: 1px solid #f3e3d7;
+        border-radius: 10px;
+        color: #6b5b52;
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .status-tab:hover {
+        background: #fdf1e8;
+        color: #99420a;
+    }
+
+    .status-tab.selected {
+        background: #99420a;
+        border-color: #99420a;
+        color: #fff;
+    }
+
+    .customer-search {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: min(100%, 340px);
+        min-height: 44px;
+        padding: 0 12px;
+        border: 1px solid #f0dfd3;
+        border-radius: 11px;
+        background: #fdf7f2;
+    }
+
+    .customer-search:focus-within {
+        border-color: #99420a;
+        box-shadow: 0 0 0 3px rgba(153, 66, 10, .1);
+    }
+
+    .customer-search span {
+        color: #8c7668;
+        font-size: 20px;
+    }
+
+    .customer-search input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #231915;
+        font: inherit;
+        font-size: 13px;
+    }
+
+    .customer-search button {
+        border: 0;
+        background: transparent;
+        color: #99420a;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    .customer-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .customer-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .customer-table thead th {
+        padding: 15px 14px;
+        background: #fdf1e8;
+        color: #5a463b;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+    }
+
+    .customer-table thead th:first-child {
+        border-radius: 9px 0 0 9px;
+    }
+
+    .customer-table thead th:last-child {
+        border-radius: 0 9px 9px 0;
+    }
+
+    .customer-table tbody td {
+        padding: 17px 14px;
+        border-bottom: 1px solid #f5eae2;
+        vertical-align: middle;
+    }
+
+    .customer-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .customer-table tbody tr:hover td {
+        background: #fffaf6;
+    }
+
+    .customer-cell {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 190px;
+    }
+
+    .customer-avatar {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f8e4d4;
+        color: #99420a;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .customer-name strong {
+        display: block;
+        color: #30221c;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .customer-name small {
+        display: block;
+        margin-top: 4px;
+        color: #8a786d;
+        font-size: 11px;
+    }
+
+    .email-cell {
+        color: #6b5b52;
+    }
+
+    .phone-cell,
+    .date-cell {
+        color: #5a463b;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .active-status {
+        background: #eaf4ea;
+        color: #2b6a38;
+    }
+
+    .blocked-status {
+        background: #fde9e7;
+        color: #a32d22;
+    }
+
+    .inactive-status {
+        background: #f1ece8;
+        color: #6b5b52;
+    }
+
+    .customer-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .status-form {
+        margin: 0;
+    }
+
+    .status-toggle {
+        position: relative;
+        width: 39px;
+        height: 22px;
+        padding: 0;
+        border: 0;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background .2s ease;
+    }
+
+    .status-toggle span {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform .2s ease;
+    }
+
+    .toggle-on {
+        background: #3d8b50;
+    }
+
+    .toggle-on span {
+        transform: translateX(17px);
+    }
+
+    .toggle-off {
+        background: #c7463b;
+    }
+
+    .toggle-off span {
+        transform: translateX(0);
+    }
+
+    .action-menu {
+        position: relative;
+    }
+
+    .action-menu summary {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        color: #6b5b52;
+        font-size: 22px;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .action-menu summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .action-menu summary:hover {
+        background: #fdf1e8;
+    }
+
+    .action-popover {
+        position: absolute;
+        z-index: 10;
+        top: 34px;
+        right: 0;
+        min-width: 150px;
+        padding: 6px;
+        border: 1px solid #f3e3d7;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 10px 25px rgba(70, 42, 25, .12);
+    }
+
+    .action-popover a {
+        display: block;
+        padding: 10px;
+        border-radius: 7px;
+        color: #5a463b;
+        font-size: 12px;
+    }
+
+    .action-popover a:hover {
+        background: #fdf1e8;
+        color: #99420a;
+    }
+
+    .empty-state {
+        padding: 45px 20px !important;
+        text-align: center;
+        color: #6b5b52;
+        white-space: normal;
+    }
+
+    .empty-state strong {
+        display: block;
+        margin-bottom: 7px;
+        color: #30221c;
+        font-size: 16px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 13px;
+    }
+
+    .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid #f3e3d7;
+    }
+
+    .table-footer p {
+        margin: 0;
+        color: #6b5b52;
+        font-size: 12px;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .pagination a,
+    .pagination span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 34px;
+        min-height: 34px;
+        padding: 0 10px;
+        border: 1px solid #f0dfd3;
+        border-radius: 8px;
+        color: #6b5b52;
+        font-size: 12px;
+    }
+
+    .pagination a:hover,
+    .pagination .current-page {
+        background: #99420a;
+        border-color: #99420a;
+        color: #fff;
+    }
+
+    .pagination .disabled {
+        opacity: .45;
+    }
+
+    @media (max-width: 700px) {
+        .customer-card {
+            padding: 15px;
+        }
+
+        .customer-heading h1 {
+            font-size: 34px;
+        }
+
+        .customer-toolbar {
+            align-items: stretch;
+        }
+
+        .customer-search {
+            width: 100%;
+        }
+
+        .table-footer {
+            align-items: flex-start;
+        }
+    }
+</style>
 {% endblock %}
 
-{% block layout %}
-<div class="customer-admin">
+{% block content %}
+<section class="customer-page">
 
-    <!-- Sidebar -->
-    <aside class="customer-sidebar">
-        <div class="sidebar-brand">
-            <h2>hersteps <span>ADMIN PORTAL</span></h2>
-            <p>FOOTWEAR FOR WOMEN</p>
+    <header class="customer-heading">
+        <div>
+            <h1>
+                Customers
+                <span class="customer-count">
+                    {{ page_obj.paginator.count }} customers
+                </span>
+            </h1>
+
+            <p class="customer-description">
+                Manage registered customer accounts and their status.
+            </p>
         </div>
 
-        <nav class="sidebar-nav">
-            <a href="{% url 'admin_panel:admin_dashboard' %}" class="side-link">
-                <span class="side-icon">▦</span> Dashboard
-            </a>
+        <div class="customer-summary">
+            <span><i class="status-dot dot-green"></i>Active customers</span>
+            <span><i class="status-dot dot-red"></i>Blocked customers</span>
+        </div>
+    </header>
 
-            <p class="nav-heading">CATALOGUE</p>
-            <a href="#" class="side-link"><span class="side-icon">♧</span> Products</a>
-            <a href="#" class="side-link"><span class="side-icon">♧</span> Categories</a>
+    <section class="customer-card">
 
-            <p class="nav-heading">SALES</p>
-            <a href="#" class="side-link"><span class="side-icon">▤</span> Orders</a>
-            <a href="#" class="side-link"><span class="side-icon">♧</span> Coupons</a>
+        <div class="customer-toolbar">
 
-            <p class="nav-heading">CUSTOMERS</p>
-            <a href="{% url 'admin_panel:user_list' %}" class="side-link active">
-                <span class="side-icon">♙</span> Customers
-            </a>
+            <nav class="status-tabs" aria-label="Filter customers by status">
+                <a href="?status=all&amp;q={{ search_query|urlencode }}"
+                   class="status-tab {% if status_filter == 'all' %}selected{% endif %}">
+                    All
+                </a>
 
-            <p class="nav-heading">ANALYTICS</p>
-            <a href="#" class="side-link"><span class="side-icon">↗</span> Sales &amp; Revenue</a>
+                <a href="?status=active&amp;q={{ search_query|urlencode }}"
+                   class="status-tab {% if status_filter == 'active' %}selected{% endif %}">
+                    Active
+                </a>
 
-            <p class="nav-heading">SETTINGS</p>
-            <a href="#" class="side-link"><span class="side-icon">☷</span> Settings</a>
-        </nav>
+                <a href="?status=blocked&amp;q={{ search_query|urlencode }}"
+                   class="status-tab {% if status_filter == 'blocked' %}selected{% endif %}">
+                    Blocked
+                </a>
+            </nav>
 
-        <form method="post" action="{% url 'admin_panel:admin_logout' %}"
-              class="sidebar-logout">
-            {% csrf_token %}
-            <button type="submit">↪ <span>Logout</span></button>
-        </form>
-    </aside>
+            <form method="get"
+                  action="{% url 'admin_panel:user_list' %}"
+                  class="customer-search">
 
-    <!-- Main area -->
-    <main class="customer-main">
+                <span aria-hidden="true">⌕</span>
 
-        <!-- Top bar -->
-        <header class="customer-topbar">
-            <form method="get" action="{% url 'admin_panel:user_list' %}"
-                  class="global-search">
-                <span>⌕</span>
-                <input type="search" name="q"
+                <input type="search"
+                       name="q"
                        value="{{ search_query }}"
-                       placeholder="Search products, orders, or clients...">
+                       placeholder="Search by name, username or email..."
+                       aria-label="Search customers">
+
+                <input type="hidden"
+                       name="status"
+                       value="{{ status_filter|default:'all' }}">
+
+                <button type="submit">Search</button>
             </form>
 
-            <div class="topbar-right">
-                <span class="notification-icon">♟<i></i></span>
-                <div class="admin-profile">
-                    <div>
-                        <strong>Admin User</strong>
-                        <small>Store Manager</small>
-                    </div>
-                    <span class="admin-avatar">♙</span>
-                </div>
-            </div>
-        </header>
+        </div>
 
-        <section class="customer-content">
+        <div class="customer-table-wrap">
+            <table class="customer-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Joined date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
 
-            <!-- Page heading -->
-            <div class="breadcrumb">
-                <span>ADMIN</span>
-                <span>›</span>
-                <strong>CUSTOMERS</strong>
-            </div>
+                <tbody>
+                    {% for customer in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="customer-cell">
+                                <span class="customer-avatar">
+                                    {% if customer.fullname %}
+                                        {{ customer.fullname|first|upper }}
+                                    {% elif customer.username %}
+                                        {{ customer.username|first|upper }}
+                                    {% else %}
+                                        {{ customer.email|first|upper }}
+                                    {% endif %}
+                                </span>
 
-            <div class="heading-row">
-                <div>
-                    <div class="title-line">
-                        <h1>Customers</h1>
-                        <span class="customer-count">
-                            {{ page_obj.paginator.count }} Customers
-                        </span>
-                    </div>
-                    <p class="page-description">
-                        Manage registered customer accounts, status, and activity overview.
-                    </p>
-                </div>
-
-                <div class="status-summary">
-                    <span><i class="dot green"></i> Active customers</span>
-                    <span class="summary-divider">·</span>
-                    <span><i class="dot red"></i> Blocked customers</span>
-                </div>
-            </div>
-
-            <!-- Filters and search -->
-            <div class="filter-bar">
-                <div class="status-tabs">
-                    <a href="?q={{ search_query|urlencode }}"
-                       class="status-tab {% if not status_filter or status_filter == 'all' %}selected{% endif %}">
-                        All
-                    </a>
-                    <a href="?status=active&amp;q={{ search_query|urlencode }}"
-                       class="status-tab {% if status_filter == 'active' %}selected{% endif %}">
-                        Active
-                    </a>
-                    <a href="?status=blocked&amp;q={{ search_query|urlencode }}"
-                       class="status-tab {% if status_filter == 'blocked' %}selected{% endif %}">
-                        Blocked
-                    </a>
-                </div>
-
-                <form method="get" action="{% url 'admin_panel:user_list' %}"
-                      class="customer-search">
-                    <span>⌕</span>
-                    <input type="search" name="q" value="{{ search_query }}"
-                           placeholder="Search by name or email...">
-                    {% if status_filter %}
-                        <input type="hidden" name="status" value="{{ status_filter }}">
-                    {% endif %}
-                </form>
-            </div>
-
-            <!-- Customer table -->
-            <div class="customer-table-wrap">
-                <table class="customer-table">
-                    <thead>
-                        <tr>
-                            <th>Customer</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Orders</th>
-                            <th>Joined<br> Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {% for customer in page_obj %}
-                        <tr>
-                            <td>
-                                <div class="customer-cell">
-                                    <span class="customer-avatar">
-                                        {% if customer.first_name %}
-                                            {{ customer.first_name|first|upper }}
+                                <div class="customer-name">
+                                    <strong>
+                                        {% if customer.fullname %}
+                                            {{ customer.fullname }}
+                                        {% elif customer.username %}
+                                            {{ customer.username }}
                                         {% else %}
-                                            {{ customer.username|first|upper }}
+                                            {{ customer.email }}
                                         {% endif %}
-                                    </span>
+                                    </strong>
 
-                                    <div class="customer-name">
-                                        <strong>
-                                            {% if customer.first_name or customer.last_name %}
-                                                {{ customer.first_name }} {{ customer.last_name }}
-                                            {% else %}
-                                                {{ customer.username }}
-                                            {% endif %}
-                                        </strong>
-                                        <small>
-                                            {% if customer.is_active %}Registered Shopper{% else %}Account Restricted{% endif %}
-                                        </small>
-                                    </div>
+                                    <small>
+                                        {% if customer.is_blocked %}
+                                            Account restricted
+                                        {% else %}
+                                            Registered shopper
+                                        {% endif %}
+                                    </small>
                                 </div>
-                            </td>
+                            </div>
+                        </td>
 
-                            <td class="email-cell">{{ customer.email|default:"—" }}</td>
-                            <td class="phone-cell">{{ customer.phone_number|default:"—" }}</td>
-                            <td><span class="orders-count">—</span></td>
-                            <td class="date-cell">{{ customer.date_joined|date:"d M Y" }}</td>
+                        <td class="email-cell">
+                            {{ customer.email|default:"—" }}
+                        </td>
 
-                            <td>
+                        <td class="phone-cell">
+                            {{ customer.phone_number|default:"—" }}
+                        </td>
+
+                        <td class="date-cell">
+                            {% if customer.created_at %}
+                                {{ customer.created_at|date:"d M Y" }}
+                            {% else %}
+                                {{ customer.date_joined|date:"d M Y" }}
+                            {% endif %}
+                        </td>
+
+                        <td>
                             {% if customer.is_blocked %}
                                 <span class="status-pill blocked-status">
-                                    <i class="dot red"></i> Blocked
+                                    <i class="status-dot dot-red"></i>Blocked
                                 </span>
                             {% elif customer.is_active %}
                                 <span class="status-pill active-status">
-                                    <i class="dot green"></i> Active
+                                    <i class="status-dot dot-green"></i>Active
                                 </span>
-                            
+                            {% else %}
+                                <span class="status-pill inactive-status">
+                                    Inactive
+                                </span>
                             {% endif %}
-                            </td>
+                        </td>
 
-                            <td>
-                                <div class="customer-actions">
-                                    <form method="post"
-                                          action="{% url 'admin_panel:toggle_user_status' customer.id %}"
-                                          class="status-form"
-                                          onsubmit="return confirm('Are you sure you want to {% if customer.is_active %}block{% else %}unblock{% endif %} this customer?');">
-                                        {% csrf_token %}
-                                        <button type="submit"
-                                                class="status-toggle {% if customer.is_active %}toggle-on{% endif %}"
-                                                aria-label="{% if customer.is_active %}Block{% else %}Unblock{% endif %} {{ customer.username }}">
-                                            <span></span>
-                                        </button>
-                                    </form>
+                        <td>
+                            <div class="customer-actions">
+                                <form method="post"
+                                      action="{% url 'admin_panel:toggle_user_status' customer.id %}"
+                                      class="status-form"
+                                      onsubmit="return confirm('Are you sure you want to {% if customer.is_blocked %}unblock{% else %}block{% endif %} this customer?');">
+                                    {% csrf_token %}
 
-                                    <details class="action-menu">
-                                        <summary aria-label="Customer actions">⋮</summary>
-                                        <div class="action-popover">
-                                            <a href="#">♙ &nbsp; View Customer</a>
-                                        </div>
-                                    </details>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <strong>No customers found</strong>
-                                <p>Try another search or choose a different status filter.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                    <button type="submit"
+                                            class="status-toggle {% if customer.is_blocked %}toggle-off{% else %}toggle-on{% endif %}"
+                                            aria-label="{% if customer.is_blocked %}Unblock{% else %}Block{% endif %} customer">
+                                        <span></span>
+                                    </button>
+                                </form>
 
-                <!-- Pagination -->
-                <footer class="table-footer">
-                    <p>
-                        {% if page_obj.paginator.count %}
-                            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }}
-                            of {{ page_obj.paginator.count }} customers
-                        {% else %}
-                            Showing 0 customers
-                        {% endif %}
-                    </p>
+                                <details class="action-menu">
+                                    <summary aria-label="More customer actions">⋮</summary>
+                                    <div class="action-popover">
+                                        <a href="mailto:{{ customer.email }}">Contact customer</a>
+                                    </div>
+                                </details>
+                            </div>
+                        </td>
+                    </tr>
 
-                    <div class="pagination">
-                        {% if page_obj.has_previous %}
-                            <a href="?page={{ page_obj.previous_page_number }}&amp;q={{ search_query|urlencode }}&amp;status={{ status_filter|urlencode }}">‹ Prev</a>
-                        {% else %}
-                            <span class="disabled">‹ Prev</span>
-                        {% endif %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <strong>No customers found</strong>
+                            <p>Try another search or choose a different status filter.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-                        <span class="current-page">{{ page_obj.number }}</span>
+        <footer class="table-footer">
+            <p>
+                {% if page_obj.paginator.count %}
+                    Showing {{ page_obj.start_index }}–{{ page_obj.end_index }}
+                    of {{ page_obj.paginator.count }} customers
+                {% else %}
+                    Showing 0 customers
+                {% endif %}
+            </p>
 
-                        {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}&amp;q={{ search_query|urlencode }}&amp;status={{ status_filter|urlencode }}">Next ›</a>
-                        {% else %}
-                            <span class="disabled">Next ›</span>
-                        {% endif %}
-                    </div>
-                </footer>
-            </div>
+            <nav class="pagination" aria-label="Customer pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&amp;q={{ search_query|urlencode }}&amp;status={{ status_filter|urlencode }}">
+                        ‹ Prev
+                    </a>
+                {% else %}
+                    <span class="disabled">‹ Prev</span>
+                {% endif %}
 
-        </section>
-    </main>
-</div>
+                <span class="current-page">{{ page_obj.number }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&amp;q={{ search_query|urlencode }}&amp;status={{ status_filter|urlencode }}">
+                        Next ›
+                    </a>
+                {% else %}
+                    <span class="disabled">Next ›</span>
+                {% endif %}
+            </nav>
+        </footer>
+
+    </section>
+</section>
 {% endblock %}

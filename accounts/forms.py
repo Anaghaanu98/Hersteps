@@ -66,10 +66,11 @@ class SignupForm(forms.Form):
         return fullname
     def clean_username(self):
         username = self.cleaned_data["username"].strip()
-        if not re.fullmatch(r"[A-Za-z0-9_]{3,30}", username):
+        if not re.fullmatch(r"(?=.*[A-Za-z0-9])[A-Za-z0-9_]{3,30}", username):
             raise forms.ValidationError(
                 "Username must be 3–30 characters and contain "
-                "only letters, numbers or underscores."
+            "at least one letter or number. Only letters, numbers "
+            "and underscores are allowed."
             )
         if User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError(

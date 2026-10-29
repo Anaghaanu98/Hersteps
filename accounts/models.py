@@ -20,8 +20,10 @@ class CustomUser(AbstractUser):
     is_verified = models.BooleanField(default=False)
     is_google_user = models.BooleanField(default=False)
     is_blocked=models.BooleanField(default=False)
+    updated_at=models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"{self.fullname} ({self.email})"
+   
 
 
 class OTPVerification(models.Model):

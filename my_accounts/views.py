@@ -38,22 +38,23 @@ def profile_view(request):
     user=request.user
 
     is_google_user=SocialAccount.objects.filter(user=user, provider='google').exists()
-
+    
     if request.method == "POST":
         form=ProfileUpdateForm(request.POST, instance=user)
-
+        
         if form.is_valid():
           form.save()
 
           messages.success(request, "Profile updated successfully.")
           return redirect("my_accounts:profile")
-
+        
         messages.error(request, "Please correct the errors below.")
     else:
         form=ProfileUpdateForm(instance=user)
     context ={"user":user, "is_google_user":is_google_user, "form":form}
-    return render(request, "my_accounts/profile.html",context)
 
+    return render(request, "my_accounts/profile.html",context)
+ 
 @login_required
 @require_POST
 def start_email_change_view(request):

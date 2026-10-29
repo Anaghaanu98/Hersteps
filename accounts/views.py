@@ -532,7 +532,8 @@ def verify_reset_otp_view(request):
     return render(
         request,
         "accounts/verify_reset_otp.html",
-        {"email": user.email},
+        {"email": user.email,"expires_at_timestamp":(int(verification.expires_at.timestamp()*1000) 
+            if verification else 0 )},
     )
 
 def reset_password_view(request):

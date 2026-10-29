@@ -1,36 +1,403 @@
-
 {% extends "accounts/base.html" %}
 {% load static %}
 
 {% block title %}My Addresses | HerSteps{% endblock %}
 
+{% block page_class %}page--full{% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/addresses.css' %}">
+<style>
+    /* My Addresses page. Styles are inline here, so css/addresses.css is no longer needed.
+       Header, footer, fonts and colour variables come from base.html. */
+
+    .address-page {
+        width: 100%;
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 32px 40px 84px;
+        color: var(--text);
+    }
+
+    /* ---------- Back link ---------- */
+    .back-navigation { margin-bottom: 18px; animation: fadeUp .5s ease both; }
+    .address-page .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: auto;
+        max-width: none;
+        margin: 0;
+        padding: 8px 14px 8px 10px;
+        border-radius: 999px;
+        color: var(--brown);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background .2s ease, transform .2s ease;
+    }
+    .address-page .back-link:hover { background: rgba(153, 66, 10, .08); transform: translateX(-3px); }
+
+    /* ---------- Heading banner ---------- */
+    .address-heading {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 40px;
+        padding: 52px 64px;
+        border-radius: 26px;
+        background:
+            radial-gradient(480px 240px at 90% 0%, rgba(255, 255, 255, .55) 0%, transparent 70%),
+            #fdf0e6;
+        box-shadow: 0 18px 40px -28px rgba(70, 42, 25, .3);
+        animation: cardIn .6s cubic-bezier(.2, .8, .2, 1) both;
+    }
+    .address-heading::after {
+        content: "";
+        position: absolute;
+        right: -80px; bottom: -110px;
+        width: 260px; height: 260px;
+        border-radius: 50%;
+        border: 1px solid rgba(201, 101, 42, .13);
+        pointer-events: none;
+    }
+    .eyebrow {
+        margin: 0 0 12px;
+        text-align: left;
+        color: #8b7061;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 2px;
+    }
+    .address-heading h1 {
+        margin: 0;
+        text-align: left;
+        font-family: var(--font-serif);
+        font-size: clamp(42px, 5.6vw, 64px);
+        font-weight: 500;
+        line-height: 1.02;
+        letter-spacing: -1px;
+        color: var(--heading);
+    }
+    .heading-description {
+        margin: 12px 0 0;
+        color: #806b5e;
+        font-size: 15px;
+    }
+
+    .primary-button {
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        flex: none;
+        padding: 18px 32px;
+        border: 0;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #a8480d 0%, var(--brown-dark) 100%);
+        box-shadow: 0 12px 24px -10px rgba(153, 66, 10, .6);
+        color: #fff;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .25s ease;
+    }
+    .primary-button::before {
+        content: "";
+        position: absolute;
+        top: 0; left: -60%;
+        width: 40%; height: 100%;
+        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .25), transparent);
+        transform: skewX(-20deg);
+        transition: left .6s ease;
+    }
+    .primary-button:hover { transform: translateY(-2px); box-shadow: 0 16px 28px -10px rgba(153, 66, 10, .65); }
+    .primary-button:hover::before { left: 120%; }
+    .primary-button:active { transform: translateY(0); }
+    .primary-button:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
+    .primary-button .plus { font-size: 24px; font-weight: 400; line-height: 1; margin-top: -2px; transition: transform .3s ease; }
+    .primary-button:hover .plus { transform: rotate(90deg); }
+
+    /* ---------- Address grid ---------- */
+    .address-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px;
+        align-items: stretch;
+    }
+
+    .address-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 40px 44px 34px;
+        border: 1px solid rgba(240, 225, 216, .7);
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 14px 34px -26px rgba(70, 42, 25, .3);
+        animation: fadeUp .55s ease both;
+        transition: transform .3s cubic-bezier(.2, .8, .2, 1), box-shadow .3s ease, border-color .3s ease;
+    }
+    .address-card:nth-child(1) { animation-delay: .10s; }
+    .address-card:nth-child(2) { animation-delay: .16s; }
+    .address-card:nth-child(3) { animation-delay: .22s; }
+    .address-card:nth-child(4) { animation-delay: .28s; }
+    .address-card:nth-child(n+5) { animation-delay: .34s; }
+    .address-card:hover {
+        transform: translateY(-5px);
+        border-color: #f1ddcf;
+        box-shadow: 0 26px 44px -26px rgba(70, 42, 25, .4);
+    }
+    .address-card.is-default { border-color: #f6cdb6; }
+
+    .address-card-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .name-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .name-row h2 {
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: 34px;
+        font-weight: 600;
+        line-height: 1.1;
+        color: var(--heading);
+    }
+    .address-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: #ede1d9;
+        color: #5f4a3e;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    .address-type svg { width: 15px; height: 15px; flex: none; }
+
+    .address-subtitle {
+        margin: 10px 0 0;
+        color: #8d766a;
+        font-size: 15px;
+        letter-spacing: .6px;
+    }
+
+    .default-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 18px;
+        border-radius: 999px;
+        background: #ffdccb;
+        color: #3a1d0d;
+        font-size: 14.5px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .default-badge::before {
+        content: "";
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--brown);
+    }
+
+    .text-button {
+        position: relative;
+        padding: 6px 2px;
+        border: 0;
+        background: none;
+        color: var(--brown);
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+    .text-button::after {
+        content: "";
+        position: absolute;
+        left: 2px; right: 2px; bottom: 2px;
+        height: 1.5px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .25s ease;
+    }
+    .text-button:hover::after { transform: scaleX(1); }
+    .text-button:focus-visible { outline: 2px solid #d8a17d; outline-offset: 3px; border-radius: 4px; }
+
+    /* Address details box */
+    .address-details {
+        position: relative;
+        padding: 26px 28px 26px 68px;
+        border-radius: 18px;
+        background: #fdf4ed;
+        color: #5b493f;
+        font-size: 17px;
+        line-height: 1.75;
+        overflow-wrap: anywhere;
+        transition: background .25s ease;
+    }
+    .address-card:hover .address-details { background: #fcefe4; }
+    .address-details p { margin: 0; }
+    .address-details p:first-child { color: var(--heading); font-weight: 500; }
+    .address-details .addr-pin,
+    .address-details .addr-phone {
+        position: absolute;
+        left: 26px;
+        width: 22px;
+        height: 22px;
+        color: #8b7568;
+    }
+    .address-details .addr-pin { top: 31px; }
+    .address-details .addr-pin svg,
+    .address-details .addr-phone svg { width: 100%; height: 100%; display: block; }
+    .address-details .phone-number {
+        margin-top: 14px;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 15.5px;
+        letter-spacing: .6px;
+        color: #2b2019;
+    }
+    .address-details .addr-phone { bottom: 29px; }
+
+    /* Footer row: note + actions */
+    .address-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: auto;
+        padding-top: 34px;
+    }
+    .address-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        color: #8d766a;
+        font-size: 15px;
+    }
+    .address-note svg { width: 18px; height: 18px; flex: none; }
+
+    .address-actions { display: flex; align-items: center; gap: 8px; margin: 0; }
+    .secondary-button,
+    .delete-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border: 0;
+        border-radius: 12px;
+        background: none;
+        font-family: inherit;
+        font-size: 15.5px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background .2s ease, color .2s ease, transform .2s ease;
+    }
+    .secondary-button svg, .delete-button svg { width: 18px; height: 18px; flex: none; }
+    .secondary-button { color: #4a372d; }
+    .secondary-button:hover { background: #f6ebe3; color: var(--brown); transform: translateY(-1px); }
+    .delete-button { color: #4a372d; }
+    .delete-button:hover { background: #fdeceb; color: #a44430; transform: translateY(-1px); }
+    .secondary-button:focus-visible, .delete-button:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
+
+    /* ---------- Empty state ---------- */
+    .empty-address {
+        grid-column: 1 / -1;
+        padding: 72px 24px;
+        border: 1.5px dashed #ecd6c6;
+        border-radius: 24px;
+        background: #fff;
+        text-align: center;
+        animation: fadeUp .55s .1s ease both;
+    }
+    .empty-icon {
+        width: 72px; height: 72px;
+        margin: 0 auto 22px;
+        display: grid; place-items: center;
+        border-radius: 50%;
+        background: #fdf0e6;
+        color: var(--brown);
+    }
+    .empty-icon svg { width: 32px; height: 32px; }
+    .empty-address h2 {
+        margin: 0 0 8px;
+        font-family: var(--font-serif);
+        font-size: 34px;
+        font-weight: 600;
+        color: var(--heading);
+    }
+    .empty-address p { margin: 0 0 28px; color: #806b5e; font-size: 15.5px; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1100px) {
+        .address-page { padding: 24px 28px 64px; }
+        .address-heading { padding: 40px 36px; }
+        .address-list { gap: 20px; }
+        .address-card { padding: 30px 26px 26px; }
+        .name-row h2 { font-size: 30px; }
+    }
+
+    @media (max-width: 860px) {
+        .address-list { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+        .address-page { padding: 16px 16px 52px; }
+        .address-heading { flex-direction: column; align-items: flex-start; gap: 22px; padding: 28px 22px; margin-bottom: 26px; border-radius: 22px; }
+        .primary-button { width: 100%; padding: 16px 24px; font-size: 15px; }
+        .address-card { padding: 24px 18px 20px; border-radius: 20px; }
+        .address-card-heading { flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .name-row h2 { font-size: 27px; }
+        .address-details { padding: 20px 18px 20px 54px; font-size: 15.5px; }
+        .address-details .addr-pin, .address-details .addr-phone { left: 18px; width: 20px; height: 20px; }
+        .address-details .addr-pin { top: 25px; }
+        .address-details .phone-number { font-size: 14px; }
+        .address-details .addr-phone { bottom: 22px; }
+        .address-footer { padding-top: 22px; }
+        .address-actions { width: 100%; justify-content: flex-end; }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
 <div class="address-page">
-    <div class="back-navigation">
-        <a href="{% url 'my_accounts:my_account' %}" class="back-link">
-            &larr; Back to My Account
-        </a>
-    </div>
-    <div class="address-heading">
-        <div>
-            <p class="eyebrow">ACCOUNT / LOGISTICS</p>
-            <h1>My Addresses</h1>
-            <p class="heading-description">
+<div class="back-navigation">
+<a href="{% url 'my_accounts:my_account' %}" class="back-link">
+&larr; Back to My Account
+</a>
+</div>
+<div class="address-heading">
+<div>
+<p class="eyebrow">ACCOUNT / LOGISTICS</p>
+<h1>My Addresses</h1>
+<p class="heading-description">
                 Manage your delivery addresses.
-            </p>
-        </div>
+</p>
+</div>
 
-        <a href="{% url 'my_accounts:add_address' %}" class="primary-button">
-            + Add New Address
-        </a>
-    </div>
+<a href="{% url 'my_accounts:add_address' %}" class="primary-button">
+<span class="plus" aria-hidden="true">+</span> Add New Address
+</a>
+</div>
 
-    {% if messages %}
+{% comment %} {% if messages %}
         <div class="messages">
             {% for message in messages %}
                 <p class="message {{ message.tags }}">
@@ -38,94 +405,120 @@
                 </p>
             {% endfor %}
         </div>
-    {% endif %}
+    {% endif %} {% endcomment %}
 
-    <div class="address-list">
+<div class="address-list">
 
-        {% for address in addresses %}
+{% for address in addresses %}
 
-            <div class="address-card">
+<div class="address-card{% if address.is_default %} is-default{% endif %}">
 
-                <div class="address-card-heading">
-                    <div>
-                        <div class="name-row">
-                            <h2>{{ address.full_name }}</h2>
+<div class="address-card-heading">
+<div>
+<div class="name-row">
+<h2>{{ address.full_name }}</h2>
 
-                            <span class="address-type">
-                                {{ address.get_address_type_display }}
-                            </span>
-                        </div>
+<span class="address-type">
+{% if address.address_type == 'home' %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/><path d="M10 20v-5h4v5"/></svg>
+{% elif address.address_type == 'work' %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg>
+{% else %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+{% endif %}
+{{ address.get_address_type_display }}
+</span>
+</div>
 
-                        <p class="address-subtitle">
-                            {% if address.address_type == 'home' %}
+<p class="address-subtitle">
+{% if address.address_type == 'home' %}
                                 HOME ADDRESS
-                            {% elif address.address_type == 'work' %}
+{% elif address.address_type == 'work' %}
                                 WORK ADDRESS
-                            {% else %}
+{% else %}
                                 DELIVERY ADDRESS
-                            {% endif %}
-                        </p>
-                    </div>
+{% endif %}
+</p>
+</div>
 
-                    {% if address.is_default %}
-                        <span class="default-badge">
+{% if address.is_default %}
+<span class="default-badge">
                             Default Address
-                        </span>
-                    {% else %}
-                        <form method="POST"
-                              action="{% url 'my_accounts:set_default_address' address.id %}">
-                            {% csrf_token %}
-                            <button type="submit"
-                                    class="text-button">
+</span>
+{% else %}
+<form method="POST"
+action="{% url 'my_accounts:set_default_address' address.id %}">
+{% csrf_token %}
+<button type="submit"
+class="text-button">
                                 Set as Default
-                            </button>
-                        </form>
-                    {% endif %}
-                </div>
+</button>
+</form>
+{% endif %}
+</div>
 
-                <div class="address-details">
-                    <p>{{ address.house_name }}</p>
-                    <p>{{ address.locality }}</p>
-                    <p>
-                        {{ address.city }}, {{ address.state }}
+<div class="address-details">
+<span class="addr-pin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-10.8a6.5 6.5 0 1 1 13 0C18.5 15.4 12 21 12 21Z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
+<p>{{ address.house_name }}</p>
+<p>{{ address.locality }}</p>
+<p>
+{{ address.city }}, {{ address.state }}
                         - {{ address.pincode }}
-                    </p>
-                    <p class="phone-number">
+</p>
+<span class="addr-phone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.8 4.5-2.2 1.4a11 11 0 0 0 5.9 5.9l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A15.5 15.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4Z"/></svg></span>
+<p class="phone-number">
                         Phone: {{ address.phone }}
-                    </p>
-                </div>
+</p>
+</div>
 
-                <div class="address-actions">
+<div class="address-footer">
+<span class="address-note">
+{% if address.address_type == 'work' %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+Business Hours Access
+{% else %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 1.6 2.7-.2 1 2.5 2.3 1.5-.7 2.6 1 2.5-1.9 2-.2 2.7-2.6.8L12 21l-2.2-1.6-2.6-.8-.2-2.7-1.9-2 1-2.5-.7-2.6L7.5 6.9l1-2.5 2.7.2L12 3Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg>
+Verified Postal Area
+{% endif %}
+</span>
 
-                    <a href="{% url 'my_accounts:edit_address' address.id %}"
-                       class="secondary-button">
+<div class="address-actions">
+
+<a href="{% url 'my_accounts:edit_address' address.id %}"
+class="secondary-button">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>
                         Edit
-                    </a>
+</a>
 
-                    <a href="{% url 'my_accounts:delete_address' address.id %}"
-                       class="delete-button">
+<a href="{% url 'my_accounts:delete_address' address.id %}"
+class="delete-button">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M10 3.5h4M6.5 7l.8 13h9.4l.8-13M10 11v6M14 11v6"/></svg>
                         Delete
-                    </a>
+</a>
 
-                </div>
+</div>
+</div>
 
-            </div>
+</div>
 
-        {% empty %}
+{% empty %}
 
-            <div class="empty-address">
-                <h2>No addresses saved yet</h2>
-                <p>Add a delivery address to make checkout easier.</p>
+<div class="empty-address">
+<div class="empty-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+</div>
+<h2>No addresses saved yet</h2>
+<p>Add a delivery address to make checkout easier.</p>
 
-                <a href="{% url 'my_accounts:add_address' %}"
-                   class="primary-button">
+<a href="{% url 'my_accounts:add_address' %}"
+class="primary-button">
                     Add Your First Address
-                </a>
-            </div>
+</a>
+</div>
 
-        {% endfor %}
+{% endfor %}
 
-    </div>
+</div>
 
 </div>
 

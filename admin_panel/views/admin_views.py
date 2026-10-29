@@ -8,6 +8,9 @@ from django.views.decorators.http import require_POST
 
 User=get_user_model()
 
+
+
+
 def admin_login_view(request):
     
     if (request.user.is_authenticated and request.user.is_active and request.user.is_staff and request.user.is_superuser):
@@ -24,6 +27,8 @@ def admin_login_view(request):
 
         messages.error(request,'Invalid credentials')
     return render(request,'admin_panel/login.html')
+
+
 def admin_required(view_func):
     return user_passes_test(
         lambda user: (
@@ -34,6 +39,7 @@ def admin_required(view_func):
         ),
         login_url='admin_panel:admin_login'
     )(view_func)
+
 
 @admin_required
 def admin_dashboard_view(request):
@@ -89,6 +95,7 @@ def toggle_user_status_view(request,user_id):
     customer.save(update_fields=["is_blocked","is_active"])
     messages.success(request,message)
     return redirect('admin_panel:user_list')
+
 
 @admin_required
 @require_POST
