@@ -2,6 +2,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 import re
+from django.contrib.auth.password_validation import validate_password
 User = get_user_model()
 
 class SignupForm(forms.Form):
@@ -65,10 +66,11 @@ class SignupForm(forms.Form):
         return fullname
     def clean_username(self):
         username = self.cleaned_data["username"].strip()
-        if not re.fullmatch(r"[A-Za-z0-9_]{3,30}", username):
+        if not re.fullmatch(r"(?=.*[A-Za-z0-9])[A-Za-z0-9_]{3,30}", username):
             raise forms.ValidationError(
                 "Username must be 3–30 characters and contain "
-                "only letters, numbers or underscores."
+            "at least one letter or number. Only letters, numbers "
+            "and underscores are allowed."
             )
         if User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError(
@@ -93,6 +95,11 @@ class SignupForm(forms.Form):
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
 
+        if password:
+            try:
+                validate_password(password)
+            except forms.ValidationError as error:
+                self.add_error('password',error)
         if password and confirm_password:
             if password != confirm_password:
                 self.add_error(

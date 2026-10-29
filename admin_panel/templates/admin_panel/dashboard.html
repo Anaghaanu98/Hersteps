@@ -1,0 +1,237 @@
+
+{% extends "admin_panel/admin_base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard | HerSteps{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block layout %}
+<div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <a href="{% url 'admin_panel:admin_dashboard' %}"
+           class="sidebar-brand">
+            <span class="brand-mark">◖</span>
+            <span>
+                <strong>hersteps</strong>
+                <small>FOOTWEAR FOR WOMEN</small>
+            </span>
+        </a>
+
+        <nav class="sidebar-nav">
+            <p class="nav-heading">Overview</p>
+
+            <a href="{% url 'admin_panel:admin_dashboard' %}"
+               class="nav-link active">
+                <span>▦</span> Dashboard
+            </a>
+
+            <p class="nav-heading">Catalogue</p>
+
+            <a href="#" class="nav-link">
+                <span>♧</span> Products
+            </a>
+
+            <a href="#" class="nav-link">
+                <span>△</span> Categories
+            </a>
+
+            <p class="nav-heading">Sales</p>
+
+            <a href="#" class="nav-link">
+                <span>▤</span> Orders
+            </a>
+
+            <a href="#" class="nav-link">
+                <span>◇</span> Coupons
+            </a>
+
+            <p class="nav-heading">Customers</p>
+
+            <a href="{%url 'admin_panel:user_list'%}"
+               class="nav-link">
+                <span>♙</span> Customer Management
+            </a>
+
+            <p class="nav-heading">System</p>
+
+            <a href="#" class="nav-link">
+                <span>⚙</span> Settings
+            </a>
+        </nav>
+
+        <form method="POST"
+              action="{%url 'admin_panel:admin_logout'%}"
+              class="sidebar-logout">
+            {% csrf_token %}
+            <button type="submit">↪ &nbsp; Logout</button>
+        </form>
+    </aside>
+
+    <!-- Main dashboard -->
+    <div class="admin-main">
+
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-breadcrumb">
+                <span>Admin</span>
+                <span class="breadcrumb-divider">/</span>
+                <strong>Dashboard</strong>
+            </div>
+
+            <div class="header-actions">
+                <form class="header-search" method="GET"
+                      action="#">
+                    <span>⌕</span>
+                    <input
+                        type="search"
+                        name="q"
+                        placeholder="Search customers..."
+                        aria-label="Search customers"
+                    >
+                </form>
+
+                <div class="profile-area">
+                    <button
+                        type="button"
+                        class="profile-toggle"
+                        id="profileToggle"
+                        aria-expanded="false"
+                        aria-controls="profileDropdown"
+                    >
+                        <span class="profile-avatar">♙</span>
+                        <span class="profile-details">
+                            <strong>{{ request.user.username }}</strong>
+                            <small>Store Administrator</small>
+                        </span>
+                        <span class="profile-arrow">⌄</span>
+                    </button>
+
+                    <!-- Simple dropdown: no dim background -->
+                    <div class="profile-dropdown"
+                         id="profileDropdown"
+                         hidden>
+                        <div class="dropdown-heading">
+                            <span class="dropdown-avatar">♙</span>
+                            <div>
+                                <strong>{{ request.user.username }}</strong>
+                                <small>Administrator</small>
+                            </div>
+                        </div>
+
+                        <a href="#" class="dropdown-link">
+                            <span>♙</span> Profile
+                        </a>
+
+                        <a href="#" class="dropdown-link">
+                            <span>⚙</span> Settings
+                        </a>
+
+                        <form method="POST"
+                              action="{%url 'admin_panel:admin_logout'%}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="dropdown-logout">
+                                <span>↪</span> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard content -->
+        <main class="dashboard-content">
+
+            <div class="welcome-section">
+                <div>
+                    <p class="section-eyebrow">STORE OVERVIEW</p>
+                    <h1>Welcome back, Admin</h1>
+                    <p class="welcome-description">
+                        Here's what's happening with your HerSteps store today.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <section class="stats-grid">
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">TOTAL CUSTOMERS</span>
+                        <span class="stat-icon">♙</span>
+                    </div>
+                    <p class="stat-value">—</p>
+                    <p class="stat-note">Registered customers</p>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">TOTAL PRODUCTS</span>
+                        <span class="stat-icon">♧</span>
+                    </div>
+                    <p class="stat-value">—</p>
+                    <p class="stat-note">Products in catalogue</p>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">TOTAL ORDERS</span>
+                        <span class="stat-icon">▤</span>
+                    </div>
+                    <p class="stat-value">—</p>
+                    <p class="stat-note">Orders received</p>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">TOTAL REVENUE</span>
+                        <span class="stat-icon">₹</span>
+                    </div>
+                    <p class="stat-value">—</p>
+                    <p class="stat-note">Revenue overview</p>
+                </article>
+
+            </section>
+
+            <!-- Quick actions -->
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Quick Actions</h2>
+                        <p>Manage your store from one place.</p>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <a href="#"
+                       class="quick-action primary-action">
+                        Customer Management <span>→</span>
+                    </a>
+
+                    <a href="#" class="quick-action">
+                        Product Management <span>→</span>
+                    </a>
+
+                    <a href="#" class="quick-action">
+                        Manage Coupons <span>→</span>
+                    </a>
+
+                    <a href="#" class="quick-action">
+                        View Orders <span>→</span>
+                    </a>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<script src="{% static 'js/dashboard.js' %}" defer></script>
+{% endblock %}
+```
+

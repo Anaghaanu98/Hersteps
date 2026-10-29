@@ -1,77 +1,438 @@
-
 {% extends "accounts/base.html" %}
 {% load socialaccount %}
 
 {% block title %}Login | HerSteps{% endblock %}
 
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ---------- Page-level overrides (login only) ---------- */
+    body { font-family: "Manrope", Arial, sans-serif; }
+
+    .site-shell {
+        padding: 0;
+        background:
+            radial-gradient(900px 500px at 85% -10%, #ffe6d4 0%, transparent 60%),
+            radial-gradient(700px 500px at -10% 110%, #fde3d8 0%, transparent 60%),
+            var(--page-bg);
+    }
+    .site-label { display: none; }
+    .page {
+        background: transparent;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 16px;
+    }
+    /* messages are rendered inside the card, hide the base.html duplicate on this page */
+    .page > div[aria-live] { display: none; }
+
+    /* ---------- Card ---------- */
+    .auth-card {
+        position: relative;
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 44px 40px 36px;
+        background: #fff;
+        border-radius: 22px;
+        border: 1px solid rgba(240, 225, 216, .7);
+        box-shadow:
+            0 1px 2px rgba(70, 42, 25, .04),
+            0 18px 40px -12px rgba(70, 42, 25, .16);
+        animation: cardIn .6s cubic-bezier(.2, .8, .2, 1) both;
+    }
+    .auth-card::before {            /* small pill accent from the design */
+        content: "";
+        display: block;
+        width: 40px;
+        height: 14px;
+        margin: 0 auto 22px;
+        border-radius: 999px;
+        background: #f8e8de;
+    }
+
+    .brand { margin-bottom: 14px; }
+    .brand-name { letter-spacing: 1.5px; }
+
+    .auth-card h1 {
+        margin: 6px 0 10px;
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 1.1;
+        letter-spacing: -.3px;
+        color: #231915;
+    }
+    .subtitle {
+        max-width: 360px;
+        margin: 0 auto 30px;
+        font-size: 14.5px;
+        line-height: 1.65;
+        color: #6b5b52;
+    }
+
+    /* ---------- Form ---------- */
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: #5a463b;
+    }
+    .password-row { margin-bottom: 0; }
+    .password-row .form-label { margin-bottom: 7px; }
+
+    .form-input {
+        height: 54px;
+        padding: 0 18px;
+        border: 1.5px solid transparent;
+        border-radius: 14px;
+        background: #fdf1e8;
+        font-family: inherit;
+        font-size: 15px;
+        color: var(--text);
+        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .form-input::placeholder { color: #b5a79d; }
+    .form-input:hover { background: #fceadd; }
+    .form-input:focus {
+        outline: none;
+        background: #fff;
+        border-color: var(--brown);
+        box-shadow: 0 0 0 4px rgba(153, 66, 10, .12);
+    }
+
+    .input-wrap { position: relative; }
+    .input-wrap .form-input { padding-right: 52px; }
+    .toggle-pass {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: #7a6a60;
+        cursor: pointer;
+        transition: background .2s ease, color .2s ease;
+    }
+    .toggle-pass:hover { background: rgba(153, 66, 10, .08); color: var(--brown); }
+    .toggle-pass:focus-visible { outline: 2px solid #d8a17d; }
+    .toggle-pass svg { width: 20px; height: 20px; }
+    .toggle-pass .eye-open { display: none; }
+    .toggle-pass.is-visible .eye-open { display: block; }
+    .toggle-pass.is-visible .eye-off { display: none; }
+
+    .caps-hint {
+        display: none;
+        margin-top: 6px;
+        font-size: 12px;
+        color: #a35a1f;
+    }
+    .caps-hint.show { display: block; }
+
+    .text-link {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--brown);
+        position: relative;
+        transition: color .2s ease;
+    }
+    .text-link::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; bottom: -2px;
+        height: 1.5px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .25s ease;
+    }
+    .text-link:hover::after { transform: scaleX(1); }
+
+    /* ---------- Buttons ---------- */
+    .primary-btn, .secondary-btn {
+        min-height: 54px;
+        border-radius: 14px;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        transition: transform .2s ease, box-shadow .25s ease, background .2s ease;
+    }
+    .primary-btn {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 8px;
+        background: linear-gradient(135deg, #a8480d 0%, #8a3a07 100%);
+        box-shadow: 0 10px 20px -8px rgba(153, 66, 10, .55);
+    }
+    .primary-btn::after {            /* soft shine sweep */
+        content: "";
+        position: absolute;
+        top: 0; left: -60%;
+        width: 40%; height: 100%;
+        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .25), transparent);
+        transform: skewX(-20deg);
+        transition: left .6s ease;
+    }
+    .primary-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 26px -8px rgba(153, 66, 10, .6); }
+    .primary-btn:hover::after { left: 120%; }
+    .primary-btn:active { transform: translateY(0); }
+    .primary-btn:focus-visible, .secondary-btn:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
+    .primary-btn .arrow { transition: transform .25s ease; }
+    .primary-btn:hover .arrow { transform: translateX(4px); }
+    .primary-btn.is-loading { pointer-events: none; opacity: .9; }
+    .primary-btn .spinner {
+        display: none;
+        width: 18px; height: 18px;
+        border: 2px solid rgba(255, 255, 255, .45);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+    }
+    .primary-btn.is-loading .spinner { display: block; }
+    .primary-btn.is-loading .arrow { display: none; }
+
+    .divider {
+        margin: 22px 0;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        color: #9a8c83;
+    }
+
+    .secondary-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: #fdf1e8;
+        border: 1.5px solid transparent;
+        color: var(--text);
+        text-decoration: none;
+    }
+    .secondary-btn:hover {
+        background: #fff;
+        border-color: #efd9c9;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -10px rgba(70, 42, 25, .25);
+    }
+    .secondary-btn svg { width: 20px; height: 20px; flex: none; }
+
+    .bottom-note {
+        margin-top: 26px;
+        padding-top: 0;
+        border-top: 0;
+        font-size: 14px;
+        color: #6b5b52;
+    }
+    .bottom-note .text-link { margin-left: 4px; }
+
+    /* ---------- Messages ---------- */
+    .form-messages { margin-bottom: 18px; }
+    .form-messages .message {
+        margin: 0 0 8px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border-left: 4px solid var(--orange);
+        background: #fff0e5;
+        font-size: 13.5px;
+        animation: fadeUp .4s ease both;
+    }
+    .form-messages .message.error,
+    .form-messages .message.danger { background: #fdeceb; border-left-color: #a32d22; color: #7d2119; }
+    .form-messages .message.success { background: #eef7ee; border-left-color: #3b7a3b; color: #2b5c2b; }
+
+    /* ---------- Animations ---------- */
+    @keyframes cardIn { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .auth-card .form-group, .auth-card .primary-btn, .auth-card .divider,
+    .auth-card .secondary-btn, .auth-card .bottom-note {
+        animation: fadeUp .5s ease both;
+    }
+    .auth-card .form-group:nth-of-type(1) { animation-delay: .10s; }
+    .auth-card .form-group:nth-of-type(2) { animation-delay: .17s; }
+    .auth-card .primary-btn { animation-delay: .24s; }
+    .auth-card .divider { animation-delay: .30s; }
+    .auth-card .secondary-btn { animation-delay: .35s; }
+    .auth-card .bottom-note { animation-delay: .40s; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 600px) {
+        .page { padding: 20px 14px; align-items: flex-start; }
+        .auth-card { margin-top: 12px; padding: 32px 22px 28px; border-radius: 20px; }
+        .auth-card h1 { font-size: 34px; }
+        .subtitle { font-size: 14px; margin-bottom: 24px; }
+        .form-input { font-size: 16px; }   /* prevents iOS zoom on focus */
+    }
+    @media (max-width: 360px) {
+        .auth-card { padding: 28px 16px 24px; }
+        .auth-card h1 { font-size: 30px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="auth-card">
-    <div class="brand">
-        <span class="brand-mark">◖</span>
-        <span class="brand-name">hersteps</span>
-        <span class="brand-tagline">FOOTWEAR FOR WOMEN</span>
-    </div>
+<div class="brand">
+<span class="brand-mark">◖</span>
+<span class="brand-name">hersteps</span>
+<span class="brand-tagline">FOOTWEAR FOR WOMEN</span>
+</div>
 
-    <h1>Welcome Back</h1>
+<h1>Welcome Back</h1>
 
-    <p class="subtitle">
-        Sign in to access your saved orders, wishlist and account.
-    </p>
+<p class="subtitle">
+        Sign in to access your saved bespoke orders, doorstep trials, and wishlist.
+</p>
+{% if messages %}
+<div class="form-messages" role="alert">
+{% for message in messages %}
+<p class="message {{ message.tags }}">
+{{ message }}
+</p>
+{% endfor %}
+</div>
+{% endif %}
+<form method="POST" action="{% url 'login' %}" id="loginForm">
+{% csrf_token %}
 
-    <form method="POST" action="{% url 'login' %}">
-        {% csrf_token %}
-
-        <div class="form-group">
-            <label class="form-label" for="identifier">
+<div class="form-group">
+<label class="form-label" for="identifier">
                 EMAIL / USERNAME
-            </label>
+</label>
 
-            <input
-                class="form-input"
-                type="text"
-                id="identifier"
-                name="identifier"
-                placeholder="Email or username"
-                autocomplete="username"
-                required
-            >
-        </div>
+<input
+class="form-input"
+type="text"
+id="identifier"
+name="identifier"
+placeholder="Email or username"
+autocomplete="username"
+required
+>
+</div>
 
-        <div class="form-group">
-            <div class="password-row">
-                <label class="form-label" for="password">PASSWORD</label>
-                <a class="text-link" href="{% url 'forgot_password' %}">
+<div class="form-group">
+<div class="password-row">
+<label class="form-label" for="password">PASSWORD</label>
+<a class="text-link" href="{% url 'forgot_password' %}">
                     Forgot Password?
-                </a>
-            </div>
+</a>
+</div>
 
-            <input
-                class="form-input"
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Enter your password"
-                autocomplete="current-password"
-                required
-            >
-        </div>
+<div class="input-wrap">
+<input
+class="form-input"
+type="password"
+id="password"
+name="password"
+placeholder="Enter your password"
+autocomplete="current-password"
+required
+>
+<button type="button" class="toggle-pass" id="togglePass" aria-label="Show password" aria-pressed="false">
+<svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/>
+<line x1="1" y1="1" x2="23" y2="23"/>
+</svg>
+<svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+<circle cx="12" cy="12" r="3"/>
+</svg>
+</button>
+</div>
+<span class="caps-hint" id="capsHint">Caps Lock is on</span>
+</div>
 
-        <button class="primary-btn" type="submit">
-            Sign In to Account →
-        </button>
-    </form>
+<button class="primary-btn" type="submit" id="submitBtn">
+<span class="btn-text">Sign In to Account</span>
+<span class="arrow" aria-hidden="true">→</span>
+<span class="spinner" aria-hidden="true"></span>
+</button>
+</form>
 
-    <div class="divider">OR</div>
+<div class="divider">OR</div>
 
-    <a class="secondary-btn"
-       style="display:block; text-align:center; text-decoration:none;"
-       href="{% url 'google_login' %}">
-         Continue with Google
-    </a>
+<a class="secondary-btn"
+href="{% url 'google_login' %}">
+<svg viewBox="0 0 48 48" aria-hidden="true">
+<path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+<path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+<path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+<path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+</svg>
+<span>Continue with Google</span>
+</a>
 
-    <div class="bottom-note">
+<div class="bottom-note">
         Don't have an account?
-        <a class="text-link" href="{% url 'signup' %}">Sign Up</a>
-    </div>
+<a class="text-link" href="{% url 'signup' %}">Sign Up</a>
+</div>
 </section>
+
+<script>
+(function () {
+    var form = document.getElementById('loginForm');
+    var pass = document.getElementById('password');
+    var toggle = document.getElementById('togglePass');
+    var caps = document.getElementById('capsHint');
+    var btn = document.getElementById('submitBtn');
+
+    // Show / hide password
+    toggle.addEventListener('click', function () {
+        var show = pass.type === 'password';
+        pass.type = show ? 'text' : 'password';
+        toggle.classList.toggle('is-visible', show);
+        toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+        toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        pass.focus();
+    });
+
+    // Caps Lock hint
+    function checkCaps(e) {
+        if (e.getModifierState) {
+            caps.classList.toggle('show', e.getModifierState('CapsLock'));
+        }
+    }
+    pass.addEventListener('keyup', checkCaps);
+    pass.addEventListener('keydown', checkCaps);
+    pass.addEventListener('blur', function () { caps.classList.remove('show'); });
+
+    // Loading state on submit (only when the browser validation passes)
+    form.addEventListener('submit', function () {
+        btn.classList.add('is-loading');
+        btn.querySelector('.btn-text').textContent = 'Signing in…';
+    });
+
+    // Reset button if the user comes back via the browser's back button
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+            btn.classList.remove('is-loading');
+            btn.querySelector('.btn-text').textContent = 'Sign In to Account';
+        }
+    });
+})();
+</script>
 {% endblock %}

@@ -1,11 +1,467 @@
-
 {% extends "accounts/base.html" %}
-{% load static %}
 
 {% block title %}{{ page_title }} | HerSteps{% endblock %}
 
+{# Top-aligned, full-width shell instead of the centered auth layout #}
+{% block page_class %}page--full{% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/add_address.css' %}">
+<style>
+    /* =====================================================
+       ADD / EDIT ADDRESS  —  scoped to .address-form-page
+       Uses the design tokens defined in base.html
+       ===================================================== */
+    .address-form-page {
+        width: 100%;
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+        color: var(--text);
+    }
+
+    /* ---------- Back link + breadcrumb ---------- */
+    .address-form-page .form-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px 24px;
+        margin-bottom: 22px;
+    }
+
+    .address-form-page .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        width: auto;
+        max-width: none;
+        margin: 0;
+        align-self: auto;
+        color: var(--heading);
+        font-size: 12.5px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: color .2s ease, gap .2s ease;
+    }
+    .address-form-page .back-link svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform .2s ease;
+    }
+    .address-form-page .back-link:hover { color: var(--brown); transform: none; }
+    .address-form-page .back-link:hover svg { transform: translateX(-3px); }
+
+    .address-form-page .breadcrumb {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+    }
+    .address-form-page .breadcrumb a {
+        color: inherit;
+        text-decoration: none;
+        transition: color .2s ease;
+    }
+    .address-form-page .breadcrumb a:hover { color: var(--brown); }
+    .address-form-page .breadcrumb .sep { color: #cdbfb6; }
+    .address-form-page .breadcrumb .current { color: var(--brown); font-weight: 600; }
+
+    /* ---------- Card ---------- */
+    .address-form-card {
+        position: relative;
+        overflow: hidden;
+        padding: 48px 48px 44px;
+        background: #fff;
+        border-radius: 24px;
+        border: 1px solid rgba(240, 225, 216, .7);
+        box-shadow:
+            0 1px 2px rgba(70, 42, 25, .04),
+            0 24px 50px -20px rgba(70, 42, 25, .18);
+    }
+    .address-form-card::before,
+    .address-form-card::after {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .address-form-card::before {
+        top: -90px;
+        right: -70px;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(201, 101, 42, .10) 0%, transparent 70%);
+    }
+    .address-form-card::after {
+        bottom: -110px;
+        left: -80px;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(201, 101, 42, .07) 0%, transparent 70%);
+    }
+    .address-form-card > * { position: relative; z-index: 1; }
+
+    /* ---------- Heading ---------- */
+    .address-form-page .form-heading {
+        margin-bottom: 34px;
+        padding-bottom: 28px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .address-form-page .section-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: #fcebdf;
+        color: var(--brown);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+    }
+    .address-form-page .section-label::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--brown);
+    }
+
+    .address-form-page .form-heading h1 {
+        margin: 16px 0 8px;
+        text-align: left;
+        font-family: var(--font-serif);
+        font-size: 46px;
+        font-weight: 500;
+        line-height: 1.05;
+        letter-spacing: -.4px;
+        color: var(--heading);
+    }
+
+    .address-form-page .form-heading p {
+        margin: 0;
+        color: var(--body-soft);
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    /* ---------- Form fields ---------- */
+    .address-form .form-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        margin-bottom: 26px;
+    }
+
+    .address-form .form-group > label,
+    .address-form .field-label {
+        margin-bottom: 9px;
+        color: #4d3a2f;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .address-form input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),
+    .address-form select,
+    .address-form textarea {
+        width: 100%;
+        height: 56px;
+        padding: 0 20px;
+        border: 1.5px solid transparent;
+        border-radius: 12px;
+        background: var(--field-bg);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 15px;
+        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .address-form textarea { height: auto; min-height: 110px; padding: 16px 20px; resize: vertical; }
+
+    .address-form select {
+        appearance: none;
+        -webkit-appearance: none;
+        padding-right: 48px;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a6a60' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 18px;
+    }
+
+    .address-form input::placeholder,
+    .address-form textarea::placeholder { color: #b5a79d; }
+
+    .address-form input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):hover,
+    .address-form select:hover,
+    .address-form textarea:hover { background-color: #fceadd; }
+
+    .address-form input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):focus,
+    .address-form select:focus,
+    .address-form textarea:focus {
+        outline: none;
+        background-color: #fff;
+        border-color: var(--brown);
+        box-shadow: 0 0 0 4px rgba(153, 66, 10, .12);
+    }
+
+    .address-form .form-group.has-error input:not([type="radio"]):not([type="checkbox"]),
+    .address-form .form-group.has-error select,
+    .address-form .form-group.has-error textarea {
+        background-color: #fff7f6;
+        border-color: #e7b9b4;
+    }
+
+    .address-form-page .field-error {
+        display: block;
+        margin: 8px 0 0;
+        color: var(--danger);
+        font-size: 12.5px;
+        line-height: 1.4;
+    }
+
+    .address-form-page .form-errors {
+        margin-bottom: 24px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border-left: 4px solid var(--danger);
+        background: #fdeceb;
+        color: #7d2119;
+        font-size: 13.5px;
+    }
+    .address-form-page .form-errors ul { margin: 0; padding: 0; list-style: none; }
+
+    /* ---------- Address type pills ---------- */
+    .address-type-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .address-type-options .radio-option {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 48px;
+        padding: 0 22px 0 18px;
+        border: 1.5px solid #e9d3c4;
+        border-radius: 999px;
+        background: #fff;
+        color: #4d3a2f;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: none;
+        cursor: pointer;
+        transition: background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .address-type-options .radio-option:hover { border-color: var(--orange); color: var(--brown); }
+
+    /* native radio stays in the DOM for forms & screen readers, just not visible */
+    .address-type-options .radio-option input[type="radio"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .radio-icon { display: inline-flex; }
+    .radio-icon svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .address-type-options .radio-option:has(input:checked) {
+        background: var(--brown);
+        border-color: var(--brown);
+        color: #fff;
+        box-shadow: 0 10px 20px -10px rgba(153, 66, 10, .6);
+    }
+    .address-type-options .radio-option:has(input:focus-visible) {
+        outline: 3px solid #e6b894;
+        outline-offset: 2px;
+    }
+
+    /* ---------- City / State / Pincode ---------- */
+    .address-form .form-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0 18px;
+    }
+
+    /* ---------- Default address checkbox ---------- */
+    .default-address-option {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 4px 0 34px;
+    }
+    .default-address-option input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        flex: none;
+        width: 26px;
+        height: 26px;
+        margin: 0;
+        border: 1.5px solid transparent;
+        border-radius: 8px;
+        background: var(--field-bg);
+        cursor: pointer;
+        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .default-address-option input[type="checkbox"]:hover { background: #fceadd; }
+    .default-address-option input[type="checkbox"]:checked {
+        background-color: var(--brown);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 16px;
+    }
+    .default-address-option input[type="checkbox"]:focus-visible {
+        outline: none;
+        border-color: var(--brown);
+        box-shadow: 0 0 0 4px rgba(153, 66, 10, .15);
+    }
+    .default-address-option label {
+        color: var(--heading);
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    /* ---------- Actions ---------- */
+    .form-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .form-actions .primary-button,
+    .form-actions .cancel-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 56px;
+        padding: 0 32px;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .form-actions .primary-button {
+        min-width: 190px;
+        border: 0;
+        color: #fff;
+        background: linear-gradient(135deg, #a8480d 0%, var(--brown-dark) 100%);
+        box-shadow: 0 10px 20px -8px rgba(153, 66, 10, .55);
+    }
+    .form-actions .primary-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 26px -8px rgba(153, 66, 10, .6);
+    }
+    .form-actions .primary-button:active { transform: translateY(0); }
+
+    .form-actions .cancel-button {
+        min-width: 120px;
+        border: 1.5px solid transparent;
+        background: #f8ece2;
+        color: #4d3a2f;
+    }
+    .form-actions .cancel-button:hover { background: #f1dfd1; }
+
+    .form-actions .primary-button:focus-visible,
+    .form-actions .cancel-button:focus-visible {
+        outline: 3px solid #e6b894;
+        outline-offset: 2px;
+    }
+
+    /* ---------- Footer note ---------- */
+    .address-form-page .form-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px 20px;
+        margin: 26px 8px 0;
+        color: var(--muted);
+        font-size: 13.5px;
+    }
+    .address-form-page .form-footer .secure-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .address-form-page .form-footer svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+    .address-form-page .form-footer .brand-stamp {
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 2.4px;
+        text-transform: uppercase;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 760px) {
+        .address-form-page { padding: 28px 18px 64px; }
+        .address-form-card { padding: 36px 28px 32px; border-radius: 22px; }
+        .address-form-page .form-heading h1 { font-size: 40px; }
+        .address-form .form-row { grid-template-columns: 1fr 1fr; }
+        .address-form .form-row .form-group:last-child { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 560px) {
+        .address-form-page { padding: 20px 14px 56px; }
+        .address-form-page .breadcrumb { display: none; }
+        .address-form-card { padding: 28px 20px 26px; border-radius: 20px; }
+        .address-form-page .form-heading { margin-bottom: 26px; padding-bottom: 22px; }
+        .address-form-page .form-heading h1 { font-size: 34px; }
+        .address-form .form-row { grid-template-columns: 1fr; }
+        .address-form input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),
+        .address-form select,
+        .address-form textarea { font-size: 16px; }   /* stops iOS zoom on focus */
+        .address-type-options { gap: 10px; }
+        .address-type-options .radio-option { padding: 0 18px 0 14px; }
+        .form-actions { flex-direction: column-reverse; align-items: stretch; }
+        .form-actions .primary-button,
+        .form-actions .cancel-button { width: 100%; }
+        .address-form-page .form-footer { margin: 22px 4px 0; }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -14,22 +470,24 @@
 
     <div class="form-navigation">
         <a href="{% url 'my_accounts:address_list' %}" class="back-link">
-            &larr; Back to Addresses
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+            Back to Addresses
         </a>
 
-        <p class="breadcrumb">
-            Home / My Account / Addresses / {{ page_title }}
-        </p>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'home' %}">Home</a><span class="sep">/</span>
+            <a href="{% url 'my_accounts:my_account' %}">My Account</a><span class="sep">/</span>
+            <a href="{% url 'my_accounts:address_list' %}">Addresses</a><span class="sep">/</span>
+            <span class="current" aria-current="page">{{ page_title }}</span>
+        </nav>
     </div>
 
     <div class="address-form-card">
 
         <div class="form-heading">
-            <span class="section-label">DELIVERY DETAILS</span>
+            <span class="section-label">Delivery details</span>
             <h1>{{ page_title }}</h1>
-            <p>
-                Enter the details for your delivery address.
-            </p>
+            <p>Tell us where to deliver your orders.</p>
         </div>
 
         <form method="POST" class="address-form">
@@ -41,7 +499,7 @@
                 </div>
             {% endif %}
 
-            <div class="form-group">
+            <div class="form-group{% if form.full_name.errors %} has-error{% endif %}">
                 <label for="{{ form.full_name.id_for_label }}">
                     Full Name
                 </label>
@@ -53,7 +511,7 @@
                 {% endfor %}
             </div>
 
-            <div class="form-group">
+            <div class="form-group{% if form.phone.errors %} has-error{% endif %}">
                 <label for="{{ form.phone.id_for_label }}">
                     Phone Number
                 </label>
@@ -65,14 +523,23 @@
                 {% endfor %}
             </div>
 
-            <div class="form-group">
-                <label>Address Type</label>
+            <div class="form-group{% if form.address_type.errors %} has-error{% endif %}">
+                <span class="field-label" id="address-type-label">Address Label</span>
 
-                <div class="address-type-options">
+                <div class="address-type-options" role="radiogroup" aria-labelledby="address-type-label">
                     {% for radio in form.address_type %}
                         <label class="radio-option"
                                for="{{ radio.id_for_label }}">
                             {{ radio.tag }}
+                            <span class="radio-icon" aria-hidden="true">
+                                {% if radio.choice_label|lower == "home" %}
+                                    <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>
+                                {% elif radio.choice_label|lower == "work" %}
+                                    <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2"/><path d="M3 13h18"/></svg>
+                                {% else %}
+                                    <svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5a7 7 0 0 0-14 0C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+                                {% endif %}
+                            </span>
                             <span>{{ radio.choice_label }}</span>
                         </label>
                     {% endfor %}
@@ -83,7 +550,7 @@
                 {% endfor %}
             </div>
 
-            <div class="form-group">
+            <div class="form-group{% if form.house_name.errors %} has-error{% endif %}">
                 <label for="{{ form.house_name.id_for_label }}">
                     Street Address
                 </label>
@@ -95,7 +562,7 @@
                 {% endfor %}
             </div>
 
-            <div class="form-group">
+            <div class="form-group{% if form.locality.errors %} has-error{% endif %}">
                 <label for="{{ form.locality.id_for_label }}">
                     Locality / Area
                 </label>
@@ -109,7 +576,7 @@
 
             <div class="form-row">
 
-                <div class="form-group">
+                <div class="form-group{% if form.city.errors %} has-error{% endif %}">
                     <label for="{{ form.city.id_for_label }}">
                         City
                     </label>
@@ -121,7 +588,7 @@
                     {% endfor %}
                 </div>
 
-                <div class="form-group">
+                <div class="form-group{% if form.state.errors %} has-error{% endif %}">
                     <label for="{{ form.state.id_for_label }}">
                         State
                     </label>
@@ -133,7 +600,7 @@
                     {% endfor %}
                 </div>
 
-                <div class="form-group">
+                <div class="form-group{% if form.pincode.errors %} has-error{% endif %}">
                     <label for="{{ form.pincode.id_for_label }}">
                         Pincode
                     </label>
@@ -147,13 +614,13 @@
 
             </div>
 
-            <div class="default-address-option">
-                {{ form.is_default }}
-
-                <label for="{{ form.is_default.id_for_label }}">
-                    Set as default address
-                </label>
-            </div>
+            {# Shown only if AddressForm has an is_default field #}
+            {% if form.is_default %}
+                <div class="default-address-option">
+                    {{ form.is_default }}
+                    <label for="{{ form.is_default.id_for_label }}">Set as default address</label>
+                </div>
+            {% endif %}
 
             {% for error in form.is_default.errors %}
                 <p class="field-error">{{ error }}</p>
@@ -175,8 +642,8 @@
     </div>
 
     <div class="form-footer">
-        <span>Secure profile information</span>
-        <span>HERSTEPS ATELIER</span>
+        
+        
     </div>
 
 </div>

@@ -12,5 +12,7 @@ urlpatterns = [
     path('add-address/',views.add_address_view, name='add_address'),
     path('address/<int:address_id>/edit/',views.edit_address_view,name='edit_address'),
     path('addresses/<int:address_id>/default/',views.set_default_address_view, name='set_default_address'),
-    path('addresses/<int:address_id>/delete/',views.delete_address_view,name='delete_address')
+    path('addresses/<int:address_id>/delete/',views.delete_address_view,name='delete_address'),
+    path("email-change/",views.start_email_change_view,name='start_email_change'),
+    path('email-change/verify/',views.verify_email_change_view,name="verify_email_change")
 ]

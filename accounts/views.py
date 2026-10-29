@@ -24,7 +24,7 @@ import logging
 logger=logging.getLogger(__name__)
 User = get_user_model()
 
-OTP_EXPIRY_MINUTES = 5
+OTP_EXPIRY_MINUTES = 2
 MAX_OTP_ATTEMPTS = 5
 RESEND_COOLDOWN_SECONDS = 30
 
@@ -145,50 +145,45 @@ def verify_email_view(request):
 
     if request.method == "POST":
         action = request.POST.get("action", "verify")
-
         if action == "resend":
-            now = timezone.now()
+         now = timezone.now()
 
-            if verification and verification.last_sent_at:
-              time_since_last_send = (
-                  now - verification.last_sent_at
-              ).total_seconds() 
+        #  if verification and now < verification.expires_at:
+        #   remaining = int(
+        #     (verification.expires_at - now).total_seconds()
+        #   ) + 1
 
-            if time_since_last_send < RESEND_COOLDOWN_SECONDS:
-              remaining = int(
-                RESEND_COOLDOWN_SECONDS - time_since_last_send
-              ) + 1
+        #   messages.error(
+        #     request,
+        #     f"Please wait {remaining} seconds until your OTP expires."
+        #   )
+        #   return redirect("verify_email")
 
-              messages.error(
-                request,
-                f"Please wait {remaining} seconds before requesting another code."
-                 )
-              return redirect("verify_email")
-            otp = generate_otp()
+         otp = generate_otp()
 
-            OTPVerification.objects.update_or_create(
-                user=user,
-                defaults={
-                    "otp_hash": make_password(otp),
-                    "expires_at": now + timedelta(
-                        minutes=OTP_EXPIRY_MINUTES
-                    ),
-                    "attempts": 0,
-                    'last_sent_at': now,
-                },
-            )
+         OTPVerification.objects.update_or_create(
+          user=user,
+          defaults={
+            "otp_hash": make_password(otp),
+            "expires_at": now + timedelta(minutes=OTP_EXPIRY_MINUTES),
+            "attempts": 0,
+            "last_sent_at": now,
+           },
+          )
 
-            try:
-                send_verification_email(user, otp)
-            except Exception:
-                messages.error(
-                    request,
-                    "We couldn't send the email. Please try again later."
-                )
-            else:
-                messages.success(request, "A new OTP has been sent.")
+         try:
+          send_verification_email(user, otp)
+         except Exception:
+          logger.exception("Resend verification email failed")
+          messages.error(
+            request,
+            "We couldn't send the email. Please try again later."
+         )
+         else:
+          messages.success(request, "A new OTP has been sent.")
 
-            return redirect("verify_email")
+         return redirect("verify_email")
+     
 
         otp = request.POST.get("otp", "").strip()
 
@@ -252,12 +247,20 @@ def verify_email_view(request):
     return render(
         request,
         "accounts/verify_email.html",
-        {"email": user.email},
+        {"email": user.email,
+         'expires_at_timestamp':(
+             int(verification.expires_at.timestamp()*1000)
+             if verification else 0
+         ),},
     )
 
 @require_http_methods(["GET", "POST"])
 def login_view(request):
-    if request.user.is_authenticated:
+    if (request.user.is_authenticated and 
+        request.user.is_staff or request.user.is_superuser
+    ):
+        return redirect('admin_panel:admin_dashboard')
+    if (request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser):
         return redirect("home")
 
 
@@ -273,29 +276,35 @@ def login_view(request):
             user = User.objects.filter(
                 username__iexact=identifier
             ).first()
+        if user and user.is_blocked:
+            if user.check_password(password):
+                messages.error(request,"Your account has been blocked by admin")
+            else:
+                messages.error(request,"Invalid email/username or password.")
+        elif user and not user.is_active:
+            if user.check_password(password) and not user.is_verified:
+                request.session["pending_verification_user_id"]=user.pk
+                messages.error(request,"Please verify your email before logging in")
+                return redirect("verify_email")
 
-        authenticated_user = None
+            messages.error(request,"This account is inactive. Please contact support.")
+        else:
+         authenticated_user = None
 
-        if user:
+         if user:
             authenticated_user = authenticate(
                 request,
                 username=user.username,
                 password=password,
             )
 
-        if authenticated_user is None:
+         if authenticated_user is None:
             messages.error(
                 request,
                 "Invalid email/username or password."
             )
 
-        elif not authenticated_user.is_active:
-            messages.error(
-                request,
-                "This account is inactive. Please verify your email."
-            )
-
-        elif not authenticated_user.is_verified:
+         elif not authenticated_user.is_verified:
             request.session[
                 "pending_verification_user_id"
             ] = authenticated_user.pk
@@ -306,7 +315,7 @@ def login_view(request):
             )
             return redirect("verify_email")
 
-        else:
+         else:
             auth_login(request, authenticated_user)
             return redirect("home")
 
@@ -320,25 +329,25 @@ def forgot_password_view(request):
         if not email:
             messages.error(request,'Please enter your email address')
             return render(request,'accounts/forgot_password.html')
-        # validate email format
+       
         try:
             validate_email(email)
 
         except ValidationError:
             messages.error(request,"Please enter a valid email address")
             return render(request,'accounts/forgot_password.html')
-        # find the registered account
+        
         user=User.objects.filter(email__iexact=email).first()
 
-        #Do not allow unverified or inactive accounts
+        
         if not user or not user.is_active or not user.is_verified:
             messages.error(request,"We couldn't process that account. Check your email ")
             return render(request,"accounts/forgot_password.html")   
 
-        #Generating otp
+        
         otp=f"{secrets.randbelow(1_000_000):06d}"
 
-        #Save only the hashed otp in the database
+        
         OTPVerification.objects.update_or_create(
             user=user,
             defaults={
@@ -365,19 +374,19 @@ def forgot_password_view(request):
             messages.error(request,"We couldn't send the OTP. Please try again later")
             return render(request,'accounts/forgot_password.html')
 
-        #Remember the account resetting the password
+        #updating the session
         request.session['password_reset_user_id']=user.pk
         request.session.pop('password_reset_verified_user_id',None)
         request.session['password_reset_last_sent']=time.time()
 
         messages.success(request, 'OTP sent to your registered email address.')
         return redirect('verify_reset_otp')
-
+     
     return render(request, "accounts/forgot_password.html")
 
 def verify_reset_otp_view(request):
     user_id=request.session.get('password_reset_user_id')
-    # The user must start with the forgot-password page
+    
     if not user_id:
         messages.error(request, "Please request a password reset first.")
         return redirect("forgot_password")
@@ -433,7 +442,7 @@ def verify_reset_otp_view(request):
             try:
                 send_password_reset_email(user, otp)
             except Exception:
-                # Remove the unusable OTP if email delivery fails
+                
                 OTPVerification.objects.filter(user=user).delete()
 
                 messages.error(
@@ -523,13 +532,14 @@ def verify_reset_otp_view(request):
     return render(
         request,
         "accounts/verify_reset_otp.html",
-        {"email": user.email},
+        {"email": user.email,"expires_at_timestamp":(int(verification.expires_at.timestamp()*1000) 
+            if verification else 0 )},
     )
 
 def reset_password_view(request):
     user_id = request.session.get("password_reset_verified_user_id")
 
-    # OTP verification must be completed first
+    
     if not user_id:
         messages.error(
             request,
@@ -552,17 +562,17 @@ def reset_password_view(request):
         password = request.POST.get("password", "")
         confirm_password = request.POST.get("confirm_password", "")
 
-        # 1. Check empty fields
+        
         if not password or not confirm_password:
             messages.error(request, "Both password fields are required.")
             return render(request, "accounts/reset_password.html")
 
-        # 2. Check whether passwords match
+       
         if password != confirm_password:
             messages.error(request, "The passwords do not match.")
             return render(request, "accounts/reset_password.html")
 
-        # 3. Check password strength using Django's configured validators
+       
         try:
             password_validation.validate_password(password, user=user)
         except ValidationError as errors:
@@ -570,16 +580,16 @@ def reset_password_view(request):
                 messages.error(request, error)
             return render(request, "accounts/reset_password.html")
 
-        # 4. Save the new password using Django's password hashing
+        
         user.set_password(password)
         user.save(update_fields=["password"])
 
-        # 5. Clear reset-related session data
+        
         request.session.pop("password_reset_verified_user_id", None)
         request.session.pop("password_reset_user_id", None)
         request.session.pop("password_reset_last_sent", None)
 
-        # Invalidate any remaining reset OTP for this user
+       
         OTPVerification.objects.filter(user=user).delete()
 
         messages.success(
@@ -590,5 +600,10 @@ def reset_password_view(request):
 
     return render(request, "accounts/reset_password.html")
 def home_view(request):
-    return render(request, "accounts/home.html")
+    if request.user.is_authenticated:
+     if request.user.is_staff or request.user.is_superuser:
+        return render(request, "admin_panel/dashboard.html")
+     else:
+        return render(request, "accounts/home.html")
 # Create your views here.
+    return render(request, "accounts/home.html")

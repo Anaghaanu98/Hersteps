@@ -1,0 +1,88 @@
+
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}Verify New Email | HerSteps{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="profile-page">
+    <section class="personal-card email-verification-card">
+        <h1>Verify Your New Email</h1>
+
+        <p>
+            Enter the six-digit verification code sent to
+            <strong>{{ new_email }}</strong>.
+        </p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="message {{ message.tags }}" role="alert">
+                    {{ message }}
+                </p>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="field-group">
+                <label for="otp">VERIFICATION CODE</label>
+                <input type="text"
+                       id="otp"
+                       name="otp"
+                       inputmode="numeric"
+                       pattern="[0-9]{6}"
+                       maxlength="6"
+                       minlength="6"
+                       placeholder="Enter 6-digit OTP"
+                       autocomplete="one-time-code"
+                       required>
+            </div>
+
+            <button type="submit" class="save-changes-btn">
+                Verify Email
+            </button>
+        </form>
+        <form method="POST" class="resend-form">
+            {% csrf_token %}
+
+            <button type="submit"
+                    id="resendOtpBtn"
+                    name="action"
+                    value="resend"
+                    formnovalidate
+                    disabled>
+                Resend OTP
+            </button>
+        </form>
+       
+        <p>
+            <a href="{% url 'my_accounts:profile' %}">
+                Cancel and return to profile
+            </a>
+        </p>
+    </section>
+</main>
+ <script>
+    const expiresAt = Number("{{ expires_at_timestamp|default:0 }}");
+    const resendButton = document.getElementById("resendOtpBtn");
+
+    function updateResendButton() {
+        const currentTime = Date.now();
+
+        if (currentTime >= expiresAt) {
+            resendButton.disabled = false;
+        } else {
+            resendButton.disabled = true;
+        }
+    }
+
+    updateResendButton();
+
+    setInterval(updateResendButton, 1000);
+</script>
+{% endblock %}
