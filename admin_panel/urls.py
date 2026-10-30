@@ -8,7 +8,7 @@ urlpatterns = [
     
     path('categories/',categories_views.category_list,name='category_list'),
     path('categories/add/',categories_views.category_add,name='category_add'),
-    path('categories/edit/',categories_views.category_edit,name='category_edit'),
+    path("categories/<int:pk>/edit/",categories_views.category_edit,name='category_edit'),
     path('categories/<int:pk>/toggle-status/',categories_views.category_toggle_status,name='category_toggle_status'),
     path('users/<int:user_id>/toggle-status/',admin_views.toggle_user_status_view,name='toggle_user_status'),
     path('logout/',admin_views.admin_logout_view,name='admin_logout')

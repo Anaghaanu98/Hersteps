@@ -4,56 +4,229 @@
 {% block nav_active %}categories{% endblock %}
 {% block breadcrumb %}{{ page_title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .form-shell {
+        max-width: 680px;
+    }
+
+    .form-card {
+        padding: 32px;
+        background: #fff;
+        border: 1px solid var(--line, #e7e9f3);
+        border-radius: 20px;
+        box-shadow: var(--shadow, 0 14px 34px -18px rgba(40, 40, 120, .22));
+    }
+
+    .form-field {
+        margin-bottom: 24px;
+    }
+
+    .form-field > label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--muted, #5d6280);
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    /* Style whatever widget Django renders (text input, select, textarea) */
+    .form-field input[type="text"],
+    .form-field input[type="email"],
+    .form-field input[type="number"],
+    .form-field input[type="search"],
+    .form-field select,
+    .form-field textarea {
+        width: 100%;
+        min-height: 50px;
+        padding: 0 16px;
+        border: 1.5px solid var(--line, #e7e9f3);
+        border-radius: 12px;
+        background: #fafbff;
+        color: var(--ink, #0f1224);
+        font-family: inherit;
+        font-size: 14.5px;
+        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .form-field textarea {
+        min-height: 110px;
+        padding: 14px 16px;
+        resize: vertical;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+        outline: none;
+        background: #fff;
+        border-color: var(--primary, #5b50f0);
+        box-shadow: 0 0 0 4px rgba(91, 80, 240, .14);
+    }
+
+    /* Checkbox (e.g. is_active) */
+    .form-field input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+        margin: 0;
+        accent-color: var(--primary, #5b50f0);
+        cursor: pointer;
+        vertical-align: middle;
+    }
+
+    .form-field ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .field-error {
+        margin: 8px 0 0;
+        padding: 9px 12px;
+        border-radius: 10px;
+        background: #fff0f1;
+        border: 1px solid #ffd3d6;
+        color: #c0282f;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .form-errors {
+        margin-bottom: 24px;
+        padding: 13px 16px;
+        border-radius: 14px;
+        background: #fff0f1;
+        border: 1px solid #ffd3d6;
+        border-left: 4px solid #e5484d;
+        color: #a12a2f;
+        font-size: 14px;
+    }
+
+    .form-errors ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line, #e7e9f3);
+    }
+
+    .form-actions button[type="submit"] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 26px;
+        border: 1.5px solid transparent;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary, #5b50f0) 0%, #7a5cf5 100%);
+        color: #fff;
+        font-family: inherit;
+        font-size: 14.5px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 14px 24px -12px rgba(91, 80, 240, .8), inset 0 1px 0 rgba(255, 255, 255, .2);
+        transition: transform .2s ease, box-shadow .25s ease, filter .2s ease;
+    }
+
+    .form-actions button[type="submit"]:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.06);
+        box-shadow: 0 18px 28px -12px rgba(91, 80, 240, .9), inset 0 1px 0 rgba(255, 255, 255, .2);
+    }
+
+    .form-actions button[type="submit"]:focus-visible {
+        outline: 3px solid rgba(139, 124, 255, .5);
+        outline-offset: 2px;
+    }
+
+    .cancel-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 46px;
+        padding: 0 22px;
+        border-radius: 12px;
+        background: var(--tint, #eef0ff);
+        color: var(--primary, #5b50f0);
+        font-size: 14.5px;
+        font-weight: 600;
+        transition: transform .2s ease, background .2s ease;
+    }
+
+    .cancel-link:hover {
+        background: var(--tint-2, #e2e5ff);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 720px) {
+        .form-card { padding: 22px; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<div class="page-head">
+<header class="page-head">
     <div>
-        <h1>{{ page_title }}</h1>
-        <p>Enter the category details below.</p>
+        <p class="page-eyebrow">Catalogue</p>
+        <h1 class="page-title">{{ page_title }}</h1>
+        <p class="page-subtitle">Enter the category details below.</p>
     </div>
-</div>
+</header>
 
-<form method="post">
-    {% csrf_token %}
+<div class="form-shell">
+    <form method="post" class="form-card">
+        {% csrf_token %}
 
-    {% if form.non_field_errors %}
-        <div style="color: red;">
+        {% if form.non_field_errors %}
+        <div class="form-errors">
             {{ form.non_field_errors }}
         </div>
-    {% endif %}
+        {% endif %}
 
-    <div style="margin-bottom: 20px;">
-        <label for="{{ form.name.id_for_label }}">
-            Category Name
-        </label>
+        <div class="form-field">
+            <label for="{{ form.name.id_for_label }}">
+                Category Name
+            </label>
 
-        {{ form.name }}
+            {{ form.name }}
 
-        {% for error in form.name.errors %}
-            <p style="color: red;">{{ error }}</p>
-        {% endfor %}
-    </div>
+            {% for error in form.name.errors %}
+            <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
 
+        <div class="form-field">
+            <label for="{{ form.is_active.id_for_label }}">
+                Status
+            </label>
 
-    <div style="margin-bottom: 20px;">
-        <label for="{{ form.is_active.id_for_label }}">
-            Status
-        </label>
+            {{ form.is_active }}
 
-        {{ form.is_active }}
+            {% for error in form.is_active.errors %}
+            <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
 
-        {% for error in form.is_active.errors %}
-            <p style="color: red;">{{ error }}</p>
-        {% endfor %}
-    </div>
+        <div class="form-actions">
+            <button type="submit">
+                {{ button_text }}
+            </button>
 
-    <button type="submit">
-        {{ button_text }}
-    </button>
-
-    <a href="{% url 'admin_panel:category_list' %}">
-        Cancel
-    </a>
-</form>
+            <a href="{% url 'admin_panel:category_list' %}" class="cancel-link">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
 
 {% endblock %}
