@@ -306,15 +306,6 @@
 <p class="subtitle">
         Sign in to access your saved bespoke orders, doorstep trials, and wishlist.
 </p>
-{% if messages %}
-<div class="form-messages" role="alert">
-{% for message in messages %}
-<p class="message {{ message.tags }}">
-{{ message }}
-</p>
-{% endfor %}
-</div>
-{% endif %}
 <form method="POST" action="{% url 'login' %}" id="loginForm">
 {% csrf_token %}
 

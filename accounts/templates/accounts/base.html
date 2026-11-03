@@ -1422,9 +1422,9 @@
 
         }
 
-        .message.error, .message.danger { background: #fdeceb; border-left-color: var(--danger); color: #7d2119; }
+        .message.error, .message.danger { background: #fef2f2; border-color: #fecaca; border-left-color: #ef4444; color: #991b1b; }
 
-        .message.success { background: #eef7ee; border-left-color: #3b7a3b; color: #2b5c2b; }
+        .message.success { background: #ecfdf5; border-color: #a7f3d0; border-left-color: #10b981; color: #065f46; }
 
         .message.warning { background: #fff6e0; border-left-color: #c98a1a; color: #7a5410; }
 
@@ -1433,6 +1433,376 @@
         .form-messages { margin-bottom: 18px; }
 
         .form-messages .message { margin: 0 0 8px; }
+
+
+
+        /* =====================================================
+
+           SITE MESSAGES (space below the nav bar)
+
+           ===================================================== */
+
+        .site-messages-wrapper {
+
+            width: 100%;
+
+            position: relative;
+
+            z-index: 95;
+
+            background: transparent;
+
+        }
+
+
+
+        .site-messages-inner {
+
+            max-width: 1320px;
+
+            margin: 0 auto;
+
+            padding: 16px 40px 0;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+        }
+
+
+
+        .site-message {
+
+            position: relative;
+
+            overflow: hidden;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            padding: 14px 18px;
+
+            border-radius: var(--radius, 14px);
+
+            font-size: 14px;
+
+            font-weight: 500;
+
+            line-height: 1.45;
+
+            border: 1px solid transparent;
+
+            border-left-width: 5px;
+
+            box-shadow: 0 4px 16px -4px rgba(70, 42, 25, .1);
+
+            animation: messageSlideDown .35s cubic-bezier(.2, .8, .2, 1) both;
+
+            transition: opacity .35s ease, transform .35s ease, max-height .35s ease, margin .35s ease, padding .35s ease;
+
+            max-height: 200px;
+
+        }
+
+
+
+        .site-message.is-dismissing {
+
+            opacity: 0;
+
+            transform: translateY(-8px);
+
+            max-height: 0;
+
+            margin-top: 0;
+
+            margin-bottom: 0;
+
+            padding-top: 0;
+
+            padding-bottom: 0;
+
+            border-width: 0;
+
+            pointer-events: none;
+
+        }
+
+
+
+        /* Success (Green) */
+
+        .site-message.success {
+
+            background: #ecfdf5;
+
+            border-color: #a7f3d0;
+
+            border-left-color: #10b981;
+
+            color: #065f46;
+
+        }
+
+        .site-message.success .site-message-icon { color: #059669; }
+
+
+
+        /* Error / Danger (Red) */
+
+        .site-message.error,
+
+        .site-message.danger {
+
+            background: #fef2f2;
+
+            border-color: #fecaca;
+
+            border-left-color: #ef4444;
+
+            color: #991b1b;
+
+        }
+
+        .site-message.error .site-message-icon,
+
+        .site-message.danger .site-message-icon { color: #dc2626; }
+
+
+
+        /* Warning */
+
+        .site-message.warning {
+
+            background: #fff9ea;
+
+            border-color: #fae8ba;
+
+            border-left-color: #d97706;
+
+            color: #78350f;
+
+        }
+
+        .site-message.warning .site-message-icon { color: #d97706; }
+
+
+
+        /* Info / Default */
+
+        .site-message.info,
+
+        .site-message {
+
+            background: #fff0e5;
+
+            border-color: #fce1cf;
+
+            border-left-color: var(--orange, #c9652a);
+
+            color: #5c2b0c;
+
+        }
+
+        .site-message.info .site-message-icon,
+
+        .site-message .site-message-icon { color: var(--orange, #c9652a); }
+
+
+
+        .site-message-icon {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            width: 22px;
+
+            height: 22px;
+
+        }
+
+        .site-message-icon svg {
+
+            width: 20px;
+
+            height: 20px;
+
+            stroke: currentColor;
+
+            fill: none;
+
+            stroke-width: 2;
+
+            stroke-linecap: round;
+
+            stroke-linejoin: round;
+
+        }
+
+
+
+        .site-message-text {
+
+            flex: 1 1 auto;
+
+            word-break: break-word;
+
+        }
+
+
+
+        .site-message-close {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            width: 30px;
+
+            height: 30px;
+
+            margin-left: auto;
+
+            padding: 0;
+
+            background: transparent;
+
+            border: 0;
+
+            border-radius: 8px;
+
+            color: inherit;
+
+            opacity: .65;
+
+            cursor: pointer;
+
+            transition: opacity .2s ease, background .2s ease, transform .2s ease;
+
+        }
+
+        .site-message-close:hover {
+
+            opacity: 1;
+
+            background: rgba(0, 0, 0, .06);
+
+            transform: scale(1.08);
+
+        }
+
+        .site-message-close:active {
+
+            transform: scale(.94);
+
+        }
+
+        .site-message-close:focus-visible {
+
+            outline: 2px solid currentColor;
+
+            outline-offset: 1px;
+
+        }
+
+        .site-message-close svg {
+
+            width: 16px;
+
+            height: 16px;
+
+            stroke: currentColor;
+
+            fill: none;
+
+            stroke-width: 2.2;
+
+            stroke-linecap: round;
+
+            stroke-linejoin: round;
+
+        }
+
+
+
+        /* Countdown progress bar (10s) */
+
+        .site-message-progress {
+
+            position: absolute;
+
+            left: 0;
+
+            bottom: 0;
+
+            height: 3px;
+
+            width: 100%;
+
+            background: currentColor;
+
+            opacity: .25;
+
+            transform-origin: left;
+
+            animation: messageProgress 10s linear forwards;
+
+        }
+
+
+
+        .site-message:hover .site-message-progress {
+
+            animation-play-state: paused;
+
+        }
+
+
+
+        @keyframes messageSlideDown {
+
+            from {
+
+                opacity: 0;
+
+                transform: translateY(-10px);
+
+            }
+
+            to {
+
+                opacity: 1;
+
+                transform: translateY(0);
+
+            }
+
+        }
+
+
+
+        @keyframes messageProgress {
+
+            from { transform: scaleX(1); }
+
+            to { transform: scaleX(0); }
+
+        }
 
 
 
@@ -1573,6 +1943,8 @@
         @media (max-width: 1100px) {
 
             .site-header-inner { padding: 0 28px; gap: 12px; }
+
+            .site-messages-inner { padding: 14px 28px 0; }
 
             .site-nav a { padding: 10px 11px; }
 
@@ -1719,6 +2091,12 @@
             .site-search button[type="submit"] { padding: 0 18px; }
 
             .page.page--full > [aria-live] { padding: 12px 16px 0; }
+
+            .site-messages-inner { padding: 12px 14px 0; }
+
+            .site-message { padding: 12px 14px; font-size: 13.5px; gap: 10px; }
+
+            .site-message-close { width: 28px; height: 28px; }
 
 
 
@@ -1928,29 +2306,73 @@
 
 
 
+        <!-- ================= SITE MESSAGES (space below the nav bar) ================= -->
+
+        {% block messages %}
+
+        {% if messages %}
+
+        <div class="site-messages-wrapper" id="siteMessages" aria-live="polite">
+
+            <div class="site-messages-inner">
+
+                {% for message in messages %}
+
+                <div class="site-message {{ message.tags|default:'info' }}" role="alert">
+
+                    <span class="site-message-icon" aria-hidden="true">
+
+                        {% if 'success' in message.tags %}
+
+                        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+
+                        {% elif 'error' in message.tags or 'danger' in message.tags %}
+
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+
+                        {% elif 'warning' in message.tags %}
+
+                        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+
+                        {% else %}
+
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+
+                        {% endif %}
+
+                    </span>
+
+                    <span class="site-message-text">{{ message }}</span>
+
+                    <button type="button" class="site-message-close" aria-label="Close message">
+
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+
+                    </button>
+
+                    <div class="site-message-progress" aria-hidden="true"></div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+        {% endblock %}
+
+
+
         <main class="page {% block page_class %}{% endblock %}">
 
             {% block back_link %}{% endblock %}
 
 
 
-            {% block base_messages %}
-
-            {% if messages %}
-
-                <div aria-live="polite">
-
-                    {% for message in messages %}
-
-                        <div class="message {{ message.tags }}">{{ message }}</div>
-
-                    {% endfor %}
-
-                </div>
-
-            {% endif %}
-
-            {% endblock %}
+            {% block base_messages %}{% endblock %}
 
 
 
@@ -2269,6 +2691,124 @@
         window.addEventListener('scroll', onScroll, { passive: true });
 
         onScroll();
+
+    })();
+
+
+
+    // 5. Site messages (auto-dismiss after 10s, close button, pause on hover)
+
+    (function initSiteMessages() {
+
+        var messages = document.querySelectorAll('.site-message');
+
+        if (!messages.length) return;
+
+
+
+        messages.forEach(function (msg) {
+
+            var dismissed = false;
+
+            var duration = 10000;
+
+            var remaining = duration;
+
+            var start = Date.now();
+
+            var timer = null;
+
+
+
+            function dismiss() {
+
+                if (dismissed) return;
+
+                dismissed = true;
+
+                if (timer) clearTimeout(timer);
+
+                msg.classList.add('is-dismissing');
+
+                setTimeout(function () {
+
+                    var container = msg.closest('.site-messages-inner');
+
+                    msg.remove();
+
+                    if (container && container.querySelectorAll('.site-message').length === 0) {
+
+                        var wrapper = container.closest('.site-messages-wrapper');
+
+                        if (wrapper) wrapper.remove();
+
+                    }
+
+                }, 350);
+
+            }
+
+
+
+            var closeBtn = msg.querySelector('.site-message-close');
+
+            if (closeBtn) {
+
+                closeBtn.addEventListener('click', function (e) {
+
+                    e.preventDefault();
+
+                    dismiss();
+
+                });
+
+            }
+
+
+
+            timer = setTimeout(dismiss, remaining);
+
+
+
+            msg.addEventListener('mouseenter', function () {
+
+                if (dismissed) return;
+
+                clearTimeout(timer);
+
+                remaining -= (Date.now() - start);
+
+                var progress = msg.querySelector('.site-message-progress');
+
+                if (progress) progress.style.animationPlayState = 'paused';
+
+            });
+
+
+
+            msg.addEventListener('mouseleave', function () {
+
+                if (dismissed) return;
+
+                if (remaining > 0) {
+
+                    start = Date.now();
+
+                    timer = setTimeout(dismiss, remaining);
+
+                    var progress = msg.querySelector('.site-message-progress');
+
+                    if (progress) progress.style.animationPlayState = 'running';
+
+                } else {
+
+                    dismiss();
+
+                }
+
+            });
+
+        });
 
     })();
 

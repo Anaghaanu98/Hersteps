@@ -344,9 +344,192 @@
             background: #f1f0ff; color: #3a2fb3; font-size: 14px;
             animation: fadeUp .4s ease both;
         }
-        .flash .message.error, .flash .message.danger { background: #fff0f1; border-color: #ffd3d6; border-left-color: #e5484d; color: #a12a2f; }
-        .flash .message.success { background: #ecfbf6; border-color: #c4f0e1; border-left-color: #12a37f; color: #0b6b53; }
-        .flash .message.warning { background: #fff8e8; border-color: #ffe7b0; border-left-color: #e5a100; color: #8a5f00; }
+        .flash .message.error, .flash .message.danger { background: #fef2f2; border-color: #fecaca; border-left-color: #ef4444; color: #991b1b; }
+        .flash .message.success { background: #ecfdf5; border-color: #a7f3d0; border-left-color: #10b981; color: #065f46; }
+        .flash .message.warning { background: #fffbeb; border-color: #fde68a; border-left-color: #f59e0b; color: #92400e; }
+
+        /* ================= Admin Messages (below nav bar) ================= */
+        .admin-messages-wrapper {
+            width: 100%;
+            position: relative;
+            z-index: 25;
+            background: transparent;
+        }
+
+        .admin-messages-inner {
+            width: 100%;
+            max-width: 1480px;
+            padding: 16px 36px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .admin-message {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.45;
+            border: 1px solid transparent;
+            border-left-width: 5px;
+            box-shadow: 0 4px 18px -4px rgba(20, 24, 60, .1);
+            animation: messageSlideDown .35s cubic-bezier(.2, .8, .2, 1) both;
+            transition: opacity .35s ease, transform .35s ease, max-height .35s ease, margin .35s ease, padding .35s ease;
+            max-height: 200px;
+        }
+
+        .admin-message.is-dismissing {
+            opacity: 0;
+            transform: translateY(-8px);
+            max-height: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-width: 0;
+            pointer-events: none;
+        }
+
+        /* Success (Green) */
+        .admin-message.success {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+        .admin-message.success .admin-message-icon { color: #059669; }
+
+        /* Error / Danger (Red) */
+        .admin-message.error,
+        .admin-message.danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+        .admin-message.error .admin-message-icon,
+        .admin-message.danger .admin-message-icon { color: #dc2626; }
+
+        /* Warning */
+        .admin-message.warning {
+            background: #fffbeb;
+            border-color: #fde68a;
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+        .admin-message.warning .admin-message-icon { color: #d97706; }
+
+        /* Info / Default */
+        .admin-message.info,
+        .admin-message {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            border-left-color: var(--primary, #5b50f0);
+            color: #312e81;
+        }
+        .admin-message.info .admin-message-icon,
+        .admin-message .admin-message-icon { color: var(--primary, #5b50f0); }
+
+        .admin-message-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+        }
+        .admin-message-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .admin-message-text {
+            flex: 1 1 auto;
+            word-break: break-word;
+        }
+
+        .admin-message-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            margin-left: auto;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            border-radius: 8px;
+            color: inherit;
+            opacity: .65;
+            cursor: pointer;
+            transition: opacity .2s ease, background .2s ease, transform .2s ease;
+        }
+        .admin-message-close:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, .06);
+            transform: scale(1.08);
+        }
+        .admin-message-close:active {
+            transform: scale(.94);
+        }
+        .admin-message-close:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 1px;
+        }
+        .admin-message-close svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Countdown progress bar (10s) */
+        .admin-message-progress {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 100%;
+            background: currentColor;
+            opacity: .28;
+            transform-origin: left;
+            animation: adminMessageProgress 10s linear forwards;
+        }
+
+        .admin-message:hover .admin-message-progress {
+            animation-play-state: paused;
+        }
+
+        @keyframes messageSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes adminMessageProgress {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
 
         /* ---------- Shared components for admin pages ---------- */
         .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin: 4px 0 28px; flex-wrap: wrap; }
@@ -473,6 +656,9 @@
             body.nav-open .sidebar { transform: none; }
             .menu-btn { display: grid; }
             .topbar { padding: 0 18px; gap: 12px; }
+            .admin-messages-inner { padding: 12px 18px 0; }
+            .admin-message { padding: 12px 14px; font-size: 13.5px; gap: 10px; }
+            .admin-message-close { width: 28px; height: 28px; }
             .content { padding: 6px 18px 40px; }
             .topbar-search { margin-left: 8px; }
         }
@@ -540,7 +726,7 @@
 
             <div class="nav-group">
                 <p class="nav-label">Catalogue</p>
-                <a class="nav-link" data-nav="products" href="{{ u_products|default:'#' }}">
+                <a class="nav-link" data-nav="products" href="{%url 'admin_panel:products_list'%}">
                     <svg class="icon" aria-hidden="true"><use href="#i-products"/></svg><span>Products</span>
                 </a>
                 <a class="nav-link" data-nav="categories" href="{% url 'admin_panel:category_list'%}">
@@ -667,15 +853,37 @@
             </div>
         </header>
 
-        <main class="content" id="main">
-            {% if messages %}
-                <div class="flash" role="alert">
-                    {% for message in messages %}
-                        <p class="message {{ message.tags }}">{{ message }}</p>
-                    {% endfor %}
+        <!-- ================= Admin Messages (Below Navbar Only) ================= -->
+        {% block messages %}
+        {% if messages %}
+        <div class="admin-messages-wrapper" id="adminMessages" aria-live="polite">
+            <div class="admin-messages-inner">
+                {% for message in messages %}
+                <div class="admin-message {{ message.tags|default:'info' }}" role="alert">
+                    <span class="admin-message-icon" aria-hidden="true">
+                        {% if 'success' in message.tags %}
+                        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+                        {% elif 'error' in message.tags or 'danger' in message.tags %}
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        {% elif 'warning' in message.tags %}
+                        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        {% endif %}
+                    </span>
+                    <span class="admin-message-text">{{ message }}</span>
+                    <button type="button" class="admin-message-close" aria-label="Close message">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <div class="admin-message-progress" aria-hidden="true"></div>
                 </div>
-            {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endblock %}
 
+        <main class="content" id="main">
             {% block content %}{% endblock %}
         </main>
     </div>
@@ -722,6 +930,65 @@
     function onScroll() { topbar.classList.toggle("is-scrolled", window.scrollY > 4); }
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
+})();
+
+// Admin messages (auto-dismiss after 10s, close button, pause on hover)
+(function initAdminMessages() {
+    var messages = document.querySelectorAll('.admin-message');
+    if (!messages.length) return;
+
+    messages.forEach(function (msg) {
+        var dismissed = false;
+        var duration = 10000;
+        var remaining = duration;
+        var start = Date.now();
+        var timer = null;
+
+        function dismiss() {
+            if (dismissed) return;
+            dismissed = true;
+            if (timer) clearTimeout(timer);
+            msg.classList.add('is-dismissing');
+            setTimeout(function () {
+                var container = msg.closest('.admin-messages-inner');
+                msg.remove();
+                if (container && container.querySelectorAll('.admin-message').length === 0) {
+                    var wrapper = container.closest('.admin-messages-wrapper');
+                    if (wrapper) wrapper.remove();
+                }
+            }, 350);
+        }
+
+        var closeBtn = msg.querySelector('.admin-message-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                dismiss();
+            });
+        }
+
+        timer = setTimeout(dismiss, remaining);
+
+        msg.addEventListener('mouseenter', function () {
+            if (dismissed) return;
+            clearTimeout(timer);
+            remaining -= (Date.now() - start);
+            var progress = msg.querySelector('.admin-message-progress');
+            if (progress) progress.style.animationPlayState = 'paused';
+        });
+
+        msg.addEventListener('mouseleave', function () {
+            if (dismissed) return;
+            if (remaining > 0) {
+                start = Date.now();
+                timer = setTimeout(dismiss, remaining);
+                var progress = msg.querySelector('.admin-message-progress');
+                if (progress) progress.style.animationPlayState = 'running';
+            } else {
+                dismiss();
+            }
+        });
+    });
 })();
 </script>
 
