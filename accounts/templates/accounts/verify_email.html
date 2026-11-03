@@ -175,13 +175,7 @@
         <a class="text-link" href="{% url 'signup' %}">Change</a>
     </div>
 
-    {% if messages %}
-        <div class="form-messages" role="alert">
-            {% for message in messages %}
-                <p class="message {{ message.tags }}">{{ message }}</p>
-            {% endfor %}
-        </div>
-    {% endif %}
+   
 
     <form method="POST" id="otpForm" novalidate>
         {% csrf_token %}

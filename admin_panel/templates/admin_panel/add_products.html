@@ -1,0 +1,800 @@
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}Add Product{% endblock %}
+{% block nav_active %}products{% endblock %}
+{% block breadcrumb %}Add Product{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
+<style>
+/* ---------- Local tokens (fall back to the admin base theme) ---------- */
+.product-form-container,
+.crop-modal {
+    --pf-primary: var(--primary, #5b50f0);
+    --pf-primary-dark: var(--primary-dark, #4538d6);
+    --pf-soft: var(--primary-soft, #8b7cff);
+    --pf-accent: var(--accent, #14c8b0);
+    --pf-ink: var(--ink, #0f1224);
+    --pf-muted: var(--muted, #5d6280);
+    --pf-tint: var(--tint, #eef0ff);
+    --pf-tint2: var(--tint-2, #e2e5ff);
+    --pf-line: var(--line, #e7e9f3);
+    --pf-danger: #e5484d;
+    --pf-heading: var(--heading, "Sora", "Plus Jakarta Sans", Arial, sans-serif);
+}
+
+/* ---------- Card ---------- */
+.product-form-container {
+    max-width: 1050px;
+    margin: 6px auto 40px;
+    padding: 36px;
+    border-radius: 22px;
+    background: #fff;
+    border: 1px solid var(--pf-line);
+    box-shadow: 0 1px 2px rgba(20, 24, 60, .04), 0 18px 40px -22px rgba(40, 40, 120, .28);
+    box-sizing: border-box;
+    animation: pfFadeUp .5s ease both;
+}
+.product-form-container * { box-sizing: border-box; }
+
+.product-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 22px;
+}
+.full-width { grid-column: 1 / -1; }
+
+/* ---------- Section headings ---------- */
+.form-section {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-top: 6px;
+}
+.form-section:not(:first-child) {
+    margin-top: 10px;
+    padding-top: 26px;
+    border-top: 1px dashed var(--pf-line);
+}
+.section-num {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--pf-primary) 0%, var(--pf-soft) 100%);
+    color: #fff;
+    font-family: var(--pf-heading);
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 10px 18px -10px rgba(91, 80, 240, .9);
+}
+.form-section h3 {
+    margin: 0;
+    font-family: var(--pf-heading);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -.2px;
+    color: var(--pf-ink);
+}
+.form-section p {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--pf-muted);
+}
+
+/* ---------- Fields ---------- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+.form-group > label {
+    color: var(--pf-muted);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    transition: color .2s ease;
+}
+.form-group:focus-within > label { color: var(--pf-primary); }
+
+.form-group input:not([type="file"]):not([type="checkbox"]),
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    min-height: 50px;
+    padding: 0 16px;
+    border: 1.5px solid var(--pf-line);
+    border-radius: 12px;
+    background: #fafbff;
+    color: var(--pf-ink);
+    font: inherit;
+    font-size: 14.5px;
+    transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.form-group input::placeholder,
+.form-group textarea::placeholder { color: #a6aac2; }
+.form-group input:not([type="file"]):hover,
+.form-group select:hover,
+.form-group textarea:hover { border-color: #d3d6ee; }
+
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 44px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235b50f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+.form-group textarea {
+    min-height: 130px;
+    padding: 14px 16px;
+    line-height: 1.6;
+    resize: vertical;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    background-color: #fff;
+    border-color: var(--pf-primary);
+    box-shadow: 0 0 0 4px rgba(91, 80, 240, .14);
+}
+
+.field-error,
+.image-error {
+    color: #c0282f;
+    font-size: 13px;
+    font-weight: 500;
+}
+.field-error {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: #fff0f1;
+    border: 1px solid #ffd3d6;
+}
+p.field-error { margin: 0 0 14px; }
+.image-error {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #fff0f1;
+    border: 1px solid #ffd3d6;
+    animation: pfShake .45s both;
+}
+.image-error:empty { display: none; }
+
+.form-subtitle,
+.image-help {
+    margin: 0;
+    color: var(--pf-muted);
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
+/* ---------- Images ---------- */
+.product-image-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+}
+.product-image-card,
+.add-image-tile {
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.product-image-card {
+    padding: 8px;
+    border: 1px solid var(--pf-line);
+    background: #fff;
+    box-shadow: 0 10px 24px -18px rgba(40, 40, 120, .4);
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    animation: pfPop .35s cubic-bezier(.2, .8, .2, 1) both;
+}
+.product-image-card:hover {
+    transform: translateY(-3px);
+    border-color: #d9dcff;
+    box-shadow: 0 18px 30px -16px rgba(70, 60, 200, .45);
+}
+.saved-image-frame {
+    width: 100%;
+    height: calc(100% - 36px);
+    overflow: hidden;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--pf-tint) 0%, #f7f8ff 100%);
+}
+.saved-image-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform .35s ease;
+}
+.product-image-card:hover .saved-image-frame img { transform: scale(1.04); }
+
+.new-image-card .saved-image-frame { height: calc(100% - 42px); }
+.new-image-card .image-actions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 7px;
+}
+.image-actions button {
+    border: 0;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+.image-actions button:hover { transform: translateY(-1px); }
+.crop-edit { background: var(--pf-tint); color: var(--pf-primary); }
+.crop-edit:hover { background: var(--pf-tint2); }
+.image-remove { background: #ffe9eb; color: #c0282f; }
+.image-remove:hover { background: #ffd6da; }
+
+.add-image-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 2px dashed #c9ccf5;
+    background: linear-gradient(135deg, #f6f6ff 0%, var(--pf-tint) 100%);
+    color: var(--pf-primary);
+    cursor: pointer;
+    font: inherit;
+    transition: transform .25s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease;
+}
+.add-image-tile:hover {
+    transform: translateY(-3px);
+    border-color: var(--pf-primary);
+    background: var(--pf-tint2);
+    box-shadow: 0 18px 30px -18px rgba(91, 80, 240, .6);
+}
+.add-image-tile:focus-visible { outline: 3px solid rgba(139, 124, 255, .55); outline-offset: 3px; }
+.add-image-plus {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pf-primary) 0%, #7a5cf5 100%);
+    color: #fff;
+    font-size: 30px;
+    line-height: 1;
+    box-shadow: 0 14px 22px -10px rgba(91, 80, 240, .85);
+    transition: transform .3s ease;
+}
+.add-image-tile:hover .add-image-plus { transform: rotate(90deg) scale(1.08); }
+.add-image-label { font-size: 13px; font-weight: 600; }
+
+.image-counter {
+    display: inline-flex;
+    align-self: flex-start;
+    margin: 0;
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: var(--pf-tint);
+    color: var(--pf-primary);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+.image-counter:empty { display: none; }
+
+/* ---------- Actions ---------- */
+.form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 26px;
+    border-top: 1px solid var(--pf-line);
+}
+.form-actions a,
+.form-actions button,
+.crop-buttons button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .25s ease, background .2s ease, filter .2s ease;
+}
+.form-actions a:hover,
+.form-actions button:hover,
+.crop-buttons button:hover { transform: translateY(-2px); }
+.form-actions a:focus-visible,
+.form-actions button:focus-visible,
+.crop-buttons button:focus-visible { outline: 3px solid rgba(139, 124, 255, .55); outline-offset: 2px; }
+
+.btn-secondary,
+.crop-cancel {
+    background: var(--pf-tint);
+    color: var(--pf-primary);
+}
+.btn-secondary:hover,
+.crop-cancel:hover { background: var(--pf-tint2); }
+
+.form-actions .btn-primary,
+.crop-save {
+    background: linear-gradient(135deg, var(--pf-primary) 0%, #7a5cf5 100%);
+    color: #fff;
+    box-shadow: 0 14px 24px -12px rgba(91, 80, 240, .85), inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+.form-actions .btn-primary:hover,
+.crop-save:hover {
+    filter: brightness(1.07);
+    box-shadow: 0 18px 30px -12px rgba(91, 80, 240, .95), inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+.form-actions .btn-primary::after { content: "→"; transition: transform .25s ease; }
+.form-actions .btn-primary:hover::after { transform: translateX(4px); }
+.crop-save:disabled,
+.form-actions .btn-primary:disabled { opacity: .6; cursor: wait; transform: none; }
+
+/* ---------- Crop modal ---------- */
+.crop-modal[hidden] { display: none !important; }
+.crop-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(10, 12, 32, .62);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    animation: pfFade .25s ease both;
+}
+.crop-dialog {
+    width: 100%;
+    max-width: 580px;
+    padding: 28px;
+    border-radius: 24px;
+    background: #fff;
+    border: 1px solid var(--pf-line);
+    box-shadow: 0 40px 80px -30px rgba(10, 12, 40, .7);
+    animation: pfPop .35s cubic-bezier(.2, .8, .2, 1) both;
+}
+.crop-dialog h3 {
+    margin: 0 0 6px;
+    font-family: var(--pf-heading);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -.4px;
+    color: var(--pf-ink);
+}
+.crop-dialog p { margin: 0 0 16px; color: var(--pf-muted); font-size: 13.5px; }
+.crop-image-frame {
+    width: 100%;
+    height: 360px;
+    overflow: hidden;
+    border-radius: 16px;
+    background: #0f1224;
+}
+.crop-image-frame img { display: block; max-width: 100%; }
+.crop-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+/* Cropper.js accent colours */
+.cropper-view-box { outline: 2px solid rgba(139, 124, 255, .9); outline-color: rgba(139, 124, 255, .9); }
+.cropper-line, .cropper-point { background-color: #8b7cff; }
+.cropper-face { background-color: transparent; }
+
+/* ---------- Motion ---------- */
+@keyframes pfFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes pfFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pfPop { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes pfShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
+
+@media (max-width: 700px) {
+    .product-form-container { padding: 22px 16px; border-radius: 18px; }
+    .product-form { grid-template-columns: minmax(0, 1fr); }
+    .full-width, .form-actions { grid-column: 1; }
+    .product-image-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .crop-image-frame { height: 280px; }
+    .crop-dialog { padding: 20px; }
+    .form-actions { flex-direction: column-reverse; }
+    .form-actions a, .form-actions button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .product-form-container, .product-image-card, .crop-modal, .crop-dialog, .image-error { animation: none !important; }
+    .product-image-card, .add-image-tile, .add-image-plus, .saved-image-frame img { transition: none !important; }
+}
+</style>
+
+<header class="page-head">
+    <div>
+        <p class="page-eyebrow">Catalogue</p>
+        <h1 class="page-title">Add New Product</h1>
+        <p class="page-subtitle">Enter the product details and add up to four images.</p>
+    </div>
+</header>
+
+<div class="product-form-container">
+
+    <form method="POST" enctype="multipart/form-data" id="productForm">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <div class="product-form">
+
+            <div class="form-section full-width">
+                <span class="section-num">1</span>
+                <div>
+                    <h3>Basic information</h3>
+                    <p>Name, category and a short description.</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">Product Name</label>
+                {{ form.name }}
+                {% for error in form.name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.category.id_for_label }}">Category</label>
+                {{ form.category }}
+                {% for error in form.category.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+
+            <div class="form-group full-width">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+                {% for error in form.description.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+
+            <div class="form-section full-width">
+                <span class="section-num">2</span>
+                <div>
+                    <h3>Style &amp; pricing</h3>
+                    <p>Colour, occasion and the selling price.</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.color.id_for_label }}">Color</label>
+                {{ form.color }}
+                {% for error in form.color.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.occasion.id_for_label }}">Occasion</label>
+                {{ form.occasion }}
+                {% for error in form.occasion.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.price.id_for_label }}">Price (₹)</label>
+                {{ form.price }}
+                {% for error in form.price.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+
+            <div class="form-section full-width">
+                <span class="section-num">3</span>
+                <div>
+                    <h3>Product images</h3>
+                    <p>Square-cropped photos shown on the storefront.</p>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Product Images</label>
+                <p class="image-help">Click + to select an image. Crop and save it before adding the next. Maximum 4 images, 5 MB each.</p>
+
+                <input type="file" id="singleImagePicker"
+                       accept="image/jpeg,image/png,image/webp" hidden>
+
+                <input type="file" name="images" id="croppedImageFiles"
+                       multiple hidden>
+
+                <div id="productImageGrid" class="product-image-grid"></div>
+                <p id="imageCounter" class="image-counter"></p>
+                <p id="imageError" class="image-error" role="alert"></p>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'admin_panel:products_list' %}" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary" id="submitProduct">Save and Add Sizes</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="cropModal" class="crop-modal" hidden>
+    <div class="crop-dialog">
+        <h3>Crop Product Image</h3>
+        <p>Adjust the image inside the square frame.</p>
+        <div class="crop-image-frame">
+            <img id="cropImage" alt="Image to crop">
+        </div>
+        <div class="crop-buttons">
+            <button type="button" id="cancelCrop" class="crop-cancel">Cancel</button>
+            <button type="button" id="saveCrop" class="crop-save">Save Crop</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<script>
+(() => {
+    const grid = document.getElementById("productImageGrid");
+    const picker = document.getElementById("singleImagePicker");
+    const croppedInput = document.getElementById("croppedImageFiles");
+    const counter = document.getElementById("imageCounter");
+    const error = document.getElementById("imageError");
+    const form = document.getElementById("productForm");
+    const modal = document.getElementById("cropModal");
+    const cropImage = document.getElementById("cropImage");
+    const saveButton = document.getElementById("saveCrop");
+    const cancelButton = document.getElementById("cancelCrop");
+    const submitButton = document.getElementById("submitProduct");
+
+    const MAX = 4;
+    const MAX_SIZE = 5 * 1024 * 1024;
+    const TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+    let images = [];
+    let nextId = 1;
+    let cropper = null;
+    let sourceUrl = null;
+    let activeId = null;
+    let busy = false;
+
+    function showError(message = "") { error.textContent = message; }
+
+    function updateCount() {
+        counter.textContent =
+            `${images.length} of ${MAX} images added. ` +
+            `${images.filter(item => item.file).length} cropped and ready.`;
+    }
+
+    function syncFiles() {
+        const transfer = new DataTransfer();
+        images.forEach(item => {
+            if (item.file) transfer.items.add(item.file);
+        });
+        croppedInput.files = transfer.files;
+        updateCount();
+    }
+
+    function cleanupCropper() {
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        if (sourceUrl) {
+            URL.revokeObjectURL(sourceUrl);
+            sourceUrl = null;
+        }
+    }
+
+    function closeCropper() {
+        cleanupCropper();
+        modal.hidden = true;
+        activeId = null;
+        busy = false;
+        saveButton.disabled = false;
+        saveButton.textContent = "Save Crop";
+    }
+
+    function openCropper(file, id) {
+        cleanupCropper();
+        activeId = id;
+        sourceUrl = URL.createObjectURL(file);
+        modal.hidden = false;
+        saveButton.disabled = false;
+        saveButton.textContent = "Save Crop";
+
+        cropImage.onload = () => {
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: "move",
+                autoCropArea: 0.9,
+                responsive: true,
+                background: false
+            });
+        };
+        cropImage.onerror = () => {
+            showError("Unable to load this image.");
+            closeCropper();
+        };
+        cropImage.src = sourceUrl;
+    }
+
+    function renderGrid() {
+        grid.querySelectorAll(".new-image-card, .add-image-tile")
+            .forEach(element => element.remove());
+
+        images.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "product-image-card new-image-card";
+
+            const frame = document.createElement("div");
+            frame.className = "saved-image-frame";
+
+            const img = document.createElement("img");
+            img.src = item.previewUrl;
+            img.alt = "Cropped product image";
+            frame.appendChild(img);
+
+            const actions = document.createElement("div");
+            actions.className = "image-actions";
+
+            const crop = document.createElement("button");
+            crop.type = "button";
+            crop.className = "crop-edit";
+            crop.textContent = "Crop Again";
+            crop.addEventListener("click", () => openCropper(item.originalFile, item.id));
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "image-remove";
+            remove.textContent = "Remove";
+            remove.addEventListener("click", () => {
+                if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+                images = images.filter(value => value.id !== item.id);
+                syncFiles();
+                renderGrid();
+                showError();
+            });
+
+            actions.append(crop, remove);
+            card.append(frame, actions);
+            grid.appendChild(card);
+        });
+
+        if (images.length < MAX) {
+            const add = document.createElement("button");
+            add.type = "button";
+            add.className = "add-image-tile";
+            add.innerHTML = '<span class="add-image-plus">+</span><span class="add-image-label">Add Image</span>';
+            add.addEventListener("click", () => picker.click());
+            grid.appendChild(add);
+        }
+
+        updateCount();
+    }
+
+    picker.addEventListener("change", () => {
+        showError();
+        const file = picker.files[0];
+        picker.value = "";
+        if (!file) return;
+
+        if (images.length >= MAX) {
+            showError("You can add a maximum of 4 images.");
+            return;
+        }
+        if (!TYPES.includes(file.type)) {
+            showError("Only JPG, PNG and WEBP images are allowed.");
+            return;
+        }
+        if (file.size > MAX_SIZE) {
+            showError("Each image must be smaller than 5 MB.");
+            return;
+        }
+
+        const item = {
+            id: nextId++,
+            originalFile: file,
+            file: null,
+            previewUrl: null
+        };
+        images.push(item);
+        openCropper(file, item.id);
+    });
+
+    saveButton.addEventListener("click", () => {
+        if (!cropper || activeId === null || busy) return;
+        busy = true;
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 1200,
+            height: 1200,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: "high"
+        });
+
+        canvas.toBlob(blob => {
+            if (!blob) {
+                showError("Could not crop the image. Please try again.");
+                busy = false;
+                saveButton.disabled = false;
+                saveButton.textContent = "Save Crop";
+                return;
+            }
+
+            const item = images.find(value => value.id === activeId);
+            if (!item) {
+                closeCropper();
+                return;
+            }
+
+            item.file = new File([blob], `product-image-${item.id}.jpg`, {
+                type: "image/jpeg"
+            });
+
+            if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+            item.previewUrl = URL.createObjectURL(item.file);
+
+            closeCropper();
+            syncFiles();
+            renderGrid();
+            showError();
+        }, "image/jpeg", 0.9);
+    });
+
+    cancelButton.addEventListener("click", () => {
+        if (activeId !== null) {
+            const item = images.find(value => value.id === activeId);
+            if (item && !item.file) {
+                images = images.filter(value => value.id !== activeId);
+            }
+        }
+        closeCropper();
+        syncFiles();
+        renderGrid();
+    });
+
+    form.addEventListener("submit", event => {
+        if (!modal.hidden) {
+            event.preventDefault();
+            showError("Save or cancel the current crop before submitting.");
+            return;
+        }
+        if (images.some(item => !item.file)) {
+            event.preventDefault();
+            showError("Please crop and save every selected image.");
+            return;
+        }
+        if (images.length === 0) {
+            event.preventDefault();
+            showError("Please add at least one product image.");
+            return;
+        }
+        syncFiles();
+        submitButton.disabled = true;
+    });
+
+    renderGrid();
+})();
+</script>
+
+{% endblock %}

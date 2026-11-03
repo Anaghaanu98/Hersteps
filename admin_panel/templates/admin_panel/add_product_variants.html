@@ -1,0 +1,345 @@
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}Manage Product Sizes{% endblock %}
+{% block nav_active %}products{% endblock %}
+{% block breadcrumb %}Manage Product Sizes{% endblock %}
+
+{% block content %}
+<style>
+/* ---------- Local tokens (fall back to the admin base theme) ---------- */
+.variants-page {
+    --pf-primary: var(--primary, #5b50f0);
+    --pf-primary-dark: var(--primary-dark, #4538d6);
+    --pf-soft: var(--primary-soft, #8b7cff);
+    --pf-accent: var(--accent, #14c8b0);
+    --pf-ink: var(--ink, #0f1224);
+    --pf-muted: var(--muted, #5d6280);
+    --pf-soft-text: var(--soft, #9296b0);
+    --pf-tint: var(--tint, #eef0ff);
+    --pf-tint2: var(--tint-2, #e2e5ff);
+    --pf-line: var(--line, #e7e9f3);
+    --pf-heading: var(--heading, "Sora", "Plus Jakarta Sans", Arial, sans-serif);
+    max-width: 860px;
+    margin: 0 auto 40px;
+}
+
+/* ---------- Header ---------- */
+.variants-page .page-header { margin: 4px 0 26px; }
+.variants-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--pf-tint);
+    color: var(--pf-primary);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.variants-eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--pf-accent);
+    box-shadow: 0 0 0 3px rgba(20, 200, 176, .2);
+}
+.variants-page .page-header h2 {
+    margin: 0;
+    font-family: var(--pf-heading);
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -.8px;
+    color: var(--pf-ink);
+}
+.variants-page .page-header p {
+    margin: 8px 0 0;
+    color: var(--pf-muted);
+    font-size: 15.5px;
+    line-height: 1.6;
+}
+
+/* ---------- Product info ---------- */
+.product-info {
+    position: relative;
+    margin-bottom: 22px;
+    padding: 20px 22px 20px 72px;
+    border: 1px solid var(--pf-line);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(20, 24, 60, .04), 0 14px 34px -22px rgba(40, 40, 120, .25);
+    animation: pfFadeUp .45s ease both;
+}
+.product-info::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    width: 38px;
+    height: 38px;
+    transform: translateY(-50%);
+    border-radius: 12px;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7.5 4.27 9 5.15'/%3E%3Cpath d='M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z'/%3E%3Cpath d='m3.3 7 8.7 5 8.7-5'/%3E%3Cpath d='M12 22V12'/%3E%3C/svg%3E") center / 20px no-repeat,
+        linear-gradient(135deg, var(--pf-primary) 0%, var(--pf-soft) 100%);
+    box-shadow: 0 10px 18px -10px rgba(91, 80, 240, .9);
+}
+.product-info strong {
+    color: var(--pf-ink);
+    font-family: var(--pf-heading);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -.2px;
+}
+.product-info p {
+    margin: 6px 0 0;
+    color: var(--pf-soft-text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11.5px;
+    overflow-wrap: anywhere;
+}
+
+
+
+/* ---------- Variant card ---------- */
+.variant-card {
+    padding: 28px;
+    border: 1px solid var(--pf-line);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(20, 24, 60, .04), 0 18px 40px -22px rgba(40, 40, 120, .28);
+    animation: pfFadeUp .55s .05s ease both;
+}
+
+.variant-heading,
+.size-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 180px;
+    align-items: center;
+    gap: 18px;
+}
+.variant-heading {
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: var(--pf-tint);
+    color: var(--pf-muted);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.size-row {
+    padding: 14px 18px;
+    border-bottom: 1px solid #eff0f8;
+    border-radius: 12px;
+    transition: background .2s ease;
+}
+.size-row:hover { background: #f9f9ff; }
+
+.size-option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--pf-ink);
+    font-family: var(--pf-heading);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.size-option input {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--pf-primary);
+    cursor: pointer;
+}
+.size-option input:focus-visible { outline: 3px solid rgba(139, 124, 255, .55); outline-offset: 2px; }
+.size-option input:checked + span { color: var(--pf-primary); }
+
+.stock-input {
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    border: 1.5px solid var(--pf-line);
+    border-radius: 12px;
+    background: #fafbff;
+    color: var(--pf-ink);
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.stock-input::placeholder { color: #a6aac2; font-weight: 400; }
+.stock-input:hover:not(:disabled) { border-color: #d3d6ee; }
+.stock-input:focus {
+    outline: none;
+    background: #fff;
+    border-color: var(--pf-primary);
+    box-shadow: 0 0 0 4px rgba(91, 80, 240, .14);
+}
+.stock-input:disabled {
+    background: #f3f4f9;
+    border-style: dashed;
+    color: #b3b6cc;
+    cursor: not-allowed;
+}
+
+/* ---------- Actions ---------- */
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 26px;
+    padding-top: 24px;
+    border-top: 1px solid var(--pf-line);
+}
+.save-btn,
+.cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 26px;
+    border: 0;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .25s ease, background .2s ease, filter .2s ease;
+}
+.save-btn:hover,
+.cancel-btn:hover { transform: translateY(-2px); }
+.save-btn:focus-visible,
+.cancel-btn:focus-visible { outline: 3px solid rgba(139, 124, 255, .55); outline-offset: 2px; }
+
+.save-btn {
+    background: linear-gradient(135deg, var(--pf-primary) 0%, #7a5cf5 100%);
+    color: #fff;
+    box-shadow: 0 14px 24px -12px rgba(91, 80, 240, .85), inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+.save-btn:hover {
+    filter: brightness(1.07);
+    box-shadow: 0 18px 30px -12px rgba(91, 80, 240, .95), inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+.cancel-btn {
+    background: var(--pf-tint);
+    color: var(--pf-primary);
+}
+.cancel-btn:hover { background: var(--pf-tint2); }
+
+@keyframes pfFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 600px) {
+    .variant-card { padding: 18px 14px; border-radius: 18px; }
+    .variants-page .page-header h2 { font-size: 30px; }
+    .variant-heading,
+    .size-row {
+        grid-template-columns: minmax(0, 1fr) 110px;
+        gap: 10px;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    .product-info { padding: 18px 16px 18px 66px; }
+    .form-actions { flex-direction: column; align-items: stretch; }
+    .save-btn,
+    .cancel-btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .product-info, .variant-card, .variants-page .message { animation: none !important; }
+}
+</style>
+
+<div class="variants-page">
+    <div class="page-header">
+        <p class="variants-eyebrow">Catalogue</p>
+        <h2>Manage Product Sizes</h2>
+        <p>Select footwear sizes and enter the available stock for each size.</p>
+    </div>
+
+    <div class="product-info">
+        <strong>{{ product.name }}</strong>
+        <p>Product ID: {{ product.uuid }}</p>
+    </div>
+
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="variant-card">
+            <div class="variant-heading">
+                <span>Size</span>
+                <span>Stock Quantity</span>
+            </div>
+
+            {% for size in size_rows %}
+                <div class="size-row">
+                    <label class="size-option">
+                        <input
+                            type="checkbox"
+                            name="sizes"
+                            value="{{ size.value }}"
+                            class="size-checkbox"
+                            data-stock-id="stock_{{ size.value }}"
+                            {% if size.value in existing_sizes %}checked{% endif %}
+                        >
+                        <span>{{ size.label }}</span>
+                    </label>
+
+                    <input
+                        type="number"
+                        id="stock_{{ size.value }}"
+                        name="stock_{{ size.value }}"
+                        class="stock-input"
+                        min="0"
+                        step="1"
+                        value="{{ size.stock }}"
+                        placeholder="Enter stock"
+                        {% if size.value not in existing_sizes %}disabled{% endif %}
+                        required
+                    >
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="save-btn">
+                    Save Sizes and Stock
+                </button>
+
+                <a
+                    href="{% url 'admin_panel:products_list' %}"
+                    class="cancel-btn"
+                >
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.querySelectorAll(".size-checkbox").forEach(function (checkbox) {
+    checkbox.addEventListener("change", function () {
+        const stockInput = document.getElementById(
+            this.dataset.stockId
+        );
+
+        stockInput.disabled = !this.checked;
+
+        if (this.checked) {
+            stockInput.focus();
+        }
+    });
+});
+</script>
+{% endblock %}

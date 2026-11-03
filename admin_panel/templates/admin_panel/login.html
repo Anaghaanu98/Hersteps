@@ -160,20 +160,7 @@
         }
         .login-subtitle { margin: 12px 0 0; color: var(--muted); font-size: 14.5px; line-height: 1.6; animation: fadeUp .7s .41s both; }
 
-        /* ================= Messages ================= */
-        .login-messages { margin-bottom: 18px; }
-        .login-message {
-            margin: 0 0 8px;
-            padding: 12px 16px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 107, 118, .35);
-            border-left: 4px solid var(--danger);
-            background: rgba(255, 107, 118, .1);
-            color: #ffc2c7;
-            font-size: 13.5px; font-weight: 500;
-            animation: shake .5s .1s both, fadeUp .4s both;
-        }
-
+        
         /* ================= Form ================= */
         .admin-login-form { display: grid; gap: 20px; }
 
@@ -356,13 +343,7 @@
             </p>
         </div>
 
-        {% if messages %}
-        <div class="login-messages" aria-live="polite">
-            {% for message in messages %}
-            <p class="login-message">{{ message }}</p>
-            {% endfor %}
-        </div>
-        {% endif %}
+        
 
         <form method="post" class="admin-login-form" id="loginForm">
             {% csrf_token %}

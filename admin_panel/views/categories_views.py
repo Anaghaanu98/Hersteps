@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from admin_panel.models import Category
 from admin_panel.forms import CategoryForm
-
+from django.core.paginator import Paginator
 
 
 def admin_required(view_func):
@@ -22,8 +22,13 @@ def admin_required(view_func):
 def category_list(request):
     categories = Category.objects.all().order_by("-created_at", "-pk")
 
+    paginator = Paginator(categories, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        "categories": categories,
+        "categories": page_obj,
+        "page_obj": page_obj,
     }
 
     return render(
@@ -31,7 +36,6 @@ def category_list(request):
         "admin_panel/category_list.html",
         context,
     )
-
 @admin_required
 def category_add(request):
 
