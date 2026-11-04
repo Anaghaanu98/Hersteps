@@ -1,113 +1,771 @@
-{% extends "accounts/base.html" %}
-{% load static %}
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}">
-{% endblock %}
-{% block title %}HerSteps | Footwear for Women{% endblock %}
 
-{# Lets the home page use the full width instead of the centered auth layout #}
-{% block page_class %}page--full{% endblock %}
+{% extends "accounts/base.html" %}
+
+{% block title %}HerSteps | Step Into Your Style{% endblock %}
 
 {% block content %}
+
+<style>
+    /* =========================
+       HOMEPAGE
+    ========================= */
+
+    .page.page--full {
+        width: 100%;
+    }
+
+    .home-page {
+        width: 100%;
+        color: var(--text);
+        font-family: var(--font-sans);
+    }
+
+    .home-page *,
+    .home-page *::before,
+    .home-page *::after {
+        box-sizing: border-box;
+    }
+
+    .home-page a {
+        text-decoration: none;
+    }
+
+    /* HERO BANNER */
+
+    .home-hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        align-items: center;
+        gap: 55px;
+        max-width: 1320px;
+        min-height: 560px;
+        margin: 0 auto;
+        padding: 60px 40px 75px;
+    }
+
+    .hero-content {
+        animation: homeFadeUp 0.7s ease both;
+    }
+
+    .hero-eyebrow,
+    .home-page .section-eyebrow {
+        margin: 0 0 15px;
+        color: var(--brown);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 2.3px;
+        line-height: 1.8;
+    }
+
+    .home-page .hero-title {
+        margin: 0;
+        color: var(--heading);
+        font-family: var(--font-serif);
+        font-size: clamp(56px, 6.2vw, 84px);
+        font-weight: 500;
+        line-height: 0.98;
+        letter-spacing: -1.5px;
+        text-align: left;
+    }
+
+    .hero-title span {
+        color: var(--brown);
+        font-style: italic;
+    }
+
+    .hero-description {
+        max-width: 390px;
+        margin: 24px 0 30px;
+        color: var(--body-soft);
+        font-size: 14px;
+        line-height: 1.9;
+    }
+
+    .home-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        min-height: 52px;
+        padding: 0 24px;
+        border: 1px solid var(--brown);
+        border-radius: 3px;
+        background: var(--brown);
+        color: #fff;
+        font-family: var(--font-sans);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.1px;
+        transition: background 0.25s ease, transform 0.25s ease;
+    }
+
+    .home-button:hover {
+        background: var(--brown-dark);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .home-button span {
+        font-size: 18px;
+        transition: transform 0.25s ease;
+    }
+
+    .home-button:hover span {
+        transform: translateX(4px);
+    }
+
+    .hero-image {
+        position: relative;
+        height: 430px;
+        overflow: hidden;
+        background: #f1dfd1;
+    }
+
+    .hero-image img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .hero-placeholder {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 20px;
+        background: linear-gradient(135deg, #f7e8dd, #e8cdbb);
+        color: var(--brown);
+        text-align: center;
+    }
+
+    .hero-placeholder strong {
+        font-family: var(--font-serif);
+        font-size: 28px;
+        font-weight: 500;
+        letter-spacing: 2px;
+    }
+
+    .hero-placeholder small {
+        color: var(--body-soft);
+        font-size: 12px;
+    }
+
+    .hero-caption {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        padding: 13px 20px;
+        background: rgba(255, 248, 244, 0.94);
+        color: var(--text);
+        font-family: var(--font-serif);
+        font-size: 17px;
+        font-style: italic;
+    }
+
+    .hero-index {
+        position: absolute;
+        bottom: 27px;
+        left: 40px;
+        color: #c9a995;
+        font-family: var(--font-serif);
+        font-size: 14px;
+    }
+
+    /* GENERAL SECTIONS */
+
+    .home-section {
+        width: 100%;
+        padding: 76px 40px 82px;
+    }
+
+    .arrivals-section {
+        background: #fffdfb;
+    }
+
+    .offers-section {
+        background: var(--peach);
+    }
+
+    .section-inner {
+        max-width: 1240px;
+        margin: 0 auto;
+    }
+
+    .section-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .home-page .section-eyebrow {
+        margin-bottom: 8px;
+    }
+
+    .home-page .section-title {
+        margin: 0;
+        color: var(--heading);
+        font-family: var(--font-serif);
+        font-size: clamp(35px, 4vw, 48px);
+        font-weight: 500;
+        line-height: 1.1;
+        text-align: left;
+    }
+
+    .section-description {
+        margin: 10px 0 0;
+        color: var(--body-soft);
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    .section-link {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 7px;
+        border-bottom: 1px solid #c9a58e;
+        color: var(--brown);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .section-link span {
+        font-size: 17px;
+        transition: transform 0.2s ease;
+    }
+
+    .section-link:hover {
+        color: var(--brown-dark);
+    }
+
+    .section-link:hover span {
+        transform: translateX(4px);
+    }
+
+    /* PRODUCT GRID */
+
+    .home-product-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 28px 20px;
+    }
+
+    .home-product-card {
+        min-width: 0;
+    }
+
+    .home-product-image {
+        position: relative;
+        aspect-ratio: 4 / 4.7;
+        overflow: hidden;
+        background: #f5eae2;
+    }
+
+    .home-product-image img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.45s ease;
+    }
+
+    .home-product-card:hover .home-product-image img {
+        transform: scale(1.045);
+    }
+
+    .home-product-image-placeholder {
+        display: grid;
+        width: 100%;
+        height: 100%;
+        place-items: center;
+        color: #b98d73;
+        font-family: var(--font-serif);
+        font-size: 23px;
+        letter-spacing: 2px;
+    }
+
+    .new-tag {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 7px 10px;
+        background: rgba(255, 248, 244, 0.95);
+        color: var(--brown);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+    }
+
+    .home-product-info {
+        padding: 14px 2px 0;
+    }
+
+    .home-product-name {
+        margin: 0;
+        color: var(--heading);
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.6;
+        text-align: left;
+    }
+
+    .home-product-category {
+        margin: 5px 0 8px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    .home-product-price {
+        margin: 0;
+        color: var(--brown);
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .home-product-card > a {
+        display: block;
+        color: inherit;
+    }
+
+    /* VIEW ALL BUTTON */
+
+    .home-view-all {
+        display: flex;
+        justify-content: center;
+        margin-top: 42px;
+    }
+
+    .home-outline-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 28px;
+        border: 1px solid var(--brown);
+        color: var(--brown);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .home-outline-button:hover {
+        background: var(--brown);
+        color: #fff;
+    }
+
+    /* EMPTY PRODUCTS */
+
+    .home-empty-products {
+        padding: 55px 20px;
+        border: 1px solid var(--border);
+        text-align: center;
+    }
+
+    .home-empty-products h3,
+    .home-offers-empty h3 {
+        margin: 0;
+        color: var(--heading);
+        font-family: var(--font-serif);
+        font-size: 30px;
+        font-weight: 500;
+    }
+
+    .home-empty-products p,
+    .home-offers-empty p {
+        color: var(--body-soft);
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    /* OFFERS GRID / PLACEHOLDER */
+
+    .home-offers-empty {
+        display: grid;
+        min-height: 270px;
+        padding: 35px 20px;
+        place-items: center;
+        border: 1px solid rgba(153, 66, 10, 0.14);
+        background: rgba(255, 255, 255, 0.45);
+        text-align: center;
+    }
+
+    .offers-content {
+        max-width: 470px;
+    }
+
+    .offers-decoration {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--orange);
+        font-size: 28px;
+    }
+
+    .home-offers-empty .section-eyebrow {
+        margin-bottom: 8px;
+    }
+
+    .home-offers-empty p {
+        max-width: 390px;
+        margin: 12px auto 22px;
+    }
+
+    .home-offers-empty .home-button {
+        min-height: 46px;
+    }
+
+    /* ANIMATION */
+
+    @keyframes homeFadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* TABLET */
+
+    @media (max-width: 1000px) {
+        .home-hero {
+            gap: 30px;
+            min-height: 480px;
+            padding: 50px 28px 65px;
+        }
+
+        .home-page .hero-title {
+            font-size: clamp(48px, 6vw, 68px);
+        }
+
+        .hero-image {
+            height: 370px;
+        }
+
+        .home-section {
+            padding: 64px 28px 72px;
+        }
+
+        .home-product-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px 16px;
+        }
+
+        .hero-index {
+            left: 28px;
+        }
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 700px) {
+        .home-hero {
+            grid-template-columns: 1fr;
+            gap: 28px;
+            min-height: 0;
+            padding: 42px 20px 55px;
+        }
+
+        .home-page .hero-title {
+            font-size: clamp(52px, 12vw, 72px);
+        }
+
+        .hero-description {
+            margin: 18px 0 24px;
+        }
+
+        .hero-image {
+            height: 340px;
+        }
+
+        .hero-index {
+            bottom: 22px;
+            left: 20px;
+        }
+
+        .home-section {
+            padding: 52px 20px 60px;
+        }
+
+        .section-heading {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .home-page .section-title {
+            font-size: 38px;
+        }
+
+        .home-product-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 26px 13px;
+        }
+
+        .home-product-info {
+            padding-top: 11px;
+        }
+
+        .home-product-name {
+            font-size: 12px;
+        }
+
+        .home-offers-empty {
+            min-height: 250px;
+            padding: 28px 16px;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .hero-image {
+            height: 280px;
+        }
+
+        .new-tag {
+            top: 8px;
+            left: 8px;
+            padding: 6px 7px;
+            font-size: 8px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero-content {
+            animation: none;
+        }
+
+        .home-product-image img,
+        .home-button,
+        .section-link span {
+            transition: none;
+        }
+    }
+</style>
+
 <div class="home-page">
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-copy">
-            <p class="eyebrow">NEW SEASON COLLECTION</p>
-            <h1>Walk in Timeless Elegance</h1>
+    <!-- HERO BANNER -->
+    <section class="home-hero">
+        <div class="hero-content">
+            <p class="hero-eyebrow">HERSTEPS · FOOTWEAR FOR WOMEN</p>
+
+            <h1 class="hero-title">
+                Every Step,<br>
+                <span>Your Style.</span>
+            </h1>
+
             <p class="hero-description">
-                Thoughtfully sculpted women’s footwear, crafted for
-                effortless grace and comfort.
+                Discover footwear that brings comfort, confidence
+                and a little elegance to every step.
             </p>
-            <a href="#categories" class="primary-button">
-                EXPLORE COLLECTION <span>→</span>
+
+            <a href="{% url 'shop' %}" class="home-button">
+                EXPLORE COLLECTION
+                <span aria-hidden="true">→</span>
             </a>
         </div>
 
         <div class="hero-image">
-            <img
-                src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1200&q=85"
-                alt="Elegant women's footwear collection"
-            >
+            {% if hero_banner_url %}
+                <img
+                    src="{{ hero_banner_url }}"
+                    alt="HerSteps women's footwear collection"
+                >
+            {% else %}
+                <div class="hero-placeholder">
+                    <strong>HERSTEPS</strong>
+                    <small>Your campaign banner will appear here.</small>
+                </div>
+            {% endif %}
+
+            <div class="hero-caption">Made for every moment</div>
+        </div>
+
+        <div class="hero-index" aria-hidden="true">01 / HERSTEPS</div>
+    </section>
+
+
+    <!-- LATEST PRODUCTS -->
+    <section class="home-section arrivals-section" id="new-arrivals">
+        <div class="section-inner">
+
+            <div class="section-heading">
+                <div>
+                    <p class="section-eyebrow">FRESH FROM HERSTEPS</p>
+                    <h2 class="section-title">Our Latest Styles</h2>
+                    <p class="section-description">
+                        Find your next favourite pair.
+                    </p>
+                </div>
+
+                <a href="{% url 'shop' %}" class="section-link">
+                    SHOP ALL <span aria-hidden="true">→</span>
+                </a>
+            </div>
+
+            {% if products %}
+                <div class="home-product-grid">
+                    {% for product in products %}
+                        <article class="home-product-card">
+                            <a href="{% url 'shop' %}"
+                               aria-label="Shop {{ product.name }}">
+
+                                <div class="home-product-image">
+                                    {% with product.images.all|first as product_image %}
+                                        {% if product_image %}
+                                            <img
+                                                src="{{ product_image.image.url }}"
+                                                alt="{{ product.name }}"
+                                                loading="lazy"
+                                            >
+                                        {% else %}
+                                            <div class="home-product-image-placeholder">
+                                                HERSTEPS
+                                            </div>
+                                        {% endif %}
+                                    {% endwith %}
+
+                                    <span class="new-tag">NEW ARRIVAL</span>
+                                </div>
+                            </a>
+
+                            <div class="home-product-info">
+                                <h3 class="home-product-name">
+                                    {{ product.name }}
+                                </h3>
+
+                                <p class="home-product-category">
+                                    {{ product.category.name }}
+                                </p>
+
+                                <p class="home-product-price">
+                                    ₹{{ product.price|floatformat:2 }}
+                                </p>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+
+                <div class="home-view-all">
+                    <a href="{% url 'shop' %}" class="home-outline-button">
+                        VIEW ALL PRODUCTS
+                    </a>
+                </div>
+
+            {% else %}
+                <div class="home-empty-products">
+                    <h3>New styles are on their way.</h3>
+                    <p>Check back soon to discover our collection.</p>
+
+                    <a href="{% url 'shop' %}" class="section-link">
+                        EXPLORE SHOP <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            {% endif %}
+
         </div>
     </section>
 
-    <!-- CATEGORIES -->
-    <section class="category-section" id="categories">
-        <p class="eyebrow">CURATED SILHOUETTES</p>
-        <h2>Shop by Category</h2>
 
-        <div class="category-grid">
-            <a href="#sale" class="category-card">
-                <img src="https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?auto=format&fit=crop&w=500&q=85" alt="Women's heels">
-                <span>Heels <b>→</b></span>
-            </a>
-            <a href="#sale" class="category-card">
-                <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=500&q=85" alt="Women's flats">
-                <span>Flats <b>→</b></span>
-            </a>
-            <a href="#sale" class="category-card">
-                <img src="https://images.unsplash.com/photo-1603487742131-4160ec999306?auto=format&fit=crop&w=500&q=85" alt="Women's sandals">
-                <span>Sandals <b>→</b></span>
-            </a>
-            <a href="#sale" class="category-card">
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=500&q=85" alt="Women's sneakers">
-                <span>Sneakers <b>→</b></span>
-            </a>
-            <a href="#sale" class="category-card">
-                <img src="https://images.unsplash.com/photo-1562273138-f46be4ebdf33?auto=format&fit=crop&w=500&q=85" alt="Women's wedges">
-                <span>Wedges <b>→</b></span>
-            </a>
-        </div>
-    </section>
+    <!-- OFFERS -->
+    <section class="home-section offers-section" id="sale">
+        <div class="section-inner">
 
-    <!-- SALE PRODUCTS -->
-    <section class="sale-section" id="sale">
-        <p class="sale-label">◇ SEASONAL ARCHIVE</p>
-        <h2>Curated Archive Sale</h2>
+            <div class="section-heading">
+                <div>
+                    <p class="section-eyebrow">A LITTLE SOMETHING SPECIAL</p>
+                    <h2 class="section-title">Offers You'll Love</h2>
+                    <p class="section-description">
+                        Discover special prices on selected styles.
+                    </p>
+                </div>
 
-        <div class="product-grid">
-            <article class="product-card">
-                <div class="product-image">
-                    <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=85" alt="Elena sculpted wedge">
-                    <span class="offer-badge">SAVE 30%</span>
-                </div>
-                <p class="product-color">COLOR: SAND BEIGE</p>
-                <h3>Elena Sculpted Wedge</h3>
-                <div class="product-bottom">
-                    <p class="price">₹3,499 <del>₹4,999</del></p>
-                    <a href="{% url 'login' %}" class="claim-button">CLAIM SIZE</a>
-                </div>
-            </article>
+                <a href="{% url 'shop' %}" class="section-link">
+                    EXPLORE SHOP <span aria-hidden="true">→</span>
+                </a>
+            </div>
 
-            <article class="product-card">
-                <div class="product-image">
-                    <img src="https://images.unsplash.com/photo-1531310197839-ccf54634509e?auto=format&fit=crop&w=800&q=85" alt="Serena knot mule">
-                    <span class="offer-badge">LIMITED OFFER</span>
-                </div>
-                <p class="product-color">COLOR: FOREST GREEN</p>
-                <h3>Serena Knot Mule</h3>
-                <div class="product-bottom">
-                    <p class="price">₹2,999 <del>₹4,499</del></p>
-                    <a href="{% url 'login' %}" class="claim-button">CLAIM SIZE</a>
-                </div>
-            </article>
+            {% if offer_products %}
+                <div class="home-product-grid">
+                    {% for product in offer_products %}
+                        <article class="home-product-card">
+                            <a href="{% url 'shop' %}"
+                               aria-label="Shop {{ product.name }}">
 
-            <article class="product-card">
-                <div class="product-image">
-                    <img src="https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?auto=format&fit=crop&w=800&q=85" alt="Camille ankle strap flat">
-                    <span class="offer-badge">SAVE 30%</span>
+                                <div class="home-product-image">
+                                    {% with product.images.all|first as product_image %}
+                                        {% if product_image %}
+                                            <img
+                                                src="{{ product_image.image.url }}"
+                                                alt="{{ product.name }}"
+                                                loading="lazy"
+                                            >
+                                        {% else %}
+                                            <div class="home-product-image-placeholder">
+                                                HERSTEPS
+                                            </div>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </a>
+
+                            <div class="home-product-info">
+                                <h3 class="home-product-name">
+                                    {{ product.name }}
+                                </h3>
+
+                                <p class="home-product-category">
+                                    {{ product.category.name }}
+                                </p>
+
+                                <p class="home-product-price">
+                                    ₹{{ product.price|floatformat:2 }}
+                                </p>
+                            </div>
+                        </article>
+                    {% endfor %}
                 </div>
-                <p class="product-color">COLOR: BLUSH NUDE</p>
-                <h3>Camille Ankle-Strap Flat</h3>
-                <div class="product-bottom">
-                    <p class="price">₹2,699 <del>₹3,899</del></p>
-                    <a href="{% url 'login' %}" class="claim-button">CLAIM SIZE</a>
+
+            {% else %}
+                <div class="home-offers-empty">
+                    <div class="offers-content">
+                        <span class="offers-decoration" aria-hidden="true">✳</span>
+
+                        <p class="section-eyebrow">COMING SOON</p>
+
+                        <h3>Something special is on its way.</h3>
+
+                        <p>
+                            Our offers collection will appear here when
+                            special prices become available.
+                        </p>
+
+                        <a href="{% url 'shop' %}" class="home-button">
+                            EXPLORE ALL STYLES
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
                 </div>
-            </article>
+            {% endif %}
+
         </div>
     </section>
 
 </div>
+
 {% endblock %}

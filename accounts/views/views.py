@@ -18,8 +18,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from .forms import SignupForm
-from .models import OTPVerification
+from ..forms import SignupForm
+from ..models import OTPVerification
 import logging
 logger=logging.getLogger(__name__)
 User = get_user_model()
@@ -599,11 +599,3 @@ def reset_password_view(request):
         return redirect("login")
 
     return render(request, "accounts/reset_password.html")
-def home_view(request):
-    if request.user.is_authenticated:
-     if request.user.is_staff or request.user.is_superuser:
-        return render(request, "admin_panel/dashboard.html")
-     else:
-        return render(request, "accounts/home.html")
-# Create your views here.
-    return render(request, "accounts/home.html")
