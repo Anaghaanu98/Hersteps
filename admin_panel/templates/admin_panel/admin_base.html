@@ -763,7 +763,13 @@
                         <svg class="icon" aria-hidden="true"><use href="#i-analytics"/></svg><span>Sales &amp; Revenue</span>
                     </a>
                 </div>
-
+                <a class="nav-link" data-nav="banners"
+                    href="{% url 'admin_panel:banner_list' %}">
+                        <svg class="icon" aria-hidden="true">
+                            <use href="#i-eye"/>
+                        </svg>
+                        <span>Banners</span>
+                    </a>
                 <div class="nav-group">
                     <p class="nav-label">Settings</p>
                     <a class="nav-link" data-nav="settings" href="{{ u_settings|default:'#' }}">

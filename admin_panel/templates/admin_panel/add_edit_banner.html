@@ -1,0 +1,115 @@
+
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}
+    {% if banner %}Edit Banner{% else %}Add Banner{% endif %}
+{% endblock %}
+
+{% block nav_active %}banners{% endblock %}
+{% block breadcrumb %}
+    {% if banner %}Edit Banner{% else %}Add Banner{% endif %}
+{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div>
+        <p class="page-eyebrow">Catalogue</p>
+
+        <h1 class="page-title">
+            {% if banner %}Edit Banner{% else %}Add Banner{% endif %}
+        </h1>
+
+        <p class="page-subtitle">
+            Enter the banner details below.
+        </p>
+    </div>
+</header>
+
+<section class="card">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div style="max-width: 650px;">
+            <div style="margin-bottom: 24px;">
+                <label for="name" class="form-label">Banner Name</label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    class="form-input"
+                    value="{{ banner.name|default:'' }}"
+                    placeholder="Enter banner name"
+                    maxlength="150"
+                    pattern="[A-Za-z]+( [A-Za-z]+)*"
+                    title="Use English letters with single spaces between words."
+                    required
+                >
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label for="image" class="form-label">Banner Image</label>
+
+                <input
+                    type="file"
+                    id="image"
+                    name="image"
+                    class="form-input"
+                    accept="image/*"
+                    {% if not banner %}required{% endif %}
+                >
+
+                {% if banner.image %}
+                    <div style="margin-top: 16px;">
+                        <p class="form-label">Current Image</p>
+                        <img
+                            src="{{ banner.image.url }}"
+                            alt="{{ banner.name }}"
+                            style="max-width: 320px; width: 100%;
+                                   max-height: 180px; object-fit: contain;
+                                   border-radius: 10px;"
+                        >
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 28px;">
+                <label for="is_active" class="form-label">Status</label>
+
+                <select
+                    id="is_active"
+                    name="is_active"
+                    class="form-input"
+                >
+                    <option value="True"
+                        {% if not banner or banner.is_active %}
+                            selected
+                        {% endif %}
+                    >
+                        Active
+                    </option>
+
+                    <option value="False"
+                        {% if banner and not banner.is_active %}
+                            selected
+                        {% endif %}
+                    >
+                        Inactive
+                    </option>
+                </select>
+            </div>
+
+            <div class="page-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if banner %}Save Changes{% else %}Add Banner{% endif %}
+                </button>
+
+                <a href="{% url 'admin_panel:banner_list' %}"
+                   class="btn btn-ghost">
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</section>
+{% endblock %}

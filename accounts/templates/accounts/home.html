@@ -1,23 +1,24 @@
-
 {% extends "accounts/base.html" %}
 
 {% block title %}HerSteps | Step Into Your Style{% endblock %}
 
+{# Full-width page so the banner can fill the whole screen width #}
+{% block page_class %}page--full{% endblock %}
+
 {% block content %}
 
-<style>
-    /* =========================
-       HOMEPAGE
-    ========================= */
+<script>document.documentElement.classList.add("js");</script>
 
-    .page.page--full {
-        width: 100%;
-    }
+<style>
+    /* =====================================================
+       HOMEPAGE  (colour tokens come from base.html)
+       ===================================================== */
 
     .home-page {
         width: 100%;
         color: var(--text);
         font-family: var(--font-sans);
+        overflow-x: clip;
     }
 
     .home-page *,
@@ -30,158 +31,397 @@
         text-decoration: none;
     }
 
-    /* HERO BANNER */
+    /* ---------- scroll reveal ---------- */
+
+    .js .reveal {
+        opacity: 0;
+        transform: translateY(28px);
+        transition:
+            opacity .8s cubic-bezier(.2, .7, .2, 1),
+            transform .8s cubic-bezier(.2, .7, .2, 1);
+        transition-delay: calc(var(--i, 0) * 80ms);
+    }
+
+    .js .reveal.is-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    /* =====================================================
+       HERO  (banner fills the page, text sits on top of it)
+       ===================================================== */
 
     .home-hero {
         position: relative;
-        display: grid;
-        grid-template-columns: 0.9fr 1.1fr;
+        display: flex;
         align-items: center;
-        gap: 55px;
-        max-width: 1320px;
-        min-height: 560px;
-        margin: 0 auto;
-        padding: 60px 40px 75px;
-    }
-
-    .hero-content {
-        animation: homeFadeUp 0.7s ease both;
-    }
-
-    .hero-eyebrow,
-    .home-page .section-eyebrow {
-        margin: 0 0 15px;
-        color: var(--brown);
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 2.3px;
-        line-height: 1.8;
-    }
-
-    .home-page .hero-title {
-        margin: 0;
-        color: var(--heading);
-        font-family: var(--font-serif);
-        font-size: clamp(56px, 6.2vw, 84px);
-        font-weight: 500;
-        line-height: 0.98;
-        letter-spacing: -1.5px;
-        text-align: left;
-    }
-
-    .hero-title span {
-        color: var(--brown);
-        font-style: italic;
-    }
-
-    .hero-description {
-        max-width: 390px;
-        margin: 24px 0 30px;
-        color: var(--body-soft);
-        font-size: 14px;
-        line-height: 1.9;
-    }
-
-    .home-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 22px;
-        min-height: 52px;
-        padding: 0 24px;
-        border: 1px solid var(--brown);
-        border-radius: 3px;
-        background: var(--brown);
-        color: #fff;
-        font-family: var(--font-sans);
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 1.1px;
-        transition: background 0.25s ease, transform 0.25s ease;
-    }
-
-    .home-button:hover {
-        background: var(--brown-dark);
-        color: #fff;
-        transform: translateY(-2px);
-    }
-
-    .home-button span {
-        font-size: 18px;
-        transition: transform 0.25s ease;
-    }
-
-    .home-button:hover span {
-        transform: translateX(4px);
-    }
-
-    .hero-image {
-        position: relative;
-        height: 430px;
+        width: 100%;
+        min-height: clamp(560px, 86vh, 800px);
         overflow: hidden;
-        background: #f1dfd1;
+        isolation: isolate;
+        background: #2a1a12;
     }
 
-    .hero-image img {
+    .hero-media {
+        position: absolute;
+        inset: -6% 0 -6% 0;
+        z-index: -3;
+        will-change: transform;
+    }
+
+    .hero-banner-slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 1.2s ease, visibility 1.2s ease;
+    }
+
+    .hero-banner-slide.is-active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .hero-banner-slide img {
         display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
         object-position: center;
+        transform: scale(1.02);
+    }
+
+    .hero-banner-slide.is-active img {
+        animation: kenBurns 9s ease-out forwards;
     }
 
     .hero-placeholder {
         display: flex;
-        width: 100%;
-        height: 100%;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 10px;
         padding: 20px;
-        background: linear-gradient(135deg, #f7e8dd, #e8cdbb);
-        color: var(--brown);
+        background:
+            radial-gradient(700px 400px at 80% 20%, rgba(201, 101, 42, .55) 0%, transparent 70%),
+            radial-gradient(600px 400px at 10% 90%, rgba(153, 66, 10, .55) 0%, transparent 70%),
+            linear-gradient(135deg, #3a2418, #1d1410);
+        color: #ffd9bf;
         text-align: center;
     }
 
     .hero-placeholder strong {
+        margin-left: 30%;
         font-family: var(--font-serif);
-        font-size: 28px;
+        font-size: 34px;
         font-weight: 500;
-        letter-spacing: 2px;
+        letter-spacing: 4px;
     }
 
     .hero-placeholder small {
-        color: var(--body-soft);
+        margin-left: 30%;
+        color: rgba(255, 255, 255, .6);
         font-size: 12px;
     }
 
+    /* dark warm gradient keeps the text readable on any banner */
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        background:
+            linear-gradient(90deg, rgba(29, 20, 16, .82) 0%, rgba(29, 20, 16, .55) 42%, rgba(29, 20, 16, .12) 100%),
+            linear-gradient(0deg, rgba(29, 20, 16, .45) 0%, transparent 40%);
+    }
+
+    /* liquid blobs */
+    .blob {
+        position: absolute;
+        z-index: -1;
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        filter: blur(60px);
+        opacity: .55;
+        pointer-events: none;
+        will-change: transform, border-radius;
+    }
+
+    .blob-1 {
+        top: -120px;
+        left: -100px;
+        width: 420px;
+        height: 420px;
+        background: var(--orange);
+        animation: morph 14s ease-in-out infinite, driftA 18s ease-in-out infinite;
+    }
+
+    .blob-2 {
+        right: 6%;
+        bottom: 10%;
+        width: 340px;
+        height: 340px;
+        background: var(--brown);
+        animation: morph 17s ease-in-out infinite reverse, driftB 21s ease-in-out infinite;
+    }
+
+    .blob-3 {
+        top: 30%;
+        left: 42%;
+        width: 220px;
+        height: 220px;
+        background: #ffb98a;
+        opacity: .3;
+        animation: morph 12s ease-in-out infinite, driftA 24s ease-in-out infinite reverse;
+    }
+
+    .hero-inner {
+        position: relative;
+        width: 100%;
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 90px 40px 130px;
+    }
+
+    /* frosted glass panel under the hero text */
+    .hero-content {
+        position: relative;
+        max-width: 600px;
+        padding: 46px 46px 44px;
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 36px 56px 36px 56px;
+        background: rgba(255, 248, 244, .10);
+        -webkit-backdrop-filter: blur(18px) saturate(150%);
+        backdrop-filter: blur(18px) saturate(150%);
+        box-shadow:
+            0 30px 60px -30px rgba(0, 0, 0, .55),
+            inset 0 1px 0 rgba(255, 255, 255, .25);
+        animation: homeFadeUp .9s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .hero-content > * {
+        animation: homeFadeUp .8s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .hero-content > :nth-child(1) { animation-delay: .15s; }
+    .hero-content > :nth-child(2) { animation-delay: .28s; }
+    .hero-content > :nth-child(3) { animation-delay: .42s; }
+    .hero-content > :nth-child(4) { animation-delay: .56s; }
+
+    .hero-eyebrow,
+    .home-page .section-eyebrow {
+        margin: 0 0 15px;
+        color: var(--brown);
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 2.3px;
+        line-height: 1.8;
+    }
+
+    .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 14px;
+        border: 1px solid rgba(255, 255, 255, .25);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .12);
+        color: #ffe3cf;
+        line-height: 1.4;
+    }
+
+    .hero-eyebrow::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #ffb98a;
+        box-shadow: 0 0 0 0 rgba(255, 185, 138, .7);
+        animation: pulseDot 2.2s ease-out infinite;
+    }
+
+    .home-page .hero-title {
+        margin: 0;
+        color: #fff;
+        font-family: var(--font-serif);
+        font-size: clamp(52px, 6.2vw, 88px);
+        font-weight: 500;
+        line-height: .98;
+        letter-spacing: -1.5px;
+        text-align: left;
+        text-shadow: 0 6px 30px rgba(0, 0, 0, .25);
+    }
+
+    .hero-title span {
+        background: linear-gradient(100deg, #ffd2b3 0%, #ff9d5c 50%, #ffd2b3 100%);
+        background-size: 220% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        font-style: italic;
+        animation: shine 6s linear infinite;
+    }
+
+    .hero-description {
+        max-width: 420px;
+        margin: 22px 0 30px;
+        color: rgba(255, 255, 255, .88);
+        font-size: 15px;
+        line-height: 1.85;
+    }
+
+    /* buttons */
+
+    .home-button {
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        min-height: 54px;
+        padding: 0 30px;
+        border: 0;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #c9652a 0%, var(--brown) 100%);
+        color: #fff;
+        font-family: var(--font-sans);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.3px;
+        box-shadow: 0 16px 30px -12px rgba(201, 101, 42, .9);
+        transition: transform .3s ease, box-shadow .3s ease;
+    }
+
+    .home-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -60%;
+        width: 40%;
+        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .4), transparent);
+        transform: skewX(-20deg);
+        animation: sweep 4s 1.5s ease-in-out infinite;
+    }
+
+    .home-button:hover {
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 22px 36px -12px rgba(201, 101, 42, 1);
+    }
+
+    .home-button span {
+        font-size: 18px;
+        transition: transform .25s ease;
+    }
+
+    .home-button:hover span {
+        transform: translateX(5px);
+    }
+
+    /* hero extras */
+
     .hero-caption {
         position: absolute;
-        right: 0;
-        bottom: 0;
-        padding: 13px 20px;
-        background: rgba(255, 248, 244, 0.94);
-        color: var(--text);
+        right: 40px;
+        bottom: 120px;
+        padding: 12px 22px;
+        border: 1px solid rgba(255, 255, 255, .28);
+        border-radius: 999px;
+        background: rgba(255, 248, 244, .14);
+        -webkit-backdrop-filter: blur(14px);
+        backdrop-filter: blur(14px);
+        color: #fff;
         font-family: var(--font-serif);
-        font-size: 17px;
+        font-size: 18px;
         font-style: italic;
+        animation: homeFadeUp 1s .7s ease both;
+    }
+
+    .hero-dots {
+        position: absolute;
+        left: 50%;
+        bottom: 104px;
+        z-index: 3;
+        display: flex;
+        gap: 8px;
+        transform: translateX(-50%);
+    }
+
+    .hero-dots button {
+        width: 9px;
+        height: 9px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .45);
+        cursor: pointer;
+        transition: width .35s ease, background .3s ease;
+    }
+
+    .hero-dots button.is-active {
+        width: 30px;
+        background: #fff;
+    }
+
+    .hero-dots button:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 3px;
     }
 
     .hero-index {
         position: absolute;
-        bottom: 27px;
+        bottom: 112px;
         left: 40px;
-        color: #c9a995;
+        color: rgba(255, 255, 255, .55);
         font-family: var(--font-serif);
         font-size: 14px;
+        letter-spacing: 1px;
     }
 
-    /* GENERAL SECTIONS */
+    /* liquid wave at the bottom of the hero */
+    .wave {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        z-index: 2;
+        height: 110px;
+        overflow: hidden;
+        pointer-events: none;
+        line-height: 0;
+    }
+
+    .wave svg {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 200%;
+        height: 100%;
+    }
+
+    .wave .wave-back {
+        opacity: .45;
+        animation: waveMove 16s linear infinite;
+    }
+
+    .wave .wave-front {
+        animation: waveMove 24s linear infinite reverse;
+    }
+
+    .wave path {
+        fill: #fffdfb;
+    }
+
+    /* =====================================================
+       SECTIONS
+       ===================================================== */
 
     .home-section {
+        position: relative;
         width: 100%;
-        padding: 76px 40px 82px;
+        padding: 40px 40px 96px;
+        overflow: hidden;
     }
 
     .arrivals-section {
@@ -189,86 +429,196 @@
     }
 
     .offers-section {
+        padding-top: 150px;
         background: var(--peach);
     }
 
     .section-inner {
+        position: relative;
+        z-index: 1;
         max-width: 1240px;
         margin: 0 auto;
     }
 
+    /* soft liquid shapes behind the headings (so the blur is visible) */
+    .section-blob {
+        position: absolute;
+        z-index: 0;
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        filter: blur(50px);
+        pointer-events: none;
+    }
+
+    .arrivals-section .section-blob-a {
+        top: 10px;
+        left: -80px;
+        width: 340px;
+        height: 340px;
+        background: rgba(201, 101, 42, .28);
+        animation: morph 15s ease-in-out infinite, driftA 20s ease-in-out infinite;
+    }
+
+    .arrivals-section .section-blob-b {
+        top: 60px;
+        right: -60px;
+        width: 280px;
+        height: 280px;
+        background: rgba(153, 66, 10, .18);
+        animation: morph 18s ease-in-out infinite reverse, driftB 22s ease-in-out infinite;
+    }
+
+    .offers-section .section-blob-a {
+        top: 130px;
+        right: -80px;
+        width: 360px;
+        height: 360px;
+        background: rgba(201, 101, 42, .30);
+        animation: morph 16s ease-in-out infinite, driftB 20s ease-in-out infinite;
+    }
+
+    .offers-section .section-blob-b {
+        top: 150px;
+        left: -60px;
+        width: 280px;
+        height: 280px;
+        background: rgba(153, 66, 10, .18);
+        animation: morph 13s ease-in-out infinite reverse, driftA 24s ease-in-out infinite;
+    }
+
+    /* section heading with blurred glass effect */
     .section-heading {
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
         gap: 24px;
-        margin-bottom: 32px;
+        margin-bottom: 38px;
+        padding: 30px 36px;
+        border: 1px solid rgba(255, 255, 255, .75);
+        border-radius: 40px 28px 40px 28px;
+        background: rgba(255, 255, 255, .45);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        backdrop-filter: blur(20px) saturate(160%);
+        box-shadow:
+            0 24px 50px -30px rgba(70, 42, 25, .35),
+            inset 0 1px 0 rgba(255, 255, 255, .9);
     }
 
     .home-page .section-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
         margin-bottom: 8px;
+    }
+
+    .home-page .section-eyebrow::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--orange);
+        box-shadow: 0 0 0 3px rgba(201, 101, 42, .22);
     }
 
     .home-page .section-title {
         margin: 0;
         color: var(--heading);
         font-family: var(--font-serif);
-        font-size: clamp(35px, 4vw, 48px);
+        font-size: clamp(36px, 4.2vw, 54px);
         font-weight: 500;
-        line-height: 1.1;
+        line-height: 1.08;
+        letter-spacing: -.5px;
         text-align: left;
     }
 
     .section-description {
         margin: 10px 0 0;
         color: var(--body-soft);
-        font-size: 13px;
+        font-size: 14px;
         line-height: 1.8;
     }
 
     .section-link {
+        position: relative;
         display: inline-flex;
         flex-shrink: 0;
         align-items: center;
         gap: 10px;
-        padding-bottom: 7px;
-        border-bottom: 1px solid #c9a58e;
+        padding: 12px 20px;
+        border: 1px solid rgba(153, 66, 10, .25);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .6);
         color: var(--brown);
-        font-size: 10px;
+        font-size: 10.5px;
         font-weight: 700;
-        letter-spacing: 1px;
+        letter-spacing: 1.1px;
+        transition: background .25s ease, color .25s ease, transform .25s ease, box-shadow .25s ease;
     }
 
     .section-link span {
         font-size: 17px;
-        transition: transform 0.2s ease;
+        transition: transform .25s ease;
     }
 
     .section-link:hover {
-        color: var(--brown-dark);
+        background: var(--brown);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 24px -12px rgba(153, 66, 10, .7);
     }
 
     .section-link:hover span {
         transform: translateX(4px);
     }
 
-    /* PRODUCT GRID */
+    /* =====================================================
+       PRODUCT GRID + CARDS
+       ===================================================== */
 
     .home-product-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 28px 20px;
+        gap: 30px 22px;
     }
 
     .home-product-card {
+        position: relative;
         min-width: 0;
+    }
+
+    .card-link {
+        display: block;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 30px;
+        background: #fff;
+        color: inherit;
+        box-shadow: 0 1px 2px rgba(70, 42, 25, .04), 0 18px 36px -26px rgba(70, 42, 25, .35);
+        transform-style: preserve-3d;
+        transition: box-shadow .35s ease, border-color .35s ease, transform .25s ease-out;
+        will-change: transform;
+    }
+
+    .home-product-card:hover .card-link {
+        border-color: #ecd2c0;
+        box-shadow: 0 34px 54px -26px rgba(70, 42, 25, .45);
+    }
+
+    .card-link:focus-visible {
+        outline: 3px solid #e6b894;
+        outline-offset: 3px;
     }
 
     .home-product-image {
         position: relative;
-        aspect-ratio: 4 / 4.7;
+        aspect-ratio: 4 / 4.8;
         overflow: hidden;
-        background: #f5eae2;
+        border-radius: 22px 22px 22px 70px;
+        background: linear-gradient(135deg, #f8eee8, #f3e3d8);
+        transition: border-radius .6s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .home-product-card:hover .home-product-image {
+        border-radius: 70px 22px 22px 22px;
     }
 
     .home-product-image img {
@@ -276,11 +626,11 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.45s ease;
+        transition: transform .8s cubic-bezier(.2, .7, .2, 1);
     }
 
     .home-product-card:hover .home-product-image img {
-        transform: scale(1.045);
+        transform: scale(1.08);
     }
 
     .home-product-image-placeholder {
@@ -288,323 +638,442 @@
         width: 100%;
         height: 100%;
         place-items: center;
+        background:
+            radial-gradient(220px 160px at 80% 15%, rgba(201, 101, 42, .28) 0%, transparent 70%),
+            linear-gradient(135deg, #f8eee8, #efd9c9);
         color: #b98d73;
         font-family: var(--font-serif);
         font-size: 23px;
-        letter-spacing: 2px;
+        letter-spacing: 3px;
     }
 
-    .new-tag {
+    .home-product-grid .home-product-card:nth-child(2n) .home-product-image-placeholder {
+        background:
+            radial-gradient(220px 160px at 20% 85%, rgba(153, 66, 10, .26) 0%, transparent 70%),
+            linear-gradient(135deg, #fbe9dc, #f1d6c3);
+    }
+
+    .new-tag,
+    .sale-tag {
         position: absolute;
-        top: 12px;
-        left: 12px;
-        padding: 7px 10px;
-        background: rgba(255, 248, 244, 0.95);
+        top: 14px;
+        left: 14px;
+        z-index: 2;
+        padding: 8px 13px;
+        border: 1px solid rgba(255, 255, 255, .7);
+        border-radius: 999px;
+        background: rgba(255, 248, 244, .72);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
         color: var(--brown);
         font-size: 9px;
         font-weight: 700;
-        letter-spacing: 0.8px;
+        letter-spacing: .9px;
+    }
+
+    .sale-tag {
+        border-color: transparent;
+        background: linear-gradient(135deg, #c9652a, var(--brown));
+        color: #fff;
+        box-shadow: 0 10px 18px -8px rgba(201, 101, 42, .9);
+    }
+
+    .card-arrow {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--brown);
+        color: #fff;
+        font-size: 20px;
+        box-shadow: 0 14px 24px -10px rgba(153, 66, 10, .8);
+        opacity: 0;
+        transform: translateY(12px) scale(.8);
+        transition: opacity .35s ease, transform .35s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .home-product-card:hover .card-arrow,
+    .card-link:focus-visible .card-arrow {
+        opacity: 1;
+        transform: none;
     }
 
     .home-product-info {
-        padding: 14px 2px 0;
-    }
-
-    .home-product-name {
-        margin: 0;
-        color: var(--heading);
-        font-family: var(--font-sans);
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1.6;
-        text-align: left;
+        padding: 16px 8px 8px;
     }
 
     .home-product-category {
-        margin: 5px 0 8px;
-        color: var(--muted);
-        font-size: 11px;
+        display: inline-block;
+        margin: 0 0 8px;
+        padding: 4px 11px;
+        border-radius: 999px;
+        background: var(--peach);
+        color: var(--brown);
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .home-product-name {
+        margin: 0 0 8px;
+        color: var(--heading);
+        font-family: var(--font-serif);
+        font-size: 23px;
+        font-weight: 600;
+        line-height: 1.15;
+        text-align: left;
     }
 
     .home-product-price {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
         margin: 0;
         color: var(--brown);
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 15px;
+        font-weight: 800;
     }
 
-    .home-product-card > a {
-        display: block;
-        color: inherit;
+    .home-product-price del {
+        color: var(--muted);
+        font-size: 12.5px;
+        font-weight: 500;
     }
 
-    /* VIEW ALL BUTTON */
+    /* view all */
 
     .home-view-all {
         display: flex;
         justify-content: center;
-        margin-top: 42px;
+        margin-top: 50px;
     }
 
     .home-outline-button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 48px;
-        padding: 0 28px;
-        border: 1px solid var(--brown);
+        min-height: 54px;
+        padding: 0 34px;
+        border: 1.5px solid var(--brown);
+        border-radius: 999px;
+        background: transparent;
         color: var(--brown);
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 700;
-        letter-spacing: 1px;
-        transition: background 0.25s ease, color 0.25s ease;
+        letter-spacing: 1.2px;
+        transition: background .3s ease, color .3s ease, transform .3s ease, box-shadow .3s ease;
     }
 
     .home-outline-button:hover {
         background: var(--brown);
         color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 18px 30px -14px rgba(153, 66, 10, .7);
     }
 
-    /* EMPTY PRODUCTS */
+    /* empty */
 
     .home-empty-products {
-        padding: 55px 20px;
-        border: 1px solid var(--border);
+        padding: 64px 20px;
+        border: 1px dashed #e7cdbb;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, .7);
         text-align: center;
     }
 
-    .home-empty-products h3,
-    .home-offers-empty h3 {
+    .home-empty-products h3 {
         margin: 0;
         color: var(--heading);
         font-family: var(--font-serif);
-        font-size: 30px;
+        font-size: 32px;
         font-weight: 500;
     }
 
-    .home-empty-products p,
-    .home-offers-empty p {
+    .home-empty-products p {
+        margin: 10px 0 22px;
         color: var(--body-soft);
-        font-size: 13px;
+        font-size: 14px;
         line-height: 1.8;
     }
 
-    /* OFFERS GRID / PLACEHOLDER */
-
-    .home-offers-empty {
-        display: grid;
-        min-height: 270px;
-        padding: 35px 20px;
-        place-items: center;
-        border: 1px solid rgba(153, 66, 10, 0.14);
-        background: rgba(255, 255, 255, 0.45);
-        text-align: center;
-    }
-
-    .offers-content {
-        max-width: 470px;
-    }
-
-    .offers-decoration {
-        display: block;
-        margin-bottom: 10px;
-        color: var(--orange);
-        font-size: 28px;
-    }
-
-    .home-offers-empty .section-eyebrow {
-        margin-bottom: 8px;
-    }
-
-    .home-offers-empty p {
-        max-width: 390px;
-        margin: 12px auto 22px;
-    }
-
-    .home-offers-empty .home-button {
-        min-height: 46px;
-    }
-
-    /* ANIMATION */
+    /* =====================================================
+       ANIMATIONS
+       ===================================================== */
 
     @keyframes homeFadeUp {
-        from {
-            opacity: 0;
-            transform: translateY(12px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: none; }
     }
 
-    /* TABLET */
+    @keyframes kenBurns {
+        from { transform: scale(1.02); }
+        to   { transform: scale(1.12); }
+    }
 
-    @media (max-width: 1000px) {
-        .home-hero {
-            gap: 30px;
-            min-height: 480px;
-            padding: 50px 28px 65px;
-        }
+    @keyframes morph {
+        0%, 100% { border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%; }
+        25%      { border-radius: 58% 42% 38% 62% / 55% 60% 40% 45%; }
+        50%      { border-radius: 36% 64% 58% 42% / 62% 38% 62% 38%; }
+        75%      { border-radius: 64% 36% 46% 54% / 40% 56% 44% 60%; }
+    }
 
-        .home-page .hero-title {
-            font-size: clamp(48px, 6vw, 68px);
-        }
+    @keyframes driftA {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50%      { transform: translate(70px, 50px) rotate(40deg); }
+    }
 
-        .hero-image {
-            height: 370px;
-        }
+    @keyframes driftB {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50%      { transform: translate(-60px, -46px) rotate(-35deg); }
+    }
 
-        .home-section {
-            padding: 64px 28px 72px;
-        }
+    @keyframes waveMove {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-50%); }
+    }
 
+    @keyframes shine {
+        to { background-position: -220% 0; }
+    }
+
+    @keyframes sweep {
+        0%       { left: -60%; }
+        40%, 100% { left: 140%; }
+    }
+
+    @keyframes pulseDot {
+        0%   { box-shadow: 0 0 0 0 rgba(255, 185, 138, .7); }
+        70%, 100% { box-shadow: 0 0 0 10px rgba(255, 185, 138, 0); }
+    }
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+
+    @media (max-width: 1100px) {
         .home-product-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 24px 16px;
+            gap: 26px 18px;
         }
 
-        .hero-index {
-            left: 28px;
-        }
+        .hero-inner { padding: 80px 28px 130px; }
+        .hero-caption { right: 28px; }
+        .hero-index { left: 28px; }
+        .home-section { padding: 40px 28px 84px; }
     }
 
-    /* MOBILE */
+    @media (max-width: 800px) {
+        .home-hero {
+            min-height: 620px;
+            align-items: flex-end;
+        }
+
+        .hero-overlay {
+            background:
+                linear-gradient(0deg, rgba(29, 20, 16, .88) 0%, rgba(29, 20, 16, .55) 55%, rgba(29, 20, 16, .15) 100%);
+        }
+
+        .hero-inner { padding: 60px 20px 140px; }
+
+        .hero-content {
+            max-width: none;
+            padding: 34px 28px 32px;
+            border-radius: 28px 44px 28px 44px;
+        }
+
+        .hero-placeholder strong,
+        .hero-placeholder small { margin-left: 0; }
+
+        .hero-caption { display: none; }
+        .hero-index { display: none; }
+        .hero-dots { bottom: 112px; }
+
+        .home-product-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px 14px;
+        }
+
+        .offers-section { padding-top: 140px; }
+    }
 
     @media (max-width: 700px) {
-        .home-hero {
-            grid-template-columns: 1fr;
-            gap: 28px;
-            min-height: 0;
-            padding: 42px 20px 55px;
-        }
-
-        .home-page .hero-title {
-            font-size: clamp(52px, 12vw, 72px);
-        }
-
-        .hero-description {
-            margin: 18px 0 24px;
-        }
-
-        .hero-image {
-            height: 340px;
-        }
-
-        .hero-index {
-            bottom: 22px;
-            left: 20px;
-        }
-
-        .home-section {
-            padding: 52px 20px 60px;
-        }
+        .home-section { padding: 30px 18px 66px; }
 
         .section-heading {
             align-items: flex-start;
             flex-direction: column;
             gap: 18px;
-            margin-bottom: 24px;
+            margin-bottom: 26px;
+            padding: 24px 22px;
+            border-radius: 30px 22px 30px 22px;
         }
 
-        .home-page .section-title {
-            font-size: 38px;
+        .home-page .section-title { font-size: 38px; }
+
+        .card-link {
+            padding: 7px;
+            border-radius: 24px;
         }
 
-        .home-product-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 26px 13px;
+        .home-product-image {
+            border-radius: 18px 18px 18px 48px;
         }
 
-        .home-product-info {
-            padding-top: 11px;
+        .home-product-card:hover .home-product-image {
+            border-radius: 48px 18px 18px 18px;
         }
 
-        .home-product-name {
-            font-size: 12px;
+        .home-product-name { font-size: 18px; }
+        .home-product-info { padding: 12px 4px 6px; }
+        .home-product-price { font-size: 14px; }
+
+        .card-arrow {
+            width: 38px;
+            height: 38px;
+            font-size: 17px;
+            opacity: 1;
+            transform: none;
         }
 
-        .home-offers-empty {
-            min-height: 250px;
-            padding: 28px 16px;
-        }
+        .wave { height: 70px; }
     }
 
     @media (max-width: 380px) {
-        .hero-image {
-            height: 280px;
-        }
+        .home-hero { min-height: 560px; }
+        .hero-content { padding: 28px 22px 26px; }
 
-        .new-tag {
-            top: 8px;
-            left: 8px;
-            padding: 6px 7px;
+        .new-tag,
+        .sale-tag {
+            top: 9px;
+            left: 9px;
+            padding: 6px 9px;
             font-size: 8px;
         }
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .hero-content {
-            animation: none;
+        .js .reveal {
+            opacity: 1;
+            transform: none;
+            transition: none;
         }
 
+        .hero-content,
+        .hero-content > *,
+        .hero-caption,
+        .hero-title span,
+        .hero-eyebrow::before,
+        .home-button::before,
+        .blob,
+        .section-blob,
+        .wave svg,
+        .hero-banner-slide.is-active img {
+            animation: none !important;
+        }
+
+        .hero-banner-slide,
+        .card-link,
+        .home-product-image,
         .home-product-image img,
-        .home-button,
-        .section-link span {
-            transition: none;
+        .card-arrow {
+            transition: none !important;
         }
     }
 </style>
 
 <div class="home-page">
 
-    <!-- HERO BANNER -->
-    <section class="home-hero">
-        <div class="hero-content">
-            <p class="hero-eyebrow">HERSTEPS · FOOTWEAR FOR WOMEN</p>
+    <!-- ================= HERO BANNER (full width, text on top) ================= -->
+    <section class="home-hero" id="top">
 
-            <h1 class="hero-title">
-                Every Step,<br>
-                <span>Your Style.</span>
-            </h1>
+        <div class="hero-media" id="heroMedia">
+            {% if active_banners %}
+                {% for banner in active_banners %}
+                    <div class="hero-banner-slide{% if forloop.first %} is-active{% endif %}">
+                        <img
+                            src="{{ banner.image.url }}"
+                            alt="{{ banner.name }}"
+                            {% if not forloop.first %}loading="lazy"{% endif %}
+                        >
+                    </div>
+                {% endfor %}
 
-            <p class="hero-description">
-                Discover footwear that brings comfort, confidence
-                and a little elegance to every step.
-            </p>
+            {% elif hero_banner_url %}
+                <div class="hero-banner-slide is-active">
+                    <img
+                        src="{{ hero_banner_url }}"
+                        alt="HerSteps women's footwear collection"
+                    >
+                </div>
 
-            <a href="{% url 'shop' %}" class="home-button">
-                EXPLORE COLLECTION
-                <span aria-hidden="true">→</span>
-            </a>
-        </div>
-
-        <div class="hero-image">
-            {% if hero_banner_url %}
-                <img
-                    src="{{ hero_banner_url }}"
-                    alt="HerSteps women's footwear collection"
-                >
             {% else %}
-                <div class="hero-placeholder">
+                <div class="hero-banner-slide hero-placeholder is-active">
                     <strong>HERSTEPS</strong>
                     <small>Your campaign banner will appear here.</small>
                 </div>
             {% endif %}
-
-            <div class="hero-caption">Made for every moment</div>
         </div>
 
+        <div class="hero-overlay"></div>
+
+        <span class="blob blob-1" aria-hidden="true"></span>
+        <span class="blob blob-2" aria-hidden="true"></span>
+        <span class="blob blob-3" aria-hidden="true"></span>
+
+        <div class="hero-inner">
+            <div class="hero-content">
+                <p class="hero-eyebrow">HERSTEPS · FOOTWEAR FOR WOMEN</p>
+
+                <h1 class="hero-title">
+                    Every Step,<br>
+                    <span>Your Style.</span>
+                </h1>
+
+                <p class="hero-description">
+                    Discover footwear that brings comfort, confidence
+                    and a little elegance to every step.
+                </p>
+
+                <a href="{% url 'shop' %}" class="home-button">
+                    EXPLORE COLLECTION
+                    <span aria-hidden="true">→</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-caption">Made for every moment</div>
+
+        <div class="hero-dots" id="heroDots" aria-label="Banner slides"></div>
+
         <div class="hero-index" aria-hidden="true">01 / HERSTEPS</div>
+
+        <!-- liquid wave divider -->
+        <div class="wave" aria-hidden="true">
+            <svg class="wave-back" viewBox="0 0 2880 120" preserveAspectRatio="none">
+                <path d="M0,70 C240,20 480,110 720,64 C960,18 1200,104 1440,70 C1680,20 1920,110 2160,64 C2400,18 2640,104 2880,70 L2880,120 L0,120 Z"/>
+            </svg>
+            <svg class="wave-front" viewBox="0 0 2880 120" preserveAspectRatio="none">
+                <path d="M0,86 C240,118 480,40 720,80 C960,120 1200,48 1440,86 C1680,118 1920,40 2160,80 C2400,120 2640,48 2880,86 L2880,120 L0,120 Z"/>
+            </svg>
+        </div>
     </section>
 
 
-    <!-- LATEST PRODUCTS -->
-    <section class="home-section arrivals-section" id="new-arrivals">
+    <!-- ================= NEWLY LAUNCHED (live products) ================= -->
+    <section class="home-section arrivals-section" id="new-arrival">
+
+        <span class="section-blob section-blob-a" aria-hidden="true"></span>
+        <span class="section-blob section-blob-b" aria-hidden="true"></span>
+
         <div class="section-inner">
 
-            <div class="section-heading">
+            <div class="section-heading reveal">
                 <div>
                     <p class="section-eyebrow">FRESH FROM HERSTEPS</p>
                     <h2 class="section-title">Our Latest Styles</h2>
@@ -621,9 +1090,15 @@
             {% if products %}
                 <div class="home-product-grid">
                     {% for product in products %}
-                        <article class="home-product-card">
-                            <a href="{% url 'shop' %}"
-                               aria-label="Shop {{ product.name }}">
+                        <article class="home-product-card reveal" style="--i: {{ forloop.counter0 }}">
+
+                            {% comment %} {# Product detail link (dummy for now).
+                               When the detail page exists, replace the href with:
+                               {% url 'product_detail' product.pk %} #} {% endcomment %}
+                            <a href="#product-{{ product.pk }}"
+                               class="card-link"
+                               data-product-id="{{ product.pk }}"
+                               aria-label="View {{ product.name }}">
 
                                 <div class="home-product-image">
                                     {% with product.images.all|first as product_image %}
@@ -641,34 +1116,35 @@
                                     {% endwith %}
 
                                     <span class="new-tag">NEW ARRIVAL</span>
+                                    <span class="card-arrow" aria-hidden="true">→</span>
+                                </div>
+
+                                <div class="home-product-info">
+                                    <p class="home-product-category">
+                                        {{ product.category.name }}
+                                    </p>
+
+                                    <h3 class="home-product-name">
+                                        {{ product.name }}
+                                    </h3>
+
+                                    <p class="home-product-price">
+                                        ₹{{ product.price|floatformat:2 }}
+                                    </p>
                                 </div>
                             </a>
-
-                            <div class="home-product-info">
-                                <h3 class="home-product-name">
-                                    {{ product.name }}
-                                </h3>
-
-                                <p class="home-product-category">
-                                    {{ product.category.name }}
-                                </p>
-
-                                <p class="home-product-price">
-                                    ₹{{ product.price|floatformat:2 }}
-                                </p>
-                            </div>
                         </article>
                     {% endfor %}
                 </div>
 
-                <div class="home-view-all">
+                <div class="home-view-all reveal">
                     <a href="{% url 'shop' %}" class="home-outline-button">
                         VIEW ALL PRODUCTS
                     </a>
                 </div>
 
             {% else %}
-                <div class="home-empty-products">
+                <div class="home-empty-products reveal">
                     <h3>New styles are on their way.</h3>
                     <p>Check back soon to discover our collection.</p>
 
@@ -682,11 +1158,25 @@
     </section>
 
 
-    <!-- OFFERS -->
+    <!-- ================= OFFERS ================= -->
     <section class="home-section offers-section" id="sale">
+
+        <!-- wave that blends the previous section into this one -->
+        <div class="wave" aria-hidden="true" style="top:-1px; bottom:auto; transform:rotate(180deg);">
+            <svg class="wave-back" viewBox="0 0 2880 120" preserveAspectRatio="none">
+                <path d="M0,70 C240,20 480,110 720,64 C960,18 1200,104 1440,70 C1680,20 1920,110 2160,64 C2400,18 2640,104 2880,70 L2880,120 L0,120 Z"/>
+            </svg>
+            <svg class="wave-front" viewBox="0 0 2880 120" preserveAspectRatio="none">
+                <path d="M0,86 C240,118 480,40 720,80 C960,120 1200,48 1440,86 C1680,118 1920,40 2160,80 C2400,120 2640,48 2880,86 L2880,120 L0,120 Z"/>
+            </svg>
+        </div>
+
+        <span class="section-blob section-blob-a" aria-hidden="true"></span>
+        <span class="section-blob section-blob-b" aria-hidden="true"></span>
+
         <div class="section-inner">
 
-            <div class="section-heading">
+            <div class="section-heading reveal">
                 <div>
                     <p class="section-eyebrow">A LITTLE SOMETHING SPECIAL</p>
                     <h2 class="section-title">Offers You'll Love</h2>
@@ -695,17 +1185,19 @@
                     </p>
                 </div>
 
-                <a href="{% url 'shop' %}" class="section-link">
-                    EXPLORE SHOP <span aria-hidden="true">→</span>
+                <a href="#" class="section-link">
+                    EXPLORE OFFERS <span aria-hidden="true">→</span>
                 </a>
             </div>
 
-            {% if offer_products %}
-                <div class="home-product-grid">
+            <div class="home-product-grid">
+
+                {% if offer_products %}
+
+                    {# Live offer products (all links are dummy "#" for now) #}
                     {% for product in offer_products %}
-                        <article class="home-product-card">
-                            <a href="{% url 'shop' %}"
-                               aria-label="Shop {{ product.name }}">
+                        <article class="home-product-card reveal" style="--i: {{ forloop.counter0 }}">
+                            <a href="#" class="card-link" aria-label="View offer on {{ product.name }}">
 
                                 <div class="home-product-image">
                                     {% with product.images.all|first as product_image %}
@@ -721,51 +1213,230 @@
                                             </div>
                                         {% endif %}
                                     {% endwith %}
+
+                                    <span class="sale-tag">OFFER</span>
+                                    <span class="card-arrow" aria-hidden="true">→</span>
+                                </div>
+
+                                <div class="home-product-info">
+                                    <p class="home-product-category">
+                                        {{ product.category.name }}
+                                    </p>
+
+                                    <h3 class="home-product-name">
+                                        {{ product.name }}
+                                    </h3>
+
+                                    <p class="home-product-price">
+                                        ₹{{ product.price|floatformat:2 }}
+                                    </p>
                                 </div>
                             </a>
-
-                            <div class="home-product-info">
-                                <h3 class="home-product-name">
-                                    {{ product.name }}
-                                </h3>
-
-                                <p class="home-product-category">
-                                    {{ product.category.name }}
-                                </p>
-
-                                <p class="home-product-price">
-                                    ₹{{ product.price|floatformat:2 }}
-                                </p>
-                            </div>
                         </article>
                     {% endfor %}
-                </div>
 
-            {% else %}
-                <div class="home-offers-empty">
-                    <div class="offers-content">
-                        <span class="offers-decoration" aria-hidden="true">✳</span>
+                {% else %}
 
-                        <p class="section-eyebrow">COMING SOON</p>
-
-                        <h3>Something special is on its way.</h3>
-
-                        <p>
-                            Our offers collection will appear here when
-                            special prices become available.
-                        </p>
-
-                        <a href="{% url 'shop' %}" class="home-button">
-                            EXPLORE ALL STYLES
-                            <span aria-hidden="true">→</span>
+                    {# Dummy offer products with "#" links - replace with real offers later #}
+                    <article class="home-product-card reveal" style="--i: 0">
+                        <a href="#" class="card-link" aria-label="View Blush Block Heels offer">
+                            <div class="home-product-image">
+                                <div class="home-product-image-placeholder">HERSTEPS</div>
+                                <span class="sale-tag">-32%</span>
+                                <span class="card-arrow" aria-hidden="true">→</span>
+                            </div>
+                            <div class="home-product-info">
+                                <p class="home-product-category">Heels</p>
+                                <h3 class="home-product-name">Blush Block Heels</h3>
+                                <p class="home-product-price">₹1,499.00 <del>₹2,199.00</del></p>
+                            </div>
                         </a>
-                    </div>
-                </div>
-            {% endif %}
+                    </article>
+
+                    <article class="home-product-card reveal" style="--i: 1">
+                        <a href="#" class="card-link" aria-label="View Cloud Comfort Flats offer">
+                            <div class="home-product-image">
+                                <div class="home-product-image-placeholder">HERSTEPS</div>
+                                <span class="sale-tag">-25%</span>
+                                <span class="card-arrow" aria-hidden="true">→</span>
+                            </div>
+                            <div class="home-product-info">
+                                <p class="home-product-category">Flats</p>
+                                <h3 class="home-product-name">Cloud Comfort Flats</h3>
+                                <p class="home-product-price">₹1,199.00 <del>₹1,599.00</del></p>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article class="home-product-card reveal" style="--i: 2">
+                        <a href="#" class="card-link" aria-label="View Golden Hour Sandals offer">
+                            <div class="home-product-image">
+                                <div class="home-product-image-placeholder">HERSTEPS</div>
+                                <span class="sale-tag">-40%</span>
+                                <span class="card-arrow" aria-hidden="true">→</span>
+                            </div>
+                            <div class="home-product-info">
+                                <p class="home-product-category">Sandals</p>
+                                <h3 class="home-product-name">Golden Hour Sandals</h3>
+                                <p class="home-product-price">₹999.00 <del>₹1,699.00</del></p>
+                            </div>
+                        </a>
+                    </article>
+
+                    <article class="home-product-card reveal" style="--i: 3">
+                        <a href="#" class="card-link" aria-label="View Everyday Sneakers offer">
+                            <div class="home-product-image">
+                                <div class="home-product-image-placeholder">HERSTEPS</div>
+                                <span class="sale-tag">-20%</span>
+                                <span class="card-arrow" aria-hidden="true">→</span>
+                            </div>
+                            <div class="home-product-info">
+                                <p class="home-product-category">Sneakers</p>
+                                <h3 class="home-product-name">Everyday Sneakers</h3>
+                                <p class="home-product-price">₹1,799.00 <del>₹2,249.00</del></p>
+                            </div>
+                        </a>
+                    </article>
+
+                {% endif %}
+
+            </div>
 
         </div>
     </section>
 
 </div>
 
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function () {
+
+    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* ---------- 1. Scroll reveal ---------- */
+
+    var revealItems = document.querySelectorAll(".reveal");
+
+    if ("IntersectionObserver" in window && !reduceMotion) {
+
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+
+        revealItems.forEach(function (el) { observer.observe(el); });
+
+    } else {
+        revealItems.forEach(function (el) { el.classList.add("is-visible"); });
+    }
+
+
+    /* ---------- 2. Hero banner slideshow ---------- */
+
+    var slides = document.querySelectorAll(".hero-banner-slide");
+    var dotsWrap = document.getElementById("heroDots");
+    var hero = document.getElementById("top");
+
+    if (slides.length > 1 && dotsWrap) {
+
+        var current = 0;
+        var timer = null;
+        var dots = [];
+
+        function goTo(index) {
+            slides[current].classList.remove("is-active");
+            dots[current].classList.remove("is-active");
+            current = (index + slides.length) % slides.length;
+            slides[current].classList.add("is-active");
+            dots[current].classList.add("is-active");
+        }
+
+        function startAuto() {
+            stopAuto();
+            if (reduceMotion) return;
+            timer = setInterval(function () { goTo(current + 1); }, 5500);
+        }
+
+        function stopAuto() {
+            if (timer) { clearInterval(timer); timer = null; }
+        }
+
+        slides.forEach(function (_, i) {
+            var dot = document.createElement("button");
+            dot.type = "button";
+            dot.setAttribute("aria-label", "Show banner " + (i + 1));
+            if (i === 0) dot.classList.add("is-active");
+            dot.addEventListener("click", function () {
+                goTo(i);
+                startAuto();
+            });
+            dotsWrap.appendChild(dot);
+            dots.push(dot);
+        });
+
+        hero.addEventListener("mouseenter", stopAuto);
+        hero.addEventListener("mouseleave", startAuto);
+        startAuto();
+    }
+
+
+    /* ---------- 3. Hero parallax ---------- */
+
+    var media = document.getElementById("heroMedia");
+
+    if (media && hero && !reduceMotion) {
+
+        var ticking = false;
+
+        function parallax() {
+            var rect = hero.getBoundingClientRect();
+            if (rect.bottom > 0 && rect.top < window.innerHeight) {
+                media.style.transform = "translate3d(0," + (-rect.top * 0.18) + "px,0)";
+            }
+            ticking = false;
+        }
+
+        window.addEventListener("scroll", function () {
+            if (!ticking) {
+                requestAnimationFrame(parallax);
+                ticking = true;
+            }
+        }, { passive: true });
+
+        parallax();
+    }
+
+
+    /* ---------- 4. Card tilt (mouse devices only) ---------- */
+
+    var canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    if (canHover && !reduceMotion) {
+
+        document.querySelectorAll(".card-link").forEach(function (card) {
+
+            card.addEventListener("mousemove", function (e) {
+                var r = card.getBoundingClientRect();
+                var x = (e.clientX - r.left) / r.width - 0.5;
+                var y = (e.clientY - r.top) / r.height - 0.5;
+                card.style.transform =
+                    "perspective(900px) rotateX(" + (-y * 6) + "deg) rotateY(" + (x * 7) +
+                    "deg) translateY(-6px)";
+            });
+
+            card.addEventListener("mouseleave", function () {
+                card.style.transform = "";
+            });
+        });
+    }
+
+})();
+</script>
 {% endblock %}

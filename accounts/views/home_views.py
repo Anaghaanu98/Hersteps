@@ -2,7 +2,11 @@ from django.shortcuts import render, redirect
 from django.db.models import Sum, Prefetch,Q,Max,Min,Exists,OuterRef
 from decimal import Decimal, InvalidOperation
 
-from admin_panel.models import Product, Category, ProductVariant
+from admin_panel.models import Product, Category, ProductVariant,Banner
+from decimal import Decimal, InvalidOperation
+
+from django.db.models import Q, Min, Max
+from django.shortcuts import render
 
 
 def home_view(request):
@@ -33,18 +37,23 @@ def home_view(request):
             ),
         )
         .order_by("-created_at")[:8]
-    )
+          )
+    active_banners = Banner.objects.filter(
+    is_active=True
+    ).order_by("-created_at", "-pk")[:2]
 
+    context = {
+        # Keep all your existing context variables here.
+        "products": products,
+        # New banner context
+        "active_banners": active_banners,
+    }
     return render(
         request,
         "accounts/home.html",
-        {"products": products},
+        context,
     )
 
-from decimal import Decimal, InvalidOperation
-
-from django.db.models import Q, Min, Max
-from django.shortcuts import render
 
 
 def shop_view(request):

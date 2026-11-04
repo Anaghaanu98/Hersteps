@@ -1,0 +1,158 @@
+
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}Banner Management{% endblock %}
+{% block nav_active %}banners{% endblock %}
+{% block breadcrumb %}Banner Management{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div>
+        <p class="page-eyebrow">Catalogue</p>
+        <h1 class="page-title">Banner Management</h1>
+        <p class="page-subtitle">Manage your website banners.</p>
+    </div>
+
+    <div class="page-actions">
+        <a href="{% url 'admin_panel:banner_add' %}"
+           class="btn btn-primary">
+            + Add Banner
+        </a>
+    </div>
+</header>
+
+<section class="card">
+    <div class="card-head">
+        <div>
+            <h2 class="card-title">All Banners</h2>
+            <p class="card-sub">View and manage your banners.</p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Banner Name</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for banner in banners %}
+                <tr>
+                    <td>
+                        {% if banner.image %}
+                            <img
+                                src="{{ banner.image.url }}"
+                                alt="{{ banner.name }}"
+                                style="width: 110px; height: 65px;
+                                       object-fit: cover; border-radius: 8px;"
+                            >
+                        {% else %}
+                            No image
+                        {% endif %}
+                    </td>
+
+                    <td class="cell-strong">{{ banner.name }}</td>
+
+                    <td>
+                        <form
+                            method="POST"
+                            action="{% url 'admin_panel:banner_toggle_status' banner.id %}"
+                            style="display: flex; align-items: center; gap: 9px;"
+                        >
+                            {% csrf_token %}
+
+                            <label class="banner-toggle">
+                                <input
+                                    type="checkbox"
+                                    {% if banner.is_active %}checked{% endif %}
+                                    onchange="this.form.submit()"
+                                    aria-label="Toggle status for {{ banner.name }}"
+                                >
+                                <span class="banner-toggle-slider"></span>
+                            </label>
+
+                            {% if banner.is_active %}
+                                <span class="pill pill-success">Active</span>
+                            {% else %}
+                                <span class="pill pill-muted">Inactive</span>
+                            {% endif %}
+                        </form>
+                    </td>
+
+                    <td>
+                        <a
+                            href="{% url 'admin_panel:banner_edit' banner.id %}"
+                            class="btn btn-ghost"
+                        >
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">
+                        No banners have been added yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<style>
+    .banner-toggle {
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+
+    .banner-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .banner-toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #dc3545;
+        border-radius: 20px;
+        transition: background-color 0.2s ease;
+    }
+
+    .banner-toggle-slider::before {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        left: 3px;
+        top: 3px;
+        background-color: #fff;
+        border-radius: 50%;
+        transition: transform 0.2s ease;
+    }
+
+    .banner-toggle input:checked + .banner-toggle-slider {
+        background-color: #198754;
+    }
+
+    .banner-toggle input:checked + .banner-toggle-slider::before {
+        transform: translateX(16px);
+    }
+
+    .banner-toggle input:focus-visible + .banner-toggle-slider {
+        outline: 2px solid currentColor;
+        outline-offset: 3px;
+    }
+</style>
+{% endblock %}
