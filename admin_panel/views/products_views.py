@@ -444,26 +444,56 @@ def edit_product_variants(request, product_uuid):
 @admin_required
 @require_POST
 def toggle_product_status(request, product_uuid):
+
     if request.method != "POST":
         return redirect("admin_panel:products_list")
+
     product = get_object_or_404(
         Product,
         uuid=product_uuid
     )
- 
-    product.is_active = not product.is_active
 
-    product.save(update_fields=["is_active", "updated_at"])
+    # Calculate total stock across all size variants
+    total_stock = product.variants.aggregate(
+        total=Sum("stock")
+    )["total"] or 0
 
-    if product.is_active:
-        messages.success(
+    # Prevent activation when the product has no stock
+    if total_stock <= 0:
+        product.is_active = False
+        product.save(update_fields=["is_active", "updated_at"])
+
+        messages.warning(
             request,
-            f"{product.name} has been activated."
+            f"{product.name} cannot be activated because it has no stock."
         )
+
     else:
-        messages.success(
-            request,
-            f"{product.name} has been blocked."
-        )
+        # Toggle product status
+        product.is_active = not product.is_active
 
-    return redirect("admin_panel:products_list")
+        product.save(update_fields=["is_active", "updated_at"])
+
+        if product.is_active:
+            messages.success(
+                request,
+                f"{product.name} has been activated."
+            )
+        else:
+            messages.success(
+                request,
+                f"{product.name} has been blocked."
+            )
+
+    # Preserve current page and search query
+    page = request.GET.get("page", "1")
+    search_query = request.GET.get("q", "")
+
+    url = reverse("admin_panel:products_list")
+
+    query_params = urlencode({
+        "page": page,
+        "q": search_query,
+    })
+
+    return redirect(f"{url}?{query_params}")

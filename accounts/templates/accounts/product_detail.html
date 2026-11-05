@@ -1,0 +1,1466 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}{{ product.name }} | HerSteps{% endblock %}
+{% block page_class %}page--full{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =====================================================
+   PRODUCT DETAIL  (colour tokens come from base.html)
+   ===================================================== */
+.pdp {
+    --pdp-brown: var(--brown, #99420a);
+    --pdp-brown-dark: var(--brown-dark, #8a3a07);
+    --pdp-orange: var(--orange, #c9652a);
+    --pdp-peach: var(--peach, #fff0e5);
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 30px 40px 100px;
+    color: var(--text);
+    position: relative;
+}
+.pdp * { box-sizing: border-box; }
+.pdp button, .pdp input { font: inherit; }
+.pdp a { color: inherit; text-decoration: none; }
+
+/* soft liquid shapes behind the page */
+.pdp::before,
+.pdp::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+    filter: blur(70px);
+    pointer-events: none;
+}
+.pdp::before {
+    top: 40px; right: -80px;
+    width: 360px; height: 360px;
+    background: rgba(201, 101, 42, .20);
+    animation: pdpMorph 16s ease-in-out infinite, pdpDriftA 22s ease-in-out infinite;
+}
+.pdp::after {
+    top: 520px; left: -100px;
+    width: 320px; height: 320px;
+    background: rgba(153, 66, 10, .12);
+    animation: pdpMorph 19s ease-in-out infinite reverse, pdpDriftB 24s ease-in-out infinite;
+}
+
+/* ---------- Breadcrumbs ---------- */
+.pdp-breadcrumbs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 28px;
+    padding: 9px 18px;
+    border: 1px solid rgba(255, 255, 255, .8);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .55);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 24px -18px rgba(70, 42, 25, .4);
+    font-size: 11px;
+    letter-spacing: .65px;
+    text-transform: uppercase;
+    color: var(--muted);
+    animation: pdpFadeUp .6s ease both;
+}
+.pdp-breadcrumbs a { transition: color .2s ease; }
+.pdp-breadcrumbs a:hover { color: var(--pdp-brown); }
+.pdp-breadcrumbs .current {
+    color: var(--heading);
+    font-weight: 700;
+}
+
+.pdp-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(340px, .9fr);
+    align-items: start;
+    gap: 48px;
+}
+
+/* ---------- Gallery ---------- */
+.pdp-gallery {
+    min-width: 0;
+    animation: pdpFadeUp .7s .05s ease both;
+}
+.pdp-main-image {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 1.2 / 1;
+    background: linear-gradient(135deg, #f8eee8, #f1e0d3);
+    border: 1px solid var(--border);
+    border-radius: 32px 32px 32px 90px;
+    box-shadow: 0 30px 60px -34px rgba(70, 42, 25, .5);
+    cursor: zoom-in;
+    transition: border-radius .7s cubic-bezier(.2, .8, .2, 1), box-shadow .4s ease;
+}
+.pdp-main-image:hover {
+    border-radius: 90px 32px 32px 32px;
+    box-shadow: 0 40px 70px -34px rgba(70, 42, 25, .6);
+}
+.pdp-main-image:focus-visible {
+    outline: 3px solid #e6b894;
+    outline-offset: 4px;
+}
+.pdp-main-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform-origin: var(--zx, 50%) var(--zy, 50%);
+    transition: transform .5s cubic-bezier(.2, .7, .2, 1), opacity .35s ease;
+}
+.pdp-main-image:hover img { transform: scale(1.12); }
+.pdp-zoom-hint {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border: 1px solid rgba(255, 255, 255, .7);
+    border-radius: 50%;
+    background: rgba(255, 248, 244, .75);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: var(--heading);
+    box-shadow: 0 12px 22px -10px rgba(70, 42, 25, .5);
+    cursor: pointer;
+    transition: transform .25s ease, background .25s ease, color .25s ease;
+}
+.pdp-zoom-hint:hover {
+    transform: scale(1.1);
+    background: var(--pdp-brown);
+    color: #fff;
+}
+.pdp-zoom-hint svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+}
+.pdp-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+.pdp-thumb {
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 18px;
+    background: #f2e6dc;
+    box-shadow: 0 10px 20px -14px rgba(70, 42, 25, .5);
+    cursor: pointer;
+    transition: transform .3s cubic-bezier(.2, .8, .2, 1), border-color .25s ease, box-shadow .3s ease;
+}
+.pdp-thumb:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 28px -14px rgba(70, 42, 25, .55);
+}
+.pdp-thumb.active {
+    border-color: var(--pdp-brown);
+    box-shadow: 0 0 0 4px rgba(153, 66, 10, .14), 0 14px 24px -12px rgba(153, 66, 10, .5);
+}
+.pdp-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .5s ease;
+}
+.pdp-thumb:hover img { transform: scale(1.08); }
+.pdp-thumb:focus-visible,
+.pdp-zoom-hint:focus-visible {
+    outline: 3px solid #e6b894;
+    outline-offset: 3px;
+}
+
+/* ---------- Product information ---------- */
+.pdp-info {
+    min-width: 0;
+    position: sticky;
+    top: calc(var(--header-h, 76px) + 22px);
+    padding: 34px 32px 30px;
+    border: 1px solid rgba(255, 255, 255, .85);
+    border-radius: 36px 56px 36px 56px;
+    background: rgba(255, 255, 255, .62);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+    box-shadow:
+        0 34px 60px -36px rgba(70, 42, 25, .45),
+        inset 0 1px 0 rgba(255, 255, 255, .95);
+    animation: pdpFadeUp .7s .12s ease both;
+}
+.pdp-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--pdp-peach);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.pdp-eyebrow span { color: var(--pdp-brown); }
+.pdp-title {
+    margin: 0 0 12px;
+    color: var(--heading);
+    font-family: var(--font-serif);
+    font-size: clamp(34px, 3.4vw, 48px);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -.5px;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+.pdp-rating {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 22px;
+    font-size: 12px;
+}
+.pdp-stars {
+    background: linear-gradient(90deg, #e08a4a, #99420a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    letter-spacing: 1px;
+    font-size: 17px;
+}
+.pdp-rating-number { font-weight: 700; }
+.pdp-rating a {
+    color: var(--muted);
+    border-bottom: 1px solid transparent;
+    transition: color .2s ease, border-color .2s ease;
+}
+.pdp-rating a:hover { color: var(--pdp-brown); border-color: currentColor; }
+
+.pdp-price-box {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px 22px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(153, 66, 10, .12);
+    border-radius: 22px;
+    background:
+        radial-gradient(220px 120px at 100% 0%, rgba(201, 101, 42, .22) 0%, transparent 70%),
+        var(--pdp-peach);
+}
+.pdp-prices {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.pdp-price {
+    font-family: var(--font-serif);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--heading);
+    line-height: 1;
+}
+.pdp-old-price {
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: line-through;
+}
+.pdp-discount {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #c9652a, var(--pdp-brown));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .4px;
+    box-shadow: 0 8px 14px -8px rgba(201, 101, 42, .9);
+}
+.pdp-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: #e5f5e9;
+    color: #267342;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+.pdp-stock::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+.pdp-stock.low { background: #fff0d9; color: #8c590b; }
+.pdp-stock.low::before { animation: pdpPulse 1.6s ease-out infinite; }
+.pdp-stock.sold { background: #fde8e6; color: #a32d22; }
+.pdp-stock.sold::before { animation: pdpPulse 1.6s ease-out infinite; }
+
+.pdp-description {
+    margin: 0 0 24px;
+    color: var(--body-soft);
+    font-size: 14px;
+    line-height: 1.9;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+.pdp-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 24px 0 13px;
+    color: var(--heading);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+.pdp-section-heading > span::before,
+.pdp-section-heading:not(:has(span))::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: var(--pdp-orange);
+    vertical-align: middle;
+}
+.pdp-size-guide {
+    color: var(--pdp-brown);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s ease;
+}
+.pdp-size-guide:hover { border-color: currentColor; }
+
+.pdp-sizes {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+}
+.pdp-size {
+    min-width: 0;
+    height: 46px;
+    padding: 0 3px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 12.5px !important;
+    font-weight: 600;
+    transition: background .25s, color .25s, border-color .25s, transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s;
+}
+.pdp-size:hover:not(:disabled) {
+    border-color: var(--pdp-brown);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px -12px rgba(153, 66, 10, .55);
+}
+.pdp-size:focus-visible {
+    outline: 3px solid #e6b894;
+    outline-offset: 2px;
+}
+.pdp-size.selected {
+    border-color: transparent;
+    background: linear-gradient(135deg, #c9652a 0%, var(--pdp-brown) 100%);
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 14px 22px -10px rgba(153, 66, 10, .75);
+}
+.pdp-size:disabled {
+    opacity: .38;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    background: #f7f1ed;
+}
+.pdp-selected-size {
+    margin: 12px 0 0;
+    min-height: 18px;
+    color: var(--muted);
+    font-size: 12.5px;
+}
+.pdp-error {
+    display: none;
+    margin: 12px 0 0;
+    padding: 9px 14px;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: var(--danger);
+    font-size: 12.5px;
+}
+.pdp-error.show { display: block; animation: pdpShake .45s both; }
+
+/* ---------- Actions ---------- */
+.pdp-actions {
+    display: grid;
+    grid-template-columns: 104px minmax(0, 1fr) 52px;
+    gap: 12px;
+    margin-top: 26px;
+}
+.pdp-quantity {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    min-width: 0;
+    height: 54px;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+}
+.pdp-quantity button {
+    width: 30px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    transition: color .2s ease, background .2s ease;
+}
+.pdp-quantity button:hover:not(:disabled) { background: var(--pdp-peach); color: var(--pdp-brown); }
+.pdp-quantity button:disabled { opacity: .35; cursor: not-allowed; }
+.pdp-quantity input {
+    width: 24px;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--heading);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+.pdp-add {
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    min-height: 54px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #c9652a 0%, var(--pdp-brown) 100%);
+    color: #fff;
+    font-size: 12px !important;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 18px 30px -14px rgba(201, 101, 42, .95);
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+.pdp-add::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -60%;
+    width: 40%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .4), transparent);
+    transform: skewX(-20deg);
+    animation: pdpSweep 4s 1.5s ease-in-out infinite;
+}
+.pdp-add:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 36px -14px rgba(201, 101, 42, 1);
+}
+.pdp-add:active:not(:disabled) { transform: translateY(0) scale(.98); }
+.pdp-add:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    box-shadow: none;
+    filter: grayscale(35%);
+}
+
+.pdp-add:disabled::before {
+    display: none;
+}
+
+.pdp-add:not(:disabled) {
+    opacity: 1;
+    cursor: pointer;
+}
+.pdp-add:focus-visible { outline: 3px solid #e6b894; outline-offset: 3px; }
+
+.pdp-wishlist {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 54px;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    transition: background .25s ease, color .25s ease, border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+.pdp-wishlist svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform .3s ease, fill .25s ease;
+}
+.pdp-wishlist:hover {
+    background: var(--pdp-brown);
+    border-color: var(--pdp-brown);
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 16px 26px -12px rgba(153, 66, 10, .7);
+}
+.pdp-wishlist:hover svg { transform: scale(1.18); fill: #fff; }
+.pdp-wishlist:focus-visible { outline: 3px solid #e6b894; outline-offset: 3px; }
+
+/* Out-of-stock: wide wishlist button */
+.pdp-soldout-actions { margin-top: 22px; }
+.pdp-wishlist--wide {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    height: 54px;
+    padding: 0 22px;
+    border-radius: 999px;
+    border-color: rgba(153, 66, 10, .35);
+    background: var(--pdp-peach);
+    color: var(--pdp-brown);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.pdp-delivery-note {
+    margin-top: 18px;
+    padding: 15px 18px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .7);
+    color: var(--body-soft);
+    font-size: 12.5px;
+    line-height: 1.75;
+}
+.pdp-delivery-note strong { color: var(--heading); }
+
+/* ---------- Highlights, coupons and reviews ---------- */
+.pdp-details { margin-top: 70px; }
+.pdp-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 34px;
+}
+.pdp-detail-panel {
+    padding: 30px;
+    border: 1px solid rgba(255, 255, 255, .85);
+    border-radius: 32px 32px 32px 56px;
+    background: rgba(255, 255, 255, .62);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 26px 50px -34px rgba(70, 42, 25, .4);
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+.pdp-detail-panel:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 34px 56px -32px rgba(70, 42, 25, .5);
+}
+.pdp-detail-panel h2,
+.pdp-related h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 20px;
+    font-family: var(--font-serif);
+    font-size: 31px;
+    font-weight: 600;
+    letter-spacing: -.3px;
+    color: var(--heading);
+}
+.pdp-detail-panel h2::before,
+.pdp-related h2::before {
+    content: "";
+    width: 28px;
+    height: 4px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--pdp-orange), var(--pdp-brown));
+}
+.pdp-highlights {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.pdp-highlights li {
+    position: relative;
+    padding: 12px 0 12px 32px;
+    border-bottom: 1px solid var(--border);
+    color: var(--body-soft);
+    font-size: 13.5px;
+    line-height: 1.6;
+    transition: transform .25s ease, color .25s ease;
+}
+.pdp-highlights li:hover { transform: translateX(4px); color: var(--heading); }
+.pdp-highlights li:last-child { border-bottom: 0; }
+.pdp-highlights li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    top: 11px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--pdp-peach);
+    color: var(--pdp-brown);
+    font-size: 11px;
+    font-weight: 800;
+}
+.pdp-coupon {
+    position: relative;
+    margin-bottom: 14px;
+    padding: 16px 18px;
+    border: 1.5px dashed #d7a17f;
+    border-radius: 18px;
+    background:
+        radial-gradient(160px 80px at 100% 0%, rgba(201, 101, 42, .18) 0%, transparent 70%),
+        var(--pdp-peach);
+    transition: transform .25s ease;
+}
+.pdp-coupon:hover { transform: translateY(-3px) rotate(-.4deg); }
+.pdp-coupon strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--pdp-brown);
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+.pdp-coupon p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.pdp-empty-note { color: var(--muted); font-size: 13.5px; line-height: 1.75; }
+
+.pdp-reviews { margin-top: 34px; }
+.pdp-review {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+}
+.pdp-review:last-child { border-bottom: 0; }
+.pdp-review-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+}
+.pdp-review p { color: var(--body-soft); font-size: 13.5px; line-height: 1.75; }
+
+/* ---------- Related products ---------- */
+.pdp-related { margin-top: 80px; }
+.pdp-related-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px 20px;
+}
+.pdp-related-card {
+    min-width: 0;
+    padding: 10px 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(70, 42, 25, .04), 0 18px 34px -26px rgba(70, 42, 25, .35);
+    transition: transform .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s ease, border-color .35s ease;
+}
+.pdp-related-card:hover {
+    transform: translateY(-6px);
+    border-color: #ecd2c0;
+    box-shadow: 0 32px 50px -26px rgba(70, 42, 25, .45);
+}
+.pdp-related-image {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 4 / 4.6;
+    border-radius: 20px 20px 20px 60px;
+    background: linear-gradient(135deg, #f8eee8, #f3e3d8);
+    transition: border-radius .6s cubic-bezier(.2, .8, .2, 1);
+}
+.pdp-related-card:hover .pdp-related-image { border-radius: 60px 20px 20px 20px; }
+.pdp-related-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .7s cubic-bezier(.2, .7, .2, 1);
+}
+.pdp-related-card:hover img { transform: scale(1.08); }
+.pdp-related-card h3 {
+    margin: 14px 8px 5px;
+    font-family: var(--font-serif);
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.15;
+}
+.pdp-related-card h3 a { transition: color .2s ease; }
+.pdp-related-card h3 a:hover { color: var(--pdp-brown); }
+.pdp-related-card p { margin: 0 8px; color: var(--pdp-brown); font-size: 15px; font-weight: 800; }
+
+/* ---------- Zoom viewer ---------- */
+.pdp-lightbox[hidden] { display: none; }
+.pdp-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    background: rgba(25, 17, 13, .86);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    animation: pdpFade .3s ease both;
+}
+.pdp-lightbox-image-wrap {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    max-width: 90vw;
+    max-height: 82vh;
+    border-radius: 28px;
+    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .8);
+    animation: pdpPop .4s cubic-bezier(.2, .8, .2, 1) both;
+}
+.pdp-lightbox img {
+    max-width: 88vw;
+    max-height: 80vh;
+    object-fit: contain;
+    transform: scale(1);
+    transition: transform .2s ease;
+    cursor: zoom-in;
+}
+.pdp-lightbox-toolbar {
+    position: absolute;
+    top: 20px;
+    right: 22px;
+    display: flex;
+    gap: 8px;
+}
+.pdp-lightbox-toolbar button,
+.pdp-lightbox-arrow {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border: 1px solid rgba(255, 255, 255, .3);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .12);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    transition: background .2s ease, transform .2s ease;
+}
+.pdp-lightbox-toolbar button:hover,
+.pdp-lightbox-arrow:hover { background: rgba(255, 255, 255, .28); transform: scale(1.08); }
+.pdp-lightbox-caption {
+    position: absolute;
+    bottom: 18px;
+    left: 0;
+    right: 0;
+    color: rgba(255, 255, 255, .85);
+    text-align: center;
+    font-size: 12px;
+}
+
+/* ---------- Scroll reveal ---------- */
+.js .pdp-reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .8s cubic-bezier(.2, .7, .2, 1), transform .8s cubic-bezier(.2, .7, .2, 1);
+}
+.js .pdp-reveal.is-visible { opacity: 1; transform: none; }
+
+/* ---------- Animations ---------- */
+@keyframes pdpFadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes pdpFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pdpPop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes pdpShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
+@keyframes pdpSweep { 0% { left: -60%; } 40%, 100% { left: 140%; } }
+@keyframes pdpPulse { 0% { box-shadow: 0 0 0 0 rgba(163, 45, 34, .5); } 70%, 100% { box-shadow: 0 0 0 9px rgba(163, 45, 34, 0); } }
+@keyframes pdpMorph {
+    0%, 100% { border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%; }
+    50%      { border-radius: 36% 64% 58% 42% / 62% 38% 62% 38%; }
+}
+@keyframes pdpDriftA { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(60px, 40px); } }
+@keyframes pdpDriftB { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-50px, -40px); } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1000px) {
+    .pdp { padding: 26px 26px 80px; }
+    .pdp-main { gap: 28px; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); }
+    .pdp-sizes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .pdp-info { padding: 28px 24px 26px; }
+}
+@media (max-width: 760px) {
+    .pdp { padding: 22px 18px 70px; }
+    .pdp-main { grid-template-columns: 1fr; gap: 26px; }
+    .pdp-main-image { aspect-ratio: 1 / .88; border-radius: 26px 26px 26px 64px; }
+    .pdp-main-image:hover { border-radius: 64px 26px 26px 26px; }
+    .pdp-info {
+        position: static;
+        padding: 26px 20px 24px;
+        border-radius: 28px 40px 28px 40px;
+    }
+    .pdp-title { font-size: 37px; }
+    .pdp-details { margin-top: 50px; }
+    .pdp-details-grid { grid-template-columns: 1fr; gap: 18px; }
+    .pdp-detail-panel { padding: 24px 20px; border-radius: 26px 26px 26px 40px; }
+    .pdp-related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
+    .pdp-related-card { padding: 7px 7px 12px; border-radius: 22px; }
+    .pdp-related-card h3 { font-size: 18px; margin-left: 4px; margin-right: 4px; }
+    .pdp-related-card p { margin-left: 4px; }
+}
+@media (max-width: 420px) {
+    .pdp { padding: 18px 13px 50px; }
+    .pdp-breadcrumbs { font-size: 10px; gap: 6px; padding: 8px 14px; }
+    .pdp-title { font-size: 33px; }
+    .pdp-actions { grid-template-columns: 92px minmax(0, 1fr) 46px; gap: 8px; }
+    .pdp-wishlist { width: 46px; }
+    .pdp-add { font-size: 10.5px !important; }
+    .pdp-thumbnails { gap: 8px; }
+    .pdp-sizes { gap: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .pdp *, .pdp::before, .pdp::after, .pdp-lightbox, .pdp-lightbox * {
+        animation: none !important;
+        transition: none !important;
+    }
+    .js .pdp-reveal { opacity: 1; transform: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<script>document.documentElement.classList.add("js");</script>
+
+<div class="pdp">
+
+    <!-- Breadcrumbs -->
+    <nav class="pdp-breadcrumbs" aria-label="Breadcrumb">
+        <a href="{% url 'home' %}">Home</a>
+        <span>/</span>
+        <a href="{% url 'shop' %}">Shop</a>
+        {% if product.category %}
+            <span>/</span>
+            <span>{{ product.category.name }}</span>
+        {% endif %}
+        <span>/</span>
+        <span class="current">{{ product.name }}</span>
+    </nav>
+
+    <div class="pdp-main">
+
+        <!-- Image gallery -->
+        <section class="pdp-gallery" aria-label="Product images">
+            <div class="pdp-main-image" id="pdpMainImage"
+                 role="button" tabindex="0"
+                 aria-label="Open product image zoom">
+                {% with first_image=product_images|first %}
+                    {% if first_image and first_image.image %}
+                        <img id="pdpHeroImage"
+                             src="{{ first_image.image.url }}"
+                             alt="{{ product.name }}"
+                             fetchpriority="high">
+                    {% else %}
+                        <img id="pdpHeroImage"
+                             src="https://placehold.co/800x800/f2e6dc/99420a?text=HerSteps"
+                             alt="{{ product.name }}">
+                    {% endif %}
+                {% endwith %}
+
+                <button type="button" class="pdp-zoom-hint"
+                        id="pdpOpenZoom" aria-label="Zoom product image">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/>
+                        <path d="M8 8 3 3M16 8l5-5M8 16l-5 5M16 16l5 5"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="pdp-thumbnails" id="pdpThumbnails">
+                {% for image in product_images %}
+                    {% if image.image %}
+                    <button type="button"
+                            class="pdp-thumb {% if forloop.first %}active{% endif %}"
+                            data-image="{{ image.image.url }}"
+                            aria-label="View product image {{ forloop.counter }}"
+                            aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
+                        <img src="{{ image.image.url }}"
+                             alt="{{ product.name }} view {{ forloop.counter }}"
+                             loading="lazy">
+                    </button>
+                    {% endif %}
+                {% empty %}
+                    <button type="button" class="pdp-thumb active"
+                            data-image="https://placehold.co/800x800/f2e6dc/99420a?text=HerSteps"
+                            aria-label="View product image">
+                        <img src="https://placehold.co/200x200/f2e6dc/99420a?text=HerSteps"
+                             alt="{{ product.name }}">
+                    </button>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Product information -->
+        <section class="pdp-info">
+            <p class="pdp-eyebrow">
+                <span>HerSteps</span>
+                &nbsp;•&nbsp; Curated Footwear
+            </p>
+
+            <h1 class="pdp-title">{{ product.name }}</h1>
+
+            <div class="pdp-rating">
+                <span class="pdp-stars" aria-label="Product rating">
+                    {% if product.rating %}
+                        ★★★★★
+                    {% else %}
+                        ☆☆☆☆☆
+                    {% endif %}
+                </span>
+                {% if product.rating %}
+                    <span class="pdp-rating-number">{{ product.rating|floatformat:1 }}</span>
+                {% else %}
+                    <span class="pdp-rating-number">New</span>
+                {% endif %}
+                <span>·</span>
+                <a href="#pdpReviews">Read reviews</a>
+            </div>
+
+            <div class="pdp-price-box">
+                <div class="pdp-prices">
+                    <span class="pdp-price">₹{{ product.price|floatformat:2 }}</span>
+                    {% if product.discount_percentage %}
+                        <span class="pdp-discount">
+                            {{ product.discount_percentage }}% OFF
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if is_sold_out %}
+                    <span class="pdp-stock sold">Sold out</span>
+                {% elif total_stock <= 5 %}
+                    <span class="pdp-stock low">Only {{ total_stock }} left</span>
+                {% else %}
+                    <span class="pdp-stock">In stock</span>
+                {% endif %}
+            </div>
+
+            {% if product.description %}
+                <p class="pdp-description">{{ product.description }}</p>
+            {% endif %}
+
+            {% if product.color or product.occasion %}
+                <div class="pdp-section-heading">Product details</div>
+                <div class="pdp-delivery-note">
+                    {% if product.color %}
+                        <strong>Color:</strong> {{ product.color }}<br>
+                    {% endif %}
+                    {% if product.occasion %}
+                        <strong>Occasion:</strong> {{ product.occasion }}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="pdp-section-heading">
+                <span>Size (UK / India)</span>
+                <a href="#pdpSizeGuide" class="pdp-size-guide">Size guide ↗</a>
+            </div>
+
+            {% if is_sold_out %}
+                <p class="pdp-empty-note">
+                    This product is currently out of stock in all sizes.
+                    Please explore our other styles below.
+                </p>
+
+                <!-- Out of stock: the shopper can still save the product to the wishlist. -->
+                <div class="pdp-soldout-actions">
+                    <button class="pdp-wishlist pdp-wishlist--wide" type="button"
+                            id="pdpWishlistButton"
+                            aria-label="Add to wishlist"
+                            title="Add to wishlist">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
+                        </svg>
+                        <span>ADD TO WISHLIST</span>
+                    </button>
+                </div>
+            {% else %}
+                <div class="pdp-sizes" id="pdpSizes">
+                    {% for variant in variants %}
+                        <button type="button"
+                                class="pdp-size"
+                                data-size="{{ variant.size }}"
+                                data-stock="{{ variant.stock }}"
+                                {% if variant.stock <= 0 %}disabled{% endif %}
+                                aria-pressed="false">
+                            {{ variant.size }}
+                        </button>
+                    {% endfor %}
+                </div>
+
+                <p class="pdp-selected-size" id="pdpSelectedSize">
+                    Select your size to continue.
+                </p>
+                <p class="pdp-error" id="pdpSizeError" role="alert">
+                    Please select an available size.
+                </p>
+                <p class="pdp-error" id="pdpStockError" role="alert">
+                    The selected quantity is not available in stock.
+                </p>
+
+                <!-- Connect this form to your existing cart endpoint. -->
+                <form method="post"
+                      action="#"
+                      id="pdpCartForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.pk }}">
+                    <input type="hidden" name="size" id="pdpSizeInput">
+                    <input type="hidden" name="quantity" id="pdpQuantityInput" value="1">
+
+                    <div class="pdp-actions">
+                        <div class="pdp-quantity">
+                            <button type="button" id="pdpQtyMinus"
+                                    aria-label="Decrease quantity">−</button>
+                            <input type="text" id="pdpQtyDisplay"
+                                   value="1" readonly aria-label="Quantity">
+                            <button type="button" id="pdpQtyPlus"
+                                    aria-label="Increase quantity">+</button>
+                        </div>
+
+                        <button class="pdp-add" type="submit" id="pdpAddButton" disabled>
+                                    ♧ &nbsp; ADD TO CART
+                                </button>
+
+                        <button class="pdp-wishlist" type="button"
+                                id="pdpWishlistButton"
+                                aria-label="Add to wishlist"
+                                title="Add to wishlist">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            {% endif %}
+
+            <div class="pdp-delivery-note">
+                <strong>Made for your everyday.</strong><br>
+                Check your size before adding this style to your bag.
+                Stock is checked again when the cart action is processed.
+            </div>
+        </section>
+    </div>
+
+    <!-- Highlights, coupons and size guide -->
+    <section class="pdp-details">
+        <div class="pdp-details-grid">
+
+            <div class="pdp-detail-panel pdp-reveal">
+                <h2>Product highlights</h2>
+                <ul class="pdp-highlights">
+                    {% if product.color %}
+                        <li>Color: {{ product.color }}</li>
+                    {% endif %}
+                    {% if product.occasion %}
+                        <li>Suitable for: {{ product.occasion }}</li>
+                    {% endif %}
+                    {% if product.category %}
+                        <li>Collection: {{ product.category.name }}</li>
+                    {% endif %}
+                    <li>Designed for everyday style and comfort.</li>
+                    <li>Choose your available UK size before checkout.</li>
+                </ul>
+            </div>
+
+            <div class="pdp-detail-panel pdp-reveal" style="transition-delay:.1s">
+                <h2>Offers &amp; coupons</h2>
+                {% for coupon in coupons %}
+                    <div class="pdp-coupon">
+                        <strong>{{ coupon.code }}</strong>
+                        <p>{{ coupon.description }}</p>
+                    </div>
+                {% empty %}
+                    <p class="pdp-empty-note">
+                        No product-specific coupons are available right now.
+                        Check the offers section for current promotions.
+                    </p>
+                    <a href="{% url 'home' %}#sale" class="pdp-size-guide">
+                        Explore current offers →
+                    </a>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <div class="pdp-detail-panel pdp-reviews pdp-reveal" id="pdpReviews">
+            <h2>Customer reviews</h2>
+            {% for review in reviews %}
+                <article class="pdp-review">
+                    <div class="pdp-review-top">
+                        <span>{{ review.user.fullname|default:"Customer" }}</span>
+                        <span class="pdp-stars">{{ review.rating }} ★</span>
+                    </div>
+                    <p>{{ review.comment }}</p>
+                </article>
+            {% empty %}
+                <p class="pdp-empty-note">
+                    There are no customer reviews for this product yet.
+                    Be the first to share your experience after purchasing.
+                </p>
+            {% endfor %}
+        </div>
+
+        
+    </section>
+
+    <!-- Related products -->
+    <section class="pdp-related">
+        <h2 class="pdp-reveal">You may also like</h2>
+        <div class="pdp-related-grid">
+            {% for item in related_products %}
+                <article class="pdp-related-card pdp-reveal" style="transition-delay: {{ forloop.counter0 }}00ms">
+                    <a class="pdp-related-image"
+                       href="{% url 'product_detail' item.uuid %}">
+                        {% with related_image=item.images.all|first %}
+                            {% if related_image and related_image.image %}
+                                <img src="{{ related_image.image.url }}"
+                                     alt="{{ item.name }}" loading="lazy">
+                            {% else %}
+                                <img src="https://placehold.co/500x575/f2e6dc/99420a?text=HerSteps"
+                                     alt="{{ item.name }}" loading="lazy">
+                            {% endif %}
+                        {% endwith %}
+                    </a>
+                    <h3>
+                        <a href="{% url 'product_detail' item.uuid %}">
+                            {{ item.name }}
+                        </a>
+                    </h3>
+                    <p>₹{{ item.price|floatformat:2 }}</p>
+                </article>
+            {% empty %}
+                <p class="pdp-empty-note">
+                    More styles are coming soon. Explore our shop for other options.
+                    <a href="{% url 'shop' %}" class="pdp-size-guide">
+                        Shop all products →
+                    </a>
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<!-- Image zoom viewer -->
+<div class="pdp-lightbox" id="pdpLightbox" hidden
+     role="dialog" aria-modal="true" aria-label="Product image viewer">
+    <div class="pdp-lightbox-toolbar">
+        <button type="button" id="pdpZoomOut" aria-label="Zoom out">−</button>
+        <button type="button" id="pdpZoomIn" aria-label="Zoom in">+</button>
+        <button type="button" id="pdpZoomReset" aria-label="Reset zoom">↺</button>
+        <button type="button" id="pdpZoomClose" aria-label="Close image viewer">×</button>
+    </div>
+    <div class="pdp-lightbox-image-wrap">
+        <img src="" alt="" id="pdpLightboxImage">
+    </div>
+    <div class="pdp-lightbox-caption">
+        Use + and − to zoom. Press Escape to close.
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    "use strict";
+
+    const hero = document.getElementById("pdpHeroImage");
+    const mainImage = document.getElementById("pdpMainImage");
+    const thumbnails = document.getElementById("pdpThumbnails");
+    const lightbox = document.getElementById("pdpLightbox");
+    const lightboxImage = document.getElementById("pdpLightboxImage");
+
+    if (!hero || !mainImage || !lightbox || !lightboxImage) return;
+
+    /* Image gallery */
+    if (thumbnails) {
+        thumbnails.addEventListener("click", function (event) {
+            const button = event.target.closest(".pdp-thumb");
+            if (!button || !button.dataset.image) return;
+
+            hero.src = button.dataset.image;
+            hero.alt = "{{ product.name|escapejs }}";
+
+            thumbnails.querySelectorAll(".pdp-thumb").forEach(function (thumb) {
+                const active = thumb === button;
+                thumb.classList.toggle("active", active);
+                thumb.setAttribute("aria-pressed", String(active));
+            });
+        });
+    }
+
+    /* Zoom in, zoom out, reset and close */
+    let zoom = 1;
+    let previousFocus = null;
+
+    function updateZoom() {
+        lightboxImage.style.transform = "scale(" + zoom + ")";
+        lightboxImage.style.cursor = zoom > 1 ? "zoom-out" : "zoom-in";
+    }
+
+    function openZoom() {
+        previousFocus = document.activeElement;
+        lightboxImage.src = hero.src;
+        lightboxImage.alt = hero.alt;
+        zoom = 1;
+        updateZoom();
+        lightbox.hidden = false;
+        document.body.style.overflow = "hidden";
+        document.getElementById("pdpZoomClose").focus();
+    }
+
+    function closeZoom() {
+        lightbox.hidden = true;
+        document.body.style.overflow = "";
+        zoom = 1;
+        updateZoom();
+        if (previousFocus) previousFocus.focus();
+    }
+
+    mainImage.addEventListener("click", openZoom);
+    mainImage.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openZoom();
+        }
+    });
+
+    document.getElementById("pdpOpenZoom").addEventListener("click", function (event) {
+        event.stopPropagation();
+        openZoom();
+    });
+
+    document.getElementById("pdpZoomIn").addEventListener("click", function () {
+        zoom = Math.min(zoom + 0.25, 3);
+        updateZoom();
+    });
+
+    document.getElementById("pdpZoomOut").addEventListener("click", function () {
+        zoom = Math.max(zoom - 0.25, 1);
+        updateZoom();
+    });
+
+    document.getElementById("pdpZoomReset").addEventListener("click", function () {
+        zoom = 1;
+        updateZoom();
+    });
+
+    document.getElementById("pdpZoomClose").addEventListener("click", closeZoom);
+
+    lightbox.addEventListener("click", function (event) {
+        if (event.target === lightbox) closeZoom();
+    });
+
+    lightboxImage.addEventListener("click", function () {
+        zoom = zoom >= 3 ? 1 : Math.min(zoom + 0.5, 3);
+        updateZoom();
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (lightbox.hidden) return;
+        if (event.key === "Escape") closeZoom();
+        if (event.key === "+" || event.key === "=") {
+            zoom = Math.min(zoom + 0.25, 3);
+            updateZoom();
+        }
+        if (event.key === "-") {
+            zoom = Math.max(zoom - 0.25, 1);
+            updateZoom();
+        }
+    });
+
+    /* Variant and quantity selection */
+    const sizeButtons = document.querySelectorAll(".pdp-size");
+    const sizeInput = document.getElementById("pdpSizeInput");
+    const qtyInput = document.getElementById("pdpQuantityInput");
+    const qtyDisplay = document.getElementById("pdpQtyDisplay");
+    const qtyMinus = document.getElementById("pdpQtyMinus");
+    const qtyPlus = document.getElementById("pdpQtyPlus");
+    const sizeText = document.getElementById("pdpSelectedSize");
+    const sizeError = document.getElementById("pdpSizeError");
+    const stockError = document.getElementById("pdpStockError");
+    const cartForm = document.getElementById("pdpCartForm");
+    const addButton = document.getElementById("pdpAddButton");
+
+    let selectedStock = 0;
+    let selectedSize = "";
+
+    function quantity() {
+        return parseInt(qtyInput.value || "1", 10);
+    }
+
+    function updateQuantity(value) {
+        const max = selectedStock > 0 ? selectedStock : 1;
+        const next = Math.max(1, Math.min(value, max));
+        qtyInput.value = String(next);
+        qtyDisplay.value = String(next);
+        qtyMinus.disabled = next <= 1;
+        qtyPlus.disabled = next >= max;
+        stockError.classList.remove("show");
+    }
+
+    sizeButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            if (button.disabled) return;
+
+            sizeButtons.forEach(function (other) {
+                const active = other === button;
+                other.classList.toggle("selected", active);
+                other.setAttribute("aria-pressed", String(active));
+            });
+
+            selectedSize = button.dataset.size;
+            selectedStock = parseInt(button.dataset.stock || "0", 10);
+            sizeInput.value = selectedSize;
+            
+            addButton.disabled = selectedStock <= 0;
+            sizeText.textContent =
+                "Selected: UK " + selectedSize +
+                " · " + selectedStock + " available";
+
+            sizeError.classList.remove("show");
+            updateQuantity(1);
+        });
+    });
+
+    if (qtyMinus && qtyPlus && qtyInput) {
+        qtyMinus.addEventListener("click", function () {
+            updateQuantity(quantity() - 1);
+        });
+        qtyPlus.addEventListener("click", function () {
+            if (quantity() >= selectedStock) {
+                stockError.textContent = "Only " + selectedStock +
+                    " units are available in this size.";
+                stockError.classList.add("show");
+                return;
+            }
+            updateQuantity(quantity() + 1);
+        });
+    }
+    if (addButton) {
+    addButton.disabled = true;
+    }
+
+    if (cartForm) {
+        cartForm.addEventListener("submit", function (event) {
+            if (!selectedSize) {
+                event.preventDefault();
+                sizeError.classList.add("show");
+                sizeText.textContent = "Please select an available size.";
+                return;
+            }
+
+            if (quantity() > selectedStock || selectedStock <= 0) {
+                event.preventDefault();
+                stockError.textContent =
+                    "The selected quantity is not available in stock.";
+                stockError.classList.add("show");
+            }
+        });
+    }
+
+    /* Wishlist requires your existing wishlist endpoint.
+       The same button (and handler) is used whether the product is
+       in stock or sold out. */
+    const wishlistButton = document.getElementById("pdpWishlistButton");
+    if (wishlistButton) {
+        wishlistButton.addEventListener("click", function () {
+            window.location.href =
+                "{% url 'home' %}?wishlist_product={{ product.pk }}";
+        });
+    }
+})();
+
+/* ---------- Visual effects only (no effect on the logic above) ---------- */
+(function () {
+
+    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal for the lower sections */
+    var items = document.querySelectorAll(".pdp-reveal");
+
+    if ("IntersectionObserver" in window && !reduceMotion) {
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+
+        items.forEach(function (el) { observer.observe(el); });
+    } else {
+        items.forEach(function (el) { el.classList.add("is-visible"); });
+    }
+
+    /* Hover zoom follows the pointer */
+    var frame = document.getElementById("pdpMainImage");
+
+    if (frame && !reduceMotion &&
+        window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+
+        frame.addEventListener("mousemove", function (e) {
+            var r = frame.getBoundingClientRect();
+            frame.style.setProperty("--zx", ((e.clientX - r.left) / r.width * 100) + "%");
+            frame.style.setProperty("--zy", ((e.clientY - r.top) / r.height * 100) + "%");
+        });
+
+        frame.addEventListener("mouseleave", function () {
+            frame.style.setProperty("--zx", "50%");
+            frame.style.setProperty("--zy", "50%");
+        });
+    }
+})();
+</script>
+{% endblock %}

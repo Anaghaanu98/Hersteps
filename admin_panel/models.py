@@ -1,10 +1,14 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
-import uuid
+import uuid,re
+from django.db.models.functions import Lower
+from django.core.exceptions import ValidationError
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     is_active = models.BooleanField(default=True)
-
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -118,3 +122,66 @@ class ProductVariant(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - UK {self.size}"
+
+class Banner(models.Model):
+    name = models.CharField(max_length=150)
+    image = CloudinaryField("image")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower("name"),
+                name="unique_banner_name_case_insensitive",
+            )
+        ]
+
+    def clean(self):
+        super().clean()
+
+        # Normalize spaces before validating the name.
+        self.name = " ".join((self.name or "").split())
+
+        if not self.name:
+            raise ValidationError({
+                "name": "Banner name cannot be empty."
+            })
+
+        if not re.fullmatch(r"[A-Za-z]+(?: [A-Za-z]+)*", self.name):
+            raise ValidationError({
+                "name": (
+                    "Banner name can contain only English letters "
+                    "and single spaces between words."
+                )
+            })
+
+        duplicate = Banner.objects.filter(
+            name__iexact=self.name
+        ).exclude(pk=self.pk)
+
+        if duplicate.exists():
+            raise ValidationError({
+                "name": "A banner with this name already exists."
+            })
+
+        if self.is_active:
+            active_banners = Banner.objects.filter(
+                is_active=True
+            ).exclude(pk=self.pk)
+
+            if active_banners.count() >= 2:
+                raise ValidationError({
+                    "is_active": (
+                        "Only two banners can be active at a time."
+                    )
+                })
+
+    def save(self, *args, **kwargs):
+        self.name = " ".join((self.name or "").split())
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
