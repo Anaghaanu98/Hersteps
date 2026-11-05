@@ -522,20 +522,21 @@
                             {% endif %}
 
                             <form method="POST"
-                                  action="{% url 'admin_panel:toggle_product_status' product.uuid %}"
-                                  class="toggle-form">
-                                {% csrf_token %}
+                            action="{% url 'admin_panel:toggle_product_status' product.uuid %}?page={{ page_obj.number }}&q={{ search_query|urlencode }}"
+                            class="toggle-form">
 
-                                <label class="toggle-switch">
-                                    <input
-                                        type="checkbox"
-                                        {% if product.is_active %}checked{% endif %}
-                                        onchange="this.form.submit()"
-                                        aria-label="Toggle {{ product.name }} status"
-                                    >
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </form>
+                            {% csrf_token %}
+
+                            <label class="toggle-switch">
+                                <input
+                                    type="checkbox"
+                                    {% if product.is_active %}checked{% endif %}
+                                    onchange="this.form.submit()"
+                                    aria-label="Toggle {{ product.name }} status"
+                                >
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </form>
                         {% endif %}
                     </td>
 

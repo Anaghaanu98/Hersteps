@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
-from django.db.models import Sum, Prefetch,Q,Max,Min,Exists,OuterRef
+from django.db.models import Sum, Prefetch,Q,Max,Min,Exists,OuterRef,Value,IntegerField
 from decimal import Decimal, InvalidOperation
 
 from admin_panel.models import Product, Category, ProductVariant,Banner
 from decimal import Decimal, InvalidOperation
-
+from django.db.models.functions import Coalesce
 from django.db.models import Q, Min, Max
 from django.shortcuts import render
 
@@ -59,9 +59,26 @@ def home_view(request):
 def shop_view(request):
 
     # -----------------------------------
+    # AUTOMATICALLY DISABLE ZERO-STOCK PRODUCTS
+    # -----------------------------------
+
+    Product.objects.annotate(
+        calculated_stock=Coalesce(
+            Sum("variants__stock"),
+            Value(0),
+            output_field=IntegerField(),
+        )
+    ).filter(
+        calculated_stock__lte=0,
+        is_active=True,
+    ).update(
+        is_active=False
+    )
+
+    # -----------------------------------
     # BASE PRODUCTS
-    # Show all active products in active categories.
-    # Do not exclude products based on stock.
+    # Show only active products in active categories.
+    # Zero-stock products are automatically inactive.
     # -----------------------------------
 
     products = Product.objects.filter(
@@ -73,10 +90,6 @@ def shop_view(request):
         "images",
         "variants"
     )
-
-    # -----------------------------------
-    # SEARCH
-    # -----------------------------------
 
     search_query = request.GET.get("q", "").strip()
 
@@ -93,7 +106,6 @@ def shop_view(request):
 
     # -----------------------------------
     # CATEGORY FILTER
-    # Multiple categories can be selected.
     # -----------------------------------
 
     categories = Category.objects.filter(
@@ -102,11 +114,9 @@ def shop_view(request):
 
     selected_categories = request.GET.getlist("category")
 
-    # If All Products is selected, remove category filtering.
     if "all" in selected_categories:
         selected_categories = []
 
-    # Keep only valid active category IDs.
     valid_category_ids = list(
         categories.filter(
             pk__in=selected_categories
@@ -124,8 +134,6 @@ def shop_view(request):
             category_id__in=selected_categories
         )
 
-        # Show the category name in the heading
-        # only when exactly one category is selected.
         if len(selected_categories) == 1:
             selected_category_name = categories.filter(
                 pk=selected_categories[0]

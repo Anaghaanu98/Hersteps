@@ -1092,12 +1092,10 @@
                     {% for product in products %}
                         <article class="home-product-card reveal" style="--i: {{ forloop.counter0 }}">
 
-                            {% comment %} {# Product detail link (dummy for now).
-                               When the detail page exists, replace the href with:
-                               {% url 'product_detail' product.pk %} #} {% endcomment %}
-                            <a href="#product-{{ product.pk }}"
+                            
+                            <a href="{% url 'product_detail' product.uuid %}"
                                class="card-link"
-                               data-product-id="{{ product.pk }}"
+                               data-product-id="{{ product.uuid}}"
                                aria-label="View {{ product.name }}">
 
                                 <div class="home-product-image">
@@ -1284,7 +1282,7 @@
                     </article>
 
                     <article class="home-product-card reveal" style="--i: 3">
-                        <a href="#" class="card-link" aria-label="View Everyday Sneakers offer">
+                        <a href="#" class="card-link" aria-label="View {{ product.name }}">
                             <div class="home-product-image">
                                 <div class="home-product-image-placeholder">HERSTEPS</div>
                                 <span class="sale-tag">-20%</span>

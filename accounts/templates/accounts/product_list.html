@@ -819,7 +819,29 @@
     color: var(--heading);
     text-align: left;
 }
+/* Make the complete product card clickable */
+.product-card {
+    position: relative;
+}
 
+.product-card-link {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: block;
+    border-radius: 22px;
+    text-decoration: none;
+}
+
+.product-card-link:focus-visible {
+    outline: 3px solid var(--orange);
+    outline-offset: 4px;
+}
+
+/* Keep wishlist above the product link */
+.wishlist-btn {
+    z-index: 3;
+}
 .product-price {
     color: var(--brown);
     font-size: 15px;
@@ -1387,8 +1409,14 @@
 
                     <article class="product-card">
 
-                        <!-- All product images are rendered; they play as a
-                             slideshow while the pointer is over the card. -->
+    <!-- Clickable link covering the complete product card -->
+                        <a
+                            href="{% url 'product_detail' product.uuid %}"
+                            class="product-card-link"
+                            aria-label="View {{ product.name }} details"
+                        ></a>
+
+                        <!-- Product images -->
                         <div class="product-image" data-slideshow>
 
                             {% for product_image in product.images.all %}
@@ -1414,59 +1442,56 @@
                                 </div>
                             {% endif %}
 
+                                <!-- Wishlist -->
+                                {% if user.is_authenticated %}
 
-                            <!-- WISHLIST -->
+                                    <button
+                                        type="button"
+                                        class="wishlist-btn"
+                                        data-product-id="{{ product.id }}"
+                                        aria-label="Add {{ product.name }} to wishlist"
+                                        title="Add to wishlist"
+                                    >
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
+                                        </svg>
+                                    </button>
 
-                            {% if user.is_authenticated %}
+                                {% else %}
 
-                                <button
-                                    type="button"
-                                    class="wishlist-btn"
-                                    data-product-id="{{ product.id }}"
-                                    aria-label="Add {{ product.name }} to wishlist"
-                                    title="Add to wishlist"
-                                >
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
-                                    </svg>
-                                </button>
+                                    <a
+                                        href="{% url 'login' %}"
+                                        class="wishlist-btn"
+                                        aria-label="Login to add to wishlist"
+                                        title="Login to add to wishlist"
+                                    >
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
+                                        </svg>
+                                    </a>
 
-                            {% else %}
+                                {% endif %}
 
-                                <a
-                                    href="{% url 'login' %}"
-                                    class="wishlist-btn"
-                                    aria-label="Login to add to wishlist"
-                                    title="Login to add to wishlist"
-                                >
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
-                                    </svg>
-                                </a>
-
-                            {% endif %}
-
-                        </div>
-
-
-                        <div class="product-details">
-
-                            <div class="product-category">
-                                {{ product.category.name }}
                             </div>
 
-                            <h3 class="product-name">
-                                {{ product.name }}
-                            </h3>
+                            <!-- Product information -->
+                            <div class="product-details">
 
-                            <div class="product-price">
-                                ₹{{ product.price|floatformat:2 }}
+                                <div class="product-category">
+                                    {{ product.category.name }}
+                                </div>
+
+                                <h3 class="product-name">
+                                    {{ product.name }}
+                                </h3>
+
+                                <div class="product-price">
+                                    ₹{{ product.price|floatformat:2 }}
+                                </div>
+
                             </div>
 
-                        </div>
-
-                    </article>
-
+                        </article>
                 {% empty %}
 
                     <div class="empty-products">
