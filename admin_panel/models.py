@@ -4,6 +4,7 @@ import uuid,re
 from django.core.exceptions import ValidationError
 from django.db.models.functions import Lower
 
+
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     is_active = models.BooleanField(default=True)
@@ -13,7 +14,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-# Create your models here.
+
 class Product(models.Model):
     uuid=models.UUIDField(default=uuid.uuid4,unique=True,editable=False)
     class ColorChoices(models.TextChoices):
