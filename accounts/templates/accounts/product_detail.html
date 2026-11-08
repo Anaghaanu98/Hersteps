@@ -545,7 +545,21 @@
 }
 .pdp-wishlist:hover svg { transform: scale(1.18); fill: #fff; }
 .pdp-wishlist:focus-visible { outline: 3px solid #e6b894; outline-offset: 3px; }
+/* Product added to wishlist */
+.pdp-wishlist.is-added,
+.pdp-wishlist.is-added:hover {
+    background: #fff;
+    color: #e53955;
+    border-color: #e53955;
+    transform: none;
+    box-shadow: none;
+}
 
+.pdp-wishlist.is-added svg,
+.pdp-wishlist.is-added:hover svg {
+    fill: #e53955;
+    stroke: #e53955;
+}
 /* Out-of-stock: wide wishlist button */
 .pdp-soldout-actions { margin-top: 22px; }
 .pdp-wishlist--wide {
@@ -1015,10 +1029,16 @@
 
                 <!-- Out of stock: the shopper can still save the product to the wishlist. -->
                 <div class="pdp-soldout-actions">
-                    <button class="pdp-wishlist pdp-wishlist--wide" type="button"
+                    <button
+                            class="pdp-wishlist pdp-wishlist--wide wishlist-btn"
+                            type="button"
                             id="pdpWishlistButton"
-                            aria-label="Add to wishlist"
-                            title="Add to wishlist">
+                            data-product-id="{{ product.id }}"
+                            data-product-name="{{ product.name }}"
+                            data-toggle-url="{% url 'wishlist:toggle' %}"
+                            aria-label="Add {{ product.name }} to wishlist"
+                            title="Add to wishlist"
+                        >
                         <svg viewBox="0 0 24 24">
                             <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
                         </svg>
@@ -1072,10 +1092,16 @@
                                     ♧ &nbsp; ADD TO CART
                                 </button>
 
-                        <button class="pdp-wishlist" type="button"
-                                id="pdpWishlistButton"
-                                aria-label="Add to wishlist"
-                                title="Add to wishlist">
+                        <button
+                                    class="pdp-wishlist wishlist-btn"
+                                    type="button"
+                                    id="pdpWishlistButton"
+                                    data-product-id="{{ product.id }}"
+                                    data-product-name="{{ product.name }}"
+                                    data-toggle-url="{% url 'wishlist:toggle' %}"
+                                    aria-label="Add {{ product.name }} to wishlist"
+                                    title="Add to wishlist"
+                                >
                             <svg viewBox="0 0 24 24">
                                 <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
                             </svg>
@@ -1409,16 +1435,7 @@
         });
     }
 
-    /* Wishlist requires your existing wishlist endpoint.
-       The same button (and handler) is used whether the product is
-       in stock or sold out. */
-    const wishlistButton = document.getElementById("pdpWishlistButton");
-    if (wishlistButton) {
-        wishlistButton.addEventListener("click", function () {
-            window.location.href =
-                "{% url 'home' %}?wishlist_product={{ product.pk }}";
-        });
-    }
+    
 })();
 
 /* ---------- Visual effects only (no effect on the logic above) ---------- */

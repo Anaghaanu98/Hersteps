@@ -1981,7 +1981,10 @@
             .site-logo { justify-self: center; }
 
             .site-logo-text strong { font-size: 25px; }
-
+           
+            .wishlist-count {
+    background: #e53955;
+}
 
 
             .site-nav {
@@ -2230,11 +2233,25 @@
 
                  {% comment %} TODO: replace #wishlist / #cart with {% url 'wishlist' %} / {% url 'cart' %} once those views exist  {% endcomment %}
 
-                <a href="#" aria-label="Wishlist" class="site-icon-btn">
+                
+                            <a
+                                href="{% url 'wishlist:page' %}"
+                                aria-label="Wishlist"
+                                class="site-icon-btn"
+                                id="navbarWishlist"
+                            >
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
+                                </svg>
 
-                    <svg viewBox="0 0 24 24"><path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/></svg>
+                                <span
+                                    class="site-cart-count wishlist-count"
+                                    id="navbarWishlistCount"
+                                    data-status-url="{% url 'wishlist:status' %}"
+                                    style="display: none;"
+                                >0</span>
+                            </a>
 
-                </a>
 
                 <a href="#cart" aria-label="Shopping bag" class="site-icon-btn">
 
@@ -2811,7 +2828,226 @@
         });
 
     })();
+    
+(function () {
 
+    const wishlistCount = document.getElementById(
+        "navbarWishlistCount"
+    );
+
+    if (!wishlistCount) return;
+
+    const statusUrl = wishlistCount.dataset.statusUrl;
+
+    /* Get CSRF token */
+    function getCookie(name) {
+
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+
+            const cookies = document.cookie.split(";");
+
+            for (let cookie of cookies) {
+
+                cookie = cookie.trim();
+
+                if (cookie.startsWith(name + "=")) {
+
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+
+    /* Update navbar wishlist count */
+    function updateWishlistCount(count) {
+
+        wishlistCount.textContent = count;
+
+        wishlistCount.style.display =
+            count > 0 ? "grid" : "none";
+
+    }
+
+
+    /* Update the heart button appearance */
+    function updateWishlistButton(button, added) {
+
+        button.classList.toggle("is-added", added);
+
+        const productName = button.dataset.productName || "Product";
+
+        button.title = added
+            ? "Remove from wishlist"
+            : "Add to wishlist";
+
+        button.setAttribute(
+            "aria-label",
+            added
+                ? "Remove " + productName + " from wishlist"
+                : "Add " + productName + " to wishlist"
+        );
+
+    }
+
+
+    /* Fetch the actual wishlist state from the database */
+    async function refreshWishlistStatus() {
+
+        const buttons = document.querySelectorAll(
+            ".wishlist-btn[data-product-id]"
+        );
+
+        const productIds = Array.from(buttons).map(
+            button => button.dataset.productId
+        );
+
+        const params = new URLSearchParams();
+
+        if (productIds.length > 0) {
+            params.set("product_ids", productIds.join(","));
+        }
+
+        try {
+
+            const response = await fetch(
+                statusUrl + "?" + params.toString(),
+                {
+                    method: "GET",
+                    credentials: "same-origin",
+                    cache: "no-store"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Unable to fetch wishlist status.");
+            }
+
+            const data = await response.json();
+
+            if (!data.success) return;
+
+            updateWishlistCount(data.count);
+
+            const wishlistedIds = new Set(
+                data.product_ids.map(String)
+            );
+
+            buttons.forEach(button => {
+
+                const productId = String(
+                    button.dataset.productId
+                );
+
+                updateWishlistButton(
+                    button,
+                    wishlistedIds.has(productId)
+                );
+
+            });
+
+        } catch (error) {
+
+            console.error("Wishlist status error:", error);
+
+        }
+    }
+
+
+    /* Handle add/remove without refreshing the page */
+    document.addEventListener("click", async function (event) {
+
+        const button = event.target.closest(
+            ".wishlist-btn[data-product-id]"
+        );
+
+        if (!button) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (button.disabled) return;
+
+        button.disabled = true;
+
+        try {
+
+            const formData = new URLSearchParams();
+
+            formData.append(
+                "product_id",
+                button.dataset.productId
+            );
+
+            const response = await fetch(
+                button.dataset.toggleUrl,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/x-www-form-urlencoded",
+
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+
+                    credentials: "same-origin",
+
+                    body: formData.toString()
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+
+                if (response.status === 401) {
+                    window.location.href = "{% url 'login' %}";
+                    return;
+                }
+
+                throw new Error(
+                    data.message || "Wishlist update failed."
+                );
+            }
+
+            /* Update heart and count using server response */
+            updateWishlistButton(button, data.added);
+            updateWishlistCount(data.count);
+
+        } catch (error) {
+
+            console.error("Wishlist toggle error:", error);
+
+            alert("Unable to update your wishlist. Please try again.");
+
+        } finally {
+
+            button.disabled = false;
+
+        }
+
+    });
+
+
+    /* Initial wishlist state */
+    refreshWishlistStatus();
+
+
+    /* Refresh when navigating back or forward */
+    window.addEventListener("pageshow", function () {
+        refreshWishlistStatus();
+    });
+
+})();
     </script>
 
     {% block extra_js %}{% endblock %}

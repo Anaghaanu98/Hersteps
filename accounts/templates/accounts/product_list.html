@@ -783,8 +783,15 @@
     transform: scale(1.1);
 }
 
+.wishlist-btn.is-added,
+.wishlist-btn.is-added:hover {
+    background: #fff;
+    color: #e53955;
+}
+
 .wishlist-btn.is-added svg {
-    fill: #fff;
+    fill: #e53955;
+    stroke: #e53955;
 }
 
 .wishlist-btn:focus-visible {
@@ -1446,16 +1453,18 @@
                                 {% if user.is_authenticated %}
 
                                     <button
-                                        type="button"
-                                        class="wishlist-btn"
-                                        data-product-id="{{ product.id }}"
-                                        aria-label="Add {{ product.name }} to wishlist"
-                                        title="Add to wishlist"
-                                    >
-                                        <svg viewBox="0 0 24 24">
-                                            <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
-                                        </svg>
-                                    </button>
+                                            type="button"
+                                            class="wishlist-btn"
+                                            data-product-id="{{ product.id }}"
+                                            data-product-name="{{ product.name }}"
+                                            data-toggle-url="{% url 'wishlist:toggle' %}"
+                                            aria-label="Add {{ product.name }} to wishlist"
+                                            title="Add to wishlist"
+                                        >
+                                            <svg viewBox="0 0 24 24">
+                                                <path d="M20.8 8.7c0 5.2-8.8 10.2-8.8 10.2S3.2 13.9 3.2 8.7a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 9.6 2.8Z"/>
+                                            </svg>
+                                        </button>
 
                                 {% else %}
 
@@ -1726,95 +1735,6 @@ function changeSorting(sortValue) {
 }
 
 
-/* ================= WISHLIST ================= */
-
-function getCookie(name) {
-
-    let cookieValue = null;
-
-    if (document.cookie && document.cookie !== "") {
-
-        const cookies = document.cookie.split(";");
-
-        for (let cookie of cookies) {
-
-            cookie = cookie.trim();
-
-            if (cookie.startsWith(name + "=")) {
-
-                cookieValue = decodeURIComponent(
-                    cookie.substring(name.length + 1)
-                );
-
-                break;
-            }
-        }
-    }
-
-    return cookieValue;
-}
-
-
-document.querySelectorAll(
-    ".wishlist-btn[data-product-id]"
-).forEach(button => {
-
-    button.addEventListener("click", async function () {
-
-        const productId = this.dataset.productId;
-        const userId = "{{ request.user.id }}";
-
-        this.disabled = true;
-
-        try {
-
-            const response = await fetch(
-                `/api/users/${userId}/wishlist/items/`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": getCookie("csrftoken")
-                    },
-
-                    body: JSON.stringify({
-                        product_id: productId
-                    })
-                }
-            );
-
-            if (response.status === 201) {
-
-                this.classList.add("is-added");
-                this.title = "Added to wishlist";
-
-            } else if (response.status === 409) {
-
-                this.classList.add("is-added");
-                this.title = "Already in wishlist";
-
-            } else {
-
-                alert("Unable to add this product to your wishlist.");
-
-            }
-
-        } catch (error) {
-
-            console.error("Wishlist error:", error);
-
-            alert("Something went wrong. Please try again.");
-
-        } finally {
-
-            this.disabled = false;
-
-        }
-
-    });
-
-});
 
 
 /* ================= HOVER IMAGE SLIDESHOW =================
