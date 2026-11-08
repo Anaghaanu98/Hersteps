@@ -127,7 +127,28 @@
         text-align: center;
         padding: 75px 20px;
     }
+    .wishlist-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
 
+.wishlist-cart-btn {
+    width: 100%;
+    padding: 11px 18px;
+    background: transparent;
+    border: 1px solid #b85c28;
+    color: #b85c28;
+    font-size: 12px;
+    letter-spacing: .5px;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.wishlist-cart-btn:hover {
+    background: #b85c28;
+    color: #fff;
+}
     .wishlist-empty svg {
         width: 55px;
         height: 55px;
@@ -263,10 +284,18 @@
                                 <p class="wishlist-stock">Currently Unavailable</p>
                             {% endif %}
 
-                            <a href="{% url 'product_detail' product.uuid %}"
-                               class="wishlist-view">
-                                VIEW PRODUCT
-                            </a>
+                            <div class="wishlist-actions">
+
+                                <a href="{% url 'product_detail' product.uuid %}"
+                                class="wishlist-view">
+                                    VIEW PRODUCT
+                                </a>
+
+                                <button type="button" class="wishlist-cart-btn">
+                                    ADD TO CART
+                                </button>
+
+                            </div>
 
                         </div>
 

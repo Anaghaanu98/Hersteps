@@ -1,9 +1,8 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
 import uuid,re
-from django.db.models.functions import Lower
 from django.core.exceptions import ValidationError
-
+from django.db.models.functions import Lower
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -23,6 +22,7 @@ class Product(models.Model):
         BROWN = "Brown", "Brown"
         RED = "Red", "Red"
         MULTICOLOR = "Multicolor", "Multicolor"
+        OTHER="Other"
 
     class OccasionChoices(models.TextChoices):
         CASUAL = "Casual", "Casual"
@@ -36,7 +36,7 @@ class Product(models.Model):
 
     name = models.CharField(max_length=150)
 
-    description = models.TextField()
+    description = models.TextField(max_length=500)
 
     category = models.ForeignKey(
         "Category",
@@ -182,6 +182,7 @@ class Banner(models.Model):
         self.name = " ".join((self.name or "").split())
         self.full_clean()
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return self.name
