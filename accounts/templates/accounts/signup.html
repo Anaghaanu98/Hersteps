@@ -1,12 +1,9 @@
 {% extends "accounts/base.html" %}
-
-{% block title %}Create Account | HerSteps{% endblock %}
-
-{% block extra_css %}
+ {% block title %}Create Account | HerSteps{% endblock %}
+ {% block extra_css %}
 <style>
     /* Signup-only styles. Shared look (card, buttons, fonts, messages) comes from base.html */
-
-    /* Back link sits at the top-left of the page on desktop, like the design */
+     /* Back link sits at the top-left of the page on desktop, like the design */
     .page { position: relative; }
     .back-link {
         position: absolute;
@@ -23,17 +20,13 @@
         font-size: 14px;
     }
     .back-link:hover { background: rgba(153, 66, 10, .07); }
-
-    .auth-card { margin-top: 24px; margin-bottom: 24px; }
+     .auth-card { margin-top: 24px; margin-bottom: 24px; }
     .auth-card .eyebrow { margin: 0 0 4px; }
     .auth-card h1 { margin-bottom: 26px; }
-
-    .secondary-btn { margin-bottom: 0; }
+     .secondary-btn { margin-bottom: 0; }
     .divider { margin: 22px 0 20px; text-transform: uppercase; }
-
-    .form-group { margin-bottom: 16px; }
-
-    /* Style whatever widget Django renders for {{ field }}, with or without a form-input class */
+     .form-group { margin-bottom: 16px; }
+     /* Style whatever widget Django renders for {{ field }}, with or without a form-input class */
     .form-group input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
     .form-group select,
     .form-group textarea {
@@ -58,8 +51,7 @@
         box-shadow: 0 0 0 4px rgba(153, 66, 10, .12);
     }
     .form-group .input-wrap input { padding-right: 52px; }
-
-    /* Field icons (name / username / email) */
+     /* Field icons (name / username / email) */
     .field-wrap { position: relative; }
     .field-wrap input { padding-right: 52px !important; }
     .field-icon {
@@ -75,8 +67,7 @@
     }
     .field-wrap:focus-within .field-icon { color: var(--brown); }
     .field-icon svg { width: 100%; height: 100%; display: block; }
-
-    /* Error state */
+     /* Error state */
     .form-group:has(.field-error) input:not([type="hidden"]) {
         border-color: rgba(163, 45, 34, .55);
         background: #fff6f5;
@@ -89,8 +80,7 @@
         border-left: 4px solid var(--danger);
         background: #fdeceb;
     }
-
-    /* Password strength + match hints (added by the script below) */
+     /* Password strength + match hints (added by the script below) */
     .strength { margin-top: 10px; }
     .strength-bars { display: flex; gap: 6px; }
     .strength-bars span {
@@ -108,17 +98,14 @@
     .match-hint { margin-top: 6px; font-size: 12.5px; min-height: 16px; }
     .match-hint.ok { color: #2f7a47; }
     .match-hint.bad { color: var(--danger); }
-
-    .primary-btn { margin-top: 12px; }
-
-    .bottom-note {
+     .primary-btn { margin-top: 12px; }
+     .bottom-note {
         margin-top: 26px;
         padding-top: 22px;
         border-top: 1px solid var(--border);
     }
     .bottom-note .text-link { display: inline-flex; align-items: center; gap: 2px; }
-
-    @media (max-width: 900px) {
+     @media (max-width: 900px) {
         .back-link { position: static; align-self: flex-start; margin: 0 0 4px; padding: 6px 8px; }
     }
     @media (max-width: 600px) {
@@ -128,23 +115,19 @@
     }
 </style>
 {% endblock %}
-
-{% block back_link %}
+ {% block back_link %}
 <a class="back-link" href="/">← Back to Store</a>
 {% endblock %}
-
-{% block content %}
+ {% block content %}
 <section class="auth-card">
 <div class="brand">
 <span class="brand-mark">◖</span>
 <span class="brand-name">hersteps</span>
 <span class="brand-tagline">FOOTWEAR FOR WOMEN</span>
 </div>
-
-<p class="eyebrow">JOIN THE ATELIER</p>
+ <p class="eyebrow">JOIN THE ATELIER</p>
 <h1>Create Your Account</h1>
-
-<a href="{% url 'google_login' %}" class="secondary-btn">
+ <a href="{% url 'google_login' %}" class="secondary-btn">
 <svg viewBox="0 0 48 48" aria-hidden="true">
 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
 <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -153,13 +136,10 @@
 </svg>
 <span>Continue with Google</span>
 </a>
-
-<div class="divider">OR WITH DETAILS</div>
-
-<form method="POST" action="{% url 'signup' %}" id="signupForm">
+ <div class="divider">OR WITH DETAILS</div>
+ <form method="POST" action="{% url 'signup' %}" id="signupForm">
 {% csrf_token %}
-
-{% for field in form %}
+ {% for field in form %}
 <div class="form-group">
 <label class="form-label" for="{{ field.id_for_label }}">
 {% if field.name == "fullname" %}Full Name
@@ -169,8 +149,7 @@
 {% else %}Confirm Password
 {% endif %}
 </label>
-
-{% if field.name == "fullname" %}
+ {% if field.name == "fullname" %}
 <div class="field-wrap">
 {{ field }}
 <span class="field-icon" aria-hidden="true">
@@ -194,48 +173,40 @@
 {% else %}
 {{ field }}
 {% endif %}
-
-{% for error in field.errors %}
+ {% for error in field.errors %}
 <span class="field-error">{{ error }}</span>
 {% endfor %}
 </div>
 {% endfor %}
-
-{% if form.non_field_errors %}
+ {% if form.non_field_errors %}
 {% for error in form.non_field_errors %}
 <p class="field-error">{{ error }}</p>
 {% endfor %}
 {% endif %}
-
-<button class="primary-btn" type="submit">
+ <button class="primary-btn" type="submit">
 <span class="btn-text">Create Account</span>
 <span class="arrow" aria-hidden="true">→</span>
 </button>
 </form>
-
-<div class="bottom-note">
+ <div class="bottom-note">
         Already have an account?
 <a class="text-link" href="{% url 'login' %}">Login ↗</a>
 </div>
 </section>
 {% endblock %}
-
-{% block extra_js %}
+ {% block extra_js %}
 <script>
 (function () {
     // Password show/hide and the loading spinner are handled globally in base.html.
     // Here: live strength meter + "passwords match" hint. Purely visual, the form is submitted as before.
     var pwInputs = document.querySelectorAll('#signupForm input[type="password"]');
     if (!pwInputs.length) return;
-
-    var pw = pwInputs[0];
+     var pw = pwInputs[0];
     var confirm = pwInputs[1] || null;
-
-    function anchor(input) {
+     function anchor(input) {
         return input.closest('.input-wrap') || input;
     }
-
-    // Strength meter
+     // Strength meter
     var meter = document.createElement('div');
     meter.className = 'strength';
     meter.setAttribute('data-level', '0');
@@ -243,8 +214,7 @@
     anchor(pw).insertAdjacentElement('afterend', meter);
     var label = meter.querySelector('.strength-label');
     var words = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-
-    function score(v) {
+     function score(v) {
         var s = 0;
         if (v.length >= 8) s++;
         if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++;
@@ -252,8 +222,7 @@
         if (/[^A-Za-z0-9]/.test(v)) s++;
         return v.length ? Math.max(s, 1) : 0;
     }
-
-    // Match hint
+     // Match hint
     var hint = null;
     if (confirm) {
         hint = document.createElement('div');
@@ -261,16 +230,14 @@
         hint.setAttribute('aria-live', 'polite');
         anchor(confirm).insertAdjacentElement('afterend', hint);
     }
-
-    function checkMatch() {
+     function checkMatch() {
         if (!hint) return;
         if (!confirm.value) { hint.textContent = ''; hint.className = 'match-hint'; return; }
         var ok = confirm.value === pw.value;
         hint.textContent = ok ? '✓ Passwords match' : 'Passwords do not match yet';
         hint.className = 'match-hint ' + (ok ? 'ok' : 'bad');
     }
-
-    pw.addEventListener('input', function () {
+     pw.addEventListener('input', function () {
         var s = score(pw.value);
         meter.setAttribute('data-level', s);
         label.textContent = s ? 'Password strength: ' + words[s] : '';
