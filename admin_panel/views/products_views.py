@@ -132,12 +132,12 @@ def add_product_variants(request, product_id):
 
     available_sizes = ProductVariant.SizeChoices.choices
 
-    existing_stock = {
-        variant.size: variant.stock
-        for variant in product.variants.all()
-    }
+    # existing_stock = {
+    #     variant.size: variant.stock
+    #     for variant in product.variants.all()
+    # }   
 
-    existing_sizes = set(existing_stock.keys())
+    # existing_sizes = set(existing_stock.keys())
 
     if request.method == "POST":
         selected_sizes = request.POST.getlist("sizes")
@@ -204,8 +204,7 @@ def add_product_variants(request, product_id):
 
                 return redirect("admin_panel:products_list")
 
-        # Keep the user's selected sizes and stock values
-        # visible if validation fails.
+        
         if request.method == "POST":
             existing_sizes = set(selected_sizes)
 
@@ -243,14 +242,14 @@ def add_product_variants(request, product_id):
 def edit_product(request, product_uuid):
     product = get_object_or_404(Product, uuid=product_uuid)
 
-    # Get the page number from the URL or submitted form.
+   
     return_page = (
         request.POST.get("return_page", "1")
         if request.method == "POST"
         else request.GET.get("page", "1")
     )
 
-    # Accept only positive integer page numbers.
+    
     if not return_page.isdigit() or int(return_page) < 1:
         return_page = "1"
 
@@ -386,7 +385,7 @@ def edit_product_variants(request, product_uuid):
 
             else:
                 with transaction.atomic():
-                    # Create new variants and update existing variants.
+                   
                     for size, stock in stock_data.items():
                         ProductVariant.objects.update_or_create(
                             product=product,
@@ -453,12 +452,11 @@ def toggle_product_status(request, product_uuid):
         uuid=product_uuid
     )
 
-    # Calculate total stock across all size variants
+   
     total_stock = product.variants.aggregate(
         total=Sum("stock")
     )["total"] or 0
 
-    # Prevent activation when the product has no stock
     if total_stock <= 0:
         product.is_active = False
         product.save(update_fields=["is_active", "updated_at"])
@@ -485,7 +483,7 @@ def toggle_product_status(request, product_uuid):
                 f"{product.name} has been blocked."
             )
 
-    # Preserve current page and search query
+   
     page = request.GET.get("page", "1")
     search_query = request.GET.get("q", "")
 

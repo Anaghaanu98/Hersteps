@@ -148,17 +148,6 @@ def verify_email_view(request):
         if action == "resend":
          now = timezone.now()
 
-        #  if verification and now < verification.expires_at:
-        #   remaining = int(
-        #     (verification.expires_at - now).total_seconds()
-        #   ) + 1
-
-        #   messages.error(
-        #     request,
-        #     f"Please wait {remaining} seconds until your OTP expires."
-        #   )
-        #   return redirect("verify_email")
-
          otp = generate_otp()
 
          OTPVerification.objects.update_or_create(

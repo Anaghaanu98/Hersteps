@@ -32,7 +32,7 @@ class CategoryForm(forms.ModelForm):
     def clean_name(self):
         name = self.cleaned_data.get("name", "")
 
-        # Do not silently remove leading/trailing spaces.
+        
         if name != name.strip():
             raise forms.ValidationError(
                 "Category name must not start or end with spaces."
@@ -112,7 +112,7 @@ class ProductForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Only active categories can be selected for a product.
+        
         self.fields["category"].queryset = Category.objects.filter(
             is_active=True
         )
