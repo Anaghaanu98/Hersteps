@@ -1,9 +1,7 @@
 {% extends "accounts/base.html" %}
-
-{% block title %}{{ product.name }} | HerSteps{% endblock %}
+ {% block title %}{{ product.name }} | HerSteps{% endblock %}
 {% block page_class %}page--full{% endblock %}
-
-{% block extra_css %}
+ {% block extra_css %}
 <style>
 /* =====================================================
    PRODUCT DETAIL  (colour tokens come from base.html)
@@ -23,8 +21,7 @@
 .pdp * { box-sizing: border-box; }
 .pdp button, .pdp input { font: inherit; }
 .pdp a { color: inherit; text-decoration: none; }
-
-/* soft liquid shapes behind the page */
+ /* soft liquid shapes behind the page */
 .pdp::before,
 .pdp::after {
     content: "";
@@ -46,8 +43,7 @@
     background: rgba(153, 66, 10, .12);
     animation: pdpMorph 19s ease-in-out infinite reverse, pdpDriftB 24s ease-in-out infinite;
 }
-
-/* ---------- Breadcrumbs ---------- */
+ /* ---------- Breadcrumbs ---------- */
 .pdp-breadcrumbs {
     display: inline-flex;
     flex-wrap: wrap;
@@ -73,15 +69,13 @@
     color: var(--heading);
     font-weight: 700;
 }
-
-.pdp-main {
+ .pdp-main {
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(340px, .9fr);
     align-items: start;
     gap: 48px;
 }
-
-/* ---------- Gallery ---------- */
+ /* ---------- Gallery ---------- */
 .pdp-gallery {
     min-width: 0;
     animation: pdpFadeUp .7s .05s ease both;
@@ -185,8 +179,7 @@
     outline: 3px solid #e6b894;
     outline-offset: 3px;
 }
-
-/* ---------- Product information ---------- */
+ /* ---------- Product information ---------- */
 .pdp-info {
     min-width: 0;
     position: sticky;
@@ -252,8 +245,7 @@
     transition: color .2s ease, border-color .2s ease;
 }
 .pdp-rating a:hover { color: var(--pdp-brown); border-color: currentColor; }
-
-.pdp-price-box {
+ .pdp-price-box {
     position: relative;
     overflow: hidden;
     display: flex;
@@ -321,8 +313,7 @@
 .pdp-stock.low::before { animation: pdpPulse 1.6s ease-out infinite; }
 .pdp-stock.sold { background: #fde8e6; color: #a32d22; }
 .pdp-stock.sold::before { animation: pdpPulse 1.6s ease-out infinite; }
-
-.pdp-description {
+ .pdp-description {
     margin: 0 0 24px;
     color: var(--body-soft);
     font-size: 14px;
@@ -363,8 +354,7 @@
     transition: border-color .2s ease;
 }
 .pdp-size-guide:hover { border-color: currentColor; }
-
-.pdp-sizes {
+ .pdp-sizes {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
@@ -421,8 +411,7 @@
     font-size: 12.5px;
 }
 .pdp-error.show { display: block; animation: pdpShake .45s both; }
-
-/* ---------- Actions ---------- */
+ /* ---------- Actions ---------- */
 .pdp-actions {
     display: grid;
     grid-template-columns: 104px minmax(0, 1fr) 52px;
@@ -503,18 +492,15 @@
     box-shadow: none;
     filter: grayscale(35%);
 }
-
-.pdp-add:disabled::before {
+ .pdp-add:disabled::before {
     display: none;
 }
-
-.pdp-add:not(:disabled) {
+ .pdp-add:not(:disabled) {
     opacity: 1;
     cursor: pointer;
 }
 .pdp-add:focus-visible { outline: 3px solid #e6b894; outline-offset: 3px; }
-
-.pdp-wishlist {
+ .pdp-wishlist {
     display: grid;
     place-items: center;
     width: 52px;
@@ -554,8 +540,7 @@
     transform: none;
     box-shadow: none;
 }
-
-.pdp-wishlist.is-added svg,
+ .pdp-wishlist.is-added svg,
 .pdp-wishlist.is-added:hover svg {
     fill: #e53955;
     stroke: #e53955;
@@ -578,8 +563,7 @@
     font-weight: 800;
     letter-spacing: 1px;
 }
-
-.pdp-delivery-note {
+ .pdp-delivery-note {
     margin-top: 18px;
     padding: 15px 18px;
     border: 1px solid var(--border);
@@ -590,8 +574,7 @@
     line-height: 1.75;
 }
 .pdp-delivery-note strong { color: var(--heading); }
-
-/* ---------- Highlights, coupons and reviews ---------- */
+ /* ---------- Highlights, coupons and reviews ---------- */
 .pdp-details { margin-top: 70px; }
 .pdp-details-grid {
     display: grid;
@@ -684,8 +667,7 @@
 }
 .pdp-coupon p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
 .pdp-empty-note { color: var(--muted); font-size: 13.5px; line-height: 1.75; }
-
-.pdp-reviews { margin-top: 34px; }
+ .pdp-reviews { margin-top: 34px; }
 .pdp-review {
     padding: 18px 0;
     border-bottom: 1px solid var(--border);
@@ -699,8 +681,7 @@
     font-weight: 700;
 }
 .pdp-review p { color: var(--body-soft); font-size: 13.5px; line-height: 1.75; }
-
-/* ---------- Related products ---------- */
+ /* ---------- Related products ---------- */
 .pdp-related { margin-top: 80px; }
 .pdp-related-grid {
     display: grid;
@@ -747,8 +728,7 @@
 .pdp-related-card h3 a { transition: color .2s ease; }
 .pdp-related-card h3 a:hover { color: var(--pdp-brown); }
 .pdp-related-card p { margin: 0 8px; color: var(--pdp-brown); font-size: 15px; font-weight: 800; }
-
-/* ---------- Zoom viewer ---------- */
+ /* ---------- Zoom viewer ---------- */
 .pdp-lightbox[hidden] { display: none; }
 .pdp-lightbox {
     position: fixed;
@@ -815,16 +795,14 @@
     text-align: center;
     font-size: 12px;
 }
-
-/* ---------- Scroll reveal ---------- */
+ /* ---------- Scroll reveal ---------- */
 .js .pdp-reveal {
     opacity: 0;
     transform: translateY(28px);
     transition: opacity .8s cubic-bezier(.2, .7, .2, 1), transform .8s cubic-bezier(.2, .7, .2, 1);
 }
 .js .pdp-reveal.is-visible { opacity: 1; transform: none; }
-
-/* ---------- Animations ---------- */
+ /* ---------- Animations ---------- */
 @keyframes pdpFadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes pdpFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pdpPop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
@@ -837,8 +815,7 @@
 }
 @keyframes pdpDriftA { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(60px, 40px); } }
 @keyframes pdpDriftB { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-50px, -40px); } }
-
-/* ---------- Responsive ---------- */
+ /* ---------- Responsive ---------- */
 @media (max-width: 1000px) {
     .pdp { padding: 26px 26px 80px; }
     .pdp-main { gap: 28px; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); }
@@ -883,13 +860,10 @@
 }
 </style>
 {% endblock %}
-
-{% block content %}
+ {% block content %}
 <script>document.documentElement.classList.add("js");</script>
-
-<div class="pdp">
-
-    <!-- Breadcrumbs -->
+ <div class="pdp">
+     <!-- Breadcrumbs -->
     <nav class="pdp-breadcrumbs" aria-label="Breadcrumb">
         <a href="{% url 'home' %}">Home</a>
         <span>/</span>
@@ -901,10 +875,8 @@
         <span>/</span>
         <span class="current">{{ product.name }}</span>
     </nav>
-
-    <div class="pdp-main">
-
-        <!-- Image gallery -->
+     <div class="pdp-main">
+         <!-- Image gallery -->
         <section class="pdp-gallery" aria-label="Product images">
             <div class="pdp-main-image" id="pdpMainImage"
                  role="button" tabindex="0"
@@ -921,8 +893,7 @@
                              alt="{{ product.name }}">
                     {% endif %}
                 {% endwith %}
-
-                <button type="button" class="pdp-zoom-hint"
+                 <button type="button" class="pdp-zoom-hint"
                         id="pdpOpenZoom" aria-label="Zoom product image">
                     <svg viewBox="0 0 24 24">
                         <path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/>
@@ -930,8 +901,7 @@
                     </svg>
                 </button>
             </div>
-
-            <div class="pdp-thumbnails" id="pdpThumbnails">
+             <div class="pdp-thumbnails" id="pdpThumbnails">
                 {% for image in product_images %}
                     {% if image.image %}
                     <button type="button"
@@ -954,17 +924,14 @@
                 {% endfor %}
             </div>
         </section>
-
-        <!-- Product information -->
+         <!-- Product information -->
         <section class="pdp-info">
             <p class="pdp-eyebrow">
                 <span>HerSteps</span>
                 &nbsp;•&nbsp; Curated Footwear
             </p>
-
-            <h1 class="pdp-title">{{ product.name }}</h1>
-
-            <div class="pdp-rating">
+             <h1 class="pdp-title">{{ product.name }}</h1>
+             <div class="pdp-rating">
                 <span class="pdp-stars" aria-label="Product rating">
                     {% if product.rating %}
                         ★★★★★
@@ -980,8 +947,7 @@
                 <span>·</span>
                 <a href="#pdpReviews">Read reviews</a>
             </div>
-
-            <div class="pdp-price-box">
+             <div class="pdp-price-box">
                 <div class="pdp-prices">
                     <span class="pdp-price">₹{{ product.price|floatformat:2 }}</span>
                     {% if product.discount_percentage %}
@@ -990,8 +956,7 @@
                         </span>
                     {% endif %}
                 </div>
-
-                {% if is_sold_out %}
+                 {% if is_sold_out %}
                     <span class="pdp-stock sold">Sold out</span>
                 {% elif total_stock <= 5 %}
                     <span class="pdp-stock low">Only {{ total_stock }} left</span>
@@ -999,12 +964,10 @@
                     <span class="pdp-stock">In stock</span>
                 {% endif %}
             </div>
-
-            {% if product.description %}
+             {% if product.description %}
                 <p class="pdp-description">{{ product.description }}</p>
             {% endif %}
-
-            {% if product.color or product.occasion %}
+             {% if product.color or product.occasion %}
                 <div class="pdp-section-heading">Product details</div>
                 <div class="pdp-delivery-note">
                     {% if product.color %}
@@ -1015,19 +978,16 @@
                     {% endif %}
                 </div>
             {% endif %}
-
-            <div class="pdp-section-heading">
+             <div class="pdp-section-heading">
                 <span>Size (UK / India)</span>
                 <a href="#pdpSizeGuide" class="pdp-size-guide">Size guide ↗</a>
             </div>
-
-            {% if is_sold_out %}
+             {% if is_sold_out %}
                 <p class="pdp-empty-note">
                     This product is currently out of stock in all sizes.
                     Please explore our other styles below.
                 </p>
-
-                <!-- Out of stock: the shopper can still save the product to the wishlist. -->
+                 <!-- Out of stock: the shopper can still save the product to the wishlist. -->
                 <div class="pdp-soldout-actions">
                     <button
                             class="pdp-wishlist pdp-wishlist--wide wishlist-btn"
@@ -1058,8 +1018,7 @@
                         </button>
                     {% endfor %}
                 </div>
-
-                <p class="pdp-selected-size" id="pdpSelectedSize">
+                 <p class="pdp-selected-size" id="pdpSelectedSize">
                     Select your size to continue.
                 </p>
                 <p class="pdp-error" id="pdpSizeError" role="alert">
@@ -1068,8 +1027,7 @@
                 <p class="pdp-error" id="pdpStockError" role="alert">
                     The selected quantity is not available in stock.
                 </p>
-
-                <!-- Connect this form to your existing cart endpoint. -->
+                 <!-- Connect this form to your existing cart endpoint. -->
                 <form method="post"
                       action="#"
                       id="pdpCartForm">
@@ -1077,8 +1035,7 @@
                     <input type="hidden" name="product_id" value="{{ product.pk }}">
                     <input type="hidden" name="size" id="pdpSizeInput">
                     <input type="hidden" name="quantity" id="pdpQuantityInput" value="1">
-
-                    <div class="pdp-actions">
+                     <div class="pdp-actions">
                         <div class="pdp-quantity">
                             <button type="button" id="pdpQtyMinus"
                                     aria-label="Decrease quantity">−</button>
@@ -1087,12 +1044,10 @@
                             <button type="button" id="pdpQtyPlus"
                                     aria-label="Increase quantity">+</button>
                         </div>
-
-                        <button class="pdp-add" type="submit" id="pdpAddButton" disabled>
+                         <button class="pdp-add" type="submit" id="pdpAddButton" disabled>
                                     ♧ &nbsp; ADD TO CART
                                 </button>
-
-                        <button
+                         <button
                                     class="pdp-wishlist wishlist-btn"
                                     type="button"
                                     id="pdpWishlistButton"
@@ -1109,20 +1064,17 @@
                     </div>
                 </form>
             {% endif %}
-
-            <div class="pdp-delivery-note">
+             <div class="pdp-delivery-note">
                 <strong>Made for your everyday.</strong><br>
                 Check your size before adding this style to your bag.
                 Stock is checked again when the cart action is processed.
             </div>
         </section>
     </div>
-
-    <!-- Highlights, coupons and size guide -->
+     <!-- Highlights, coupons and size guide -->
     <section class="pdp-details">
         <div class="pdp-details-grid">
-
-            <div class="pdp-detail-panel pdp-reveal">
+             <div class="pdp-detail-panel pdp-reveal">
                 <h2>Product highlights</h2>
                 <ul class="pdp-highlights">
                     {% if product.color %}
@@ -1138,8 +1090,7 @@
                     <li>Choose your available UK size before checkout.</li>
                 </ul>
             </div>
-
-            <div class="pdp-detail-panel pdp-reveal" style="transition-delay:.1s">
+             <div class="pdp-detail-panel pdp-reveal" style="transition-delay:.1s">
                 <h2>Offers &amp; coupons</h2>
                 {% for coupon in coupons %}
                     <div class="pdp-coupon">
@@ -1156,10 +1107,8 @@
                     </a>
                 {% endfor %}
             </div>
-
-        </div>
-
-        <div class="pdp-detail-panel pdp-reviews pdp-reveal" id="pdpReviews">
+         </div>
+         <div class="pdp-detail-panel pdp-reviews pdp-reveal" id="pdpReviews">
             <h2>Customer reviews</h2>
             {% for review in reviews %}
                 <article class="pdp-review">
@@ -1176,11 +1125,8 @@
                 </p>
             {% endfor %}
         </div>
-
-        
-    </section>
-
-    <!-- Related products -->
+     </section>
+     <!-- Related products -->
     <section class="pdp-related">
         <h2 class="pdp-reveal">You may also like</h2>
         <div class="pdp-related-grid">
@@ -1216,8 +1162,7 @@
         </div>
     </section>
 </div>
-
-<!-- Image zoom viewer -->
+ <!-- Image zoom viewer -->
 <div class="pdp-lightbox" id="pdpLightbox" hidden
      role="dialog" aria-modal="true" aria-label="Product image viewer">
     <div class="pdp-lightbox-toolbar">
@@ -1234,47 +1179,38 @@
     </div>
 </div>
 {% endblock %}
-
-{% block extra_js %}
+ {% block extra_js %}
 <script>
 (function () {
     "use strict";
-
-    const hero = document.getElementById("pdpHeroImage");
+     const hero = document.getElementById("pdpHeroImage");
     const mainImage = document.getElementById("pdpMainImage");
     const thumbnails = document.getElementById("pdpThumbnails");
     const lightbox = document.getElementById("pdpLightbox");
     const lightboxImage = document.getElementById("pdpLightboxImage");
-
-    if (!hero || !mainImage || !lightbox || !lightboxImage) return;
-
-    /* Image gallery */
+     if (!hero || !mainImage || !lightbox || !lightboxImage) return;
+     /* Image gallery */
     if (thumbnails) {
         thumbnails.addEventListener("click", function (event) {
             const button = event.target.closest(".pdp-thumb");
             if (!button || !button.dataset.image) return;
-
-            hero.src = button.dataset.image;
+             hero.src = button.dataset.image;
             hero.alt = "{{ product.name|escapejs }}";
-
-            thumbnails.querySelectorAll(".pdp-thumb").forEach(function (thumb) {
+             thumbnails.querySelectorAll(".pdp-thumb").forEach(function (thumb) {
                 const active = thumb === button;
                 thumb.classList.toggle("active", active);
                 thumb.setAttribute("aria-pressed", String(active));
             });
         });
     }
-
-    /* Zoom in, zoom out, reset and close */
+     /* Zoom in, zoom out, reset and close */
     let zoom = 1;
     let previousFocus = null;
-
-    function updateZoom() {
+     function updateZoom() {
         lightboxImage.style.transform = "scale(" + zoom + ")";
         lightboxImage.style.cursor = zoom > 1 ? "zoom-out" : "zoom-in";
     }
-
-    function openZoom() {
+     function openZoom() {
         previousFocus = document.activeElement;
         lightboxImage.src = hero.src;
         lightboxImage.alt = hero.alt;
@@ -1284,55 +1220,45 @@
         document.body.style.overflow = "hidden";
         document.getElementById("pdpZoomClose").focus();
     }
-
-    function closeZoom() {
+     function closeZoom() {
         lightbox.hidden = true;
         document.body.style.overflow = "";
         zoom = 1;
         updateZoom();
         if (previousFocus) previousFocus.focus();
     }
-
-    mainImage.addEventListener("click", openZoom);
+     mainImage.addEventListener("click", openZoom);
     mainImage.addEventListener("keydown", function (event) {
         if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
             openZoom();
         }
     });
-
-    document.getElementById("pdpOpenZoom").addEventListener("click", function (event) {
+     document.getElementById("pdpOpenZoom").addEventListener("click", function (event) {
         event.stopPropagation();
         openZoom();
     });
-
-    document.getElementById("pdpZoomIn").addEventListener("click", function () {
+     document.getElementById("pdpZoomIn").addEventListener("click", function () {
         zoom = Math.min(zoom + 0.25, 3);
         updateZoom();
     });
-
-    document.getElementById("pdpZoomOut").addEventListener("click", function () {
+     document.getElementById("pdpZoomOut").addEventListener("click", function () {
         zoom = Math.max(zoom - 0.25, 1);
         updateZoom();
     });
-
-    document.getElementById("pdpZoomReset").addEventListener("click", function () {
+     document.getElementById("pdpZoomReset").addEventListener("click", function () {
         zoom = 1;
         updateZoom();
     });
-
-    document.getElementById("pdpZoomClose").addEventListener("click", closeZoom);
-
-    lightbox.addEventListener("click", function (event) {
+     document.getElementById("pdpZoomClose").addEventListener("click", closeZoom);
+     lightbox.addEventListener("click", function (event) {
         if (event.target === lightbox) closeZoom();
     });
-
-    lightboxImage.addEventListener("click", function () {
+     lightboxImage.addEventListener("click", function () {
         zoom = zoom >= 3 ? 1 : Math.min(zoom + 0.5, 3);
         updateZoom();
     });
-
-    document.addEventListener("keydown", function (event) {
+     document.addEventListener("keydown", function (event) {
         if (lightbox.hidden) return;
         if (event.key === "Escape") closeZoom();
         if (event.key === "+" || event.key === "=") {
@@ -1344,8 +1270,7 @@
             updateZoom();
         }
     });
-
-    /* Variant and quantity selection */
+     /* Variant and quantity selection */
     const sizeButtons = document.querySelectorAll(".pdp-size");
     const sizeInput = document.getElementById("pdpSizeInput");
     const qtyInput = document.getElementById("pdpQuantityInput");
@@ -1357,15 +1282,12 @@
     const stockError = document.getElementById("pdpStockError");
     const cartForm = document.getElementById("pdpCartForm");
     const addButton = document.getElementById("pdpAddButton");
-
-    let selectedStock = 0;
+     let selectedStock = 0;
     let selectedSize = "";
-
-    function quantity() {
+     function quantity() {
         return parseInt(qtyInput.value || "1", 10);
     }
-
-    function updateQuantity(value) {
+     function updateQuantity(value) {
         const max = selectedStock > 0 ? selectedStock : 1;
         const next = Math.max(1, Math.min(value, max));
         qtyInput.value = String(next);
@@ -1374,32 +1296,26 @@
         qtyPlus.disabled = next >= max;
         stockError.classList.remove("show");
     }
-
-    sizeButtons.forEach(function (button) {
+     sizeButtons.forEach(function (button) {
         button.addEventListener("click", function () {
             if (button.disabled) return;
-
-            sizeButtons.forEach(function (other) {
+             sizeButtons.forEach(function (other) {
                 const active = other === button;
                 other.classList.toggle("selected", active);
                 other.setAttribute("aria-pressed", String(active));
             });
-
-            selectedSize = button.dataset.size;
+             selectedSize = button.dataset.size;
             selectedStock = parseInt(button.dataset.stock || "0", 10);
             sizeInput.value = selectedSize;
-            
-            addButton.disabled = selectedStock <= 0;
+             addButton.disabled = selectedStock <= 0;
             sizeText.textContent =
                 "Selected: UK " + selectedSize +
                 " · " + selectedStock + " available";
-
-            sizeError.classList.remove("show");
+             sizeError.classList.remove("show");
             updateQuantity(1);
         });
     });
-
-    if (qtyMinus && qtyPlus && qtyInput) {
+     if (qtyMinus && qtyPlus && qtyInput) {
         qtyMinus.addEventListener("click", function () {
             updateQuantity(quantity() - 1);
         });
@@ -1416,8 +1332,7 @@
     if (addButton) {
     addButton.disabled = true;
     }
-
-    if (cartForm) {
+     if (cartForm) {
         cartForm.addEventListener("submit", function (event) {
             if (!selectedSize) {
                 event.preventDefault();
@@ -1425,8 +1340,7 @@
                 sizeText.textContent = "Please select an available size.";
                 return;
             }
-
-            if (quantity() > selectedStock || selectedStock <= 0) {
+             if (quantity() > selectedStock || selectedStock <= 0) {
                 event.preventDefault();
                 stockError.textContent =
                     "The selected quantity is not available in stock.";
@@ -1434,19 +1348,13 @@
             }
         });
     }
-
-    
-})();
-
-/* ---------- Visual effects only (no effect on the logic above) ---------- */
+ })();
+ /* ---------- Visual effects only (no effect on the logic above) ---------- */
 (function () {
-
-    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    /* Scroll reveal for the lower sections */
+     var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+     /* Scroll reveal for the lower sections */
     var items = document.querySelectorAll(".pdp-reveal");
-
-    if ("IntersectionObserver" in window && !reduceMotion) {
+     if ("IntersectionObserver" in window && !reduceMotion) {
         var observer = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (entry.isIntersecting) {
@@ -1455,25 +1363,20 @@
                 }
             });
         }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
-
-        items.forEach(function (el) { observer.observe(el); });
+         items.forEach(function (el) { observer.observe(el); });
     } else {
         items.forEach(function (el) { el.classList.add("is-visible"); });
     }
-
-    /* Hover zoom follows the pointer */
+     /* Hover zoom follows the pointer */
     var frame = document.getElementById("pdpMainImage");
-
-    if (frame && !reduceMotion &&
+     if (frame && !reduceMotion &&
         window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-
-        frame.addEventListener("mousemove", function (e) {
+         frame.addEventListener("mousemove", function (e) {
             var r = frame.getBoundingClientRect();
             frame.style.setProperty("--zx", ((e.clientX - r.left) / r.width * 100) + "%");
             frame.style.setProperty("--zy", ((e.clientY - r.top) / r.height * 100) + "%");
         });
-
-        frame.addEventListener("mouseleave", function () {
+         frame.addEventListener("mouseleave", function () {
             frame.style.setProperty("--zx", "50%");
             frame.style.setProperty("--zy", "50%");
         });

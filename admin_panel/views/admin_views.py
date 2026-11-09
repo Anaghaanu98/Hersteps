@@ -53,9 +53,7 @@ def user_list_view(request):
     search_query=request.GET.get('q','').strip()
     if search_query:
            users=users.filter(Q(username__icontains=search_query)| Q(email__icontains=search_query)
-                         | Q(fullname__icontains=search_query))
-
-           
+                         | Q(fullname__icontains=search_query))        
 
     status_filter=request.GET.get('status','all')
 
