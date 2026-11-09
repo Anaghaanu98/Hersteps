@@ -78,7 +78,7 @@ def shop_view(request):
 
      if "all" in selected_categories:
         selected_categories = []
-        valid_category_ids = list(categories.filter(pk__in=selected_categories).values_list("pk", flat=True))
+     valid_category_ids = list(categories.filter(pk__in=selected_categories).values_list("pk", flat=True))
 
      selected_categories = [str(category_id) for category_id in valid_category_ids]
 
