@@ -205,24 +205,24 @@ def add_product_variants(request, product_id):
                 return redirect("admin_panel:products_list")
 
         
-        if request.method == "POST":
-            existing_sizes = set(selected_sizes)
+        # if request.method == "POST":
+        #     existing_sizes = set(selected_sizes)
 
-            for size in selected_sizes:
-                stock_value = request.POST.get(
-                    f"stock_{size}", ""
-                ).strip()
+        #     for size in selected_sizes:
+        #         stock_value = request.POST.get(
+        #             f"stock_{size}", ""
+        #         ).strip()
 
-                try:
-                    existing_stock[size] = int(stock_value)
-                except (ValueError, TypeError):
-                    existing_stock[size] = stock_value
+        #         try:
+        #             existing_stock[size] = int(stock_value)
+        #         except (ValueError, TypeError):
+        #             existing_stock[size] = stock_value
 
     size_rows = [
         {
             "value": value,
             "label": label,
-            "stock": existing_stock.get(value, 0),
+            "stock": 0,
         }
         for value, label in available_sizes
     ]
@@ -234,7 +234,7 @@ def add_product_variants(request, product_id):
             "product": product,
             "product_uuid": product.uuid,
             "size_rows": size_rows,
-            "existing_sizes": existing_sizes,
+            
         },
     )
 
