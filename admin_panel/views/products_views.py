@@ -205,18 +205,18 @@ def add_product_variants(request, product_id):
                 return redirect("admin_panel:products_list")
 
         
-        # if request.method == "POST":
-        #     existing_sizes = set(selected_sizes)
+        if request.method == "POST":
+            existing_sizes = set(selected_sizes)
 
-        #     for size in selected_sizes:
-        #         stock_value = request.POST.get(
-        #             f"stock_{size}", ""
-        #         ).strip()
+            # for size in selected_sizes:
+            #     stock_value = request.POST.get(
+            #         f"stock_{size}", ""
+            #     ).strip()
 
-        #         try:
-        #             existing_stock[size] = int(stock_value)
-        #         except (ValueError, TypeError):
-        #             existing_stock[size] = stock_value
+            #     try:
+            #         existing_stock[size] = int(stock_value)
+            #     except (ValueError, TypeError):
+            #         existing_stock[size] = stock_value
 
     size_rows = [
         {
@@ -483,7 +483,7 @@ def toggle_product_status(request, product_uuid):
                 f"{product.name} has been blocked."
             )
 
-   
+    # Preserve current page and search query
     page = request.GET.get("page", "1")
     search_query = request.GET.get("q", "")
 
