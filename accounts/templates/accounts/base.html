@@ -1408,6 +1408,12 @@
                 }
             );
              const data = await response.json();
+             /* Redirect blocked products to shop */
+            if (response.status === 403 && data.redirect_url) {
+                window.location.href = data.redirect_url;
+                return;
+}
+             
              if (!response.ok || !data.success) {
                  if (response.status === 401) {
                     window.location.href = "{% url 'login' %}";

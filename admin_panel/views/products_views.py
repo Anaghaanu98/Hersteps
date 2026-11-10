@@ -234,7 +234,7 @@ def add_product_variants(request, product_id):
             "product": product,
             "product_uuid": product.uuid,
             "size_rows": size_rows,
-            "existing_sizes": existing_sizes,
+            
         },
     )
 

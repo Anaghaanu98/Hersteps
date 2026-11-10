@@ -4,19 +4,23 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from admin_panel.models import Product
 
+
+
+
+
 def product_detail(request, product_uuid):
     
     product = get_object_or_404(
         Product.objects.select_related("category"),
         uuid=product_uuid,
     )
-    
-    if not product.is_active:
-        messages.warning(request, "This product is no longer available.")
-        return redirect("product_list")
-    if product.category and not product.category.is_active:
-        messages.warning(request, "This product is no longer available.")
-        return redirect("product_list")
+    if not product.is_active or not product.category.is_active:
+     messages.error(
+            request,
+            "Sorry! This product is currently unavailable."
+        )
+     return redirect("shop")
+   
      # Calculate current stock from the size variants.
     variants = product.variants.all().order_by("size")
     total_stock = variants.aggregate(
@@ -51,3 +55,5 @@ def product_detail(request, product_uuid):
         "accounts/product_detail.html",
         context,
     )
+
+

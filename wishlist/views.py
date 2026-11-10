@@ -5,6 +5,9 @@ from django.shortcuts import render
 from .models import Wishlist
 from admin_panel.models import Product
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.urls import reverse
+
 
 @require_POST
 def toggle_wishlist(request):
@@ -17,6 +20,7 @@ def toggle_wishlist(request):
 
     product_id = request.POST.get("product_id")
 
+    
     if not product_id:
         return JsonResponse(
             {"success": False, "message": "Product ID is required."},
@@ -30,7 +34,19 @@ def toggle_wishlist(request):
             {"success": False, "message": "Product not found."},
             status=404
         )
+    # Check whether product or category is blocked
+    if not product.is_active or not product.category.is_active:
 
+     messages.error(
+        request,
+        "Sorry! This product is currently unavailable."
+    )
+
+     return JsonResponse({
+        "success": False,
+        "message": "Sorry! This product is currently unavailable.",
+        "redirect_url": reverse("shop")
+     }, status=403)
     wishlist_item = Wishlist.objects.filter(
         user=request.user,
         product=product
