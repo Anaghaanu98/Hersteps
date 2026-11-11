@@ -121,14 +121,25 @@ def wishlist_status(request):
 
 @login_required(login_url="login")
 def wishlist_page(request):
+
     wishlist_items = (
         Wishlist.objects
         .filter(user=request.user)
-        .select_related("product", "product__category")
-        .prefetch_related("product__images")
+        .select_related(
+            "product",
+            "product__category"
+        )
+        .prefetch_related(
+            "product__images",
+            "product__variants"
+        )
     )
 
-    return render(request, "wishlist/wishlist.html", {
-        "wishlist_items": wishlist_items
-    })
+    return render(
+        request,
+        "wishlist/wishlist.html",
+        {
+            "wishlist_items": wishlist_items
+        }
+    )
 # Create your views here.

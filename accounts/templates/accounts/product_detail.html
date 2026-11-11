@@ -861,6 +861,15 @@
 </style>
 {% endblock %}
  {% block content %}
+ <div id="cartNotificationContainer"
+     class="site-messages-wrapper"
+     style="display: none;"
+     aria-live="polite">
+
+    <div class="site-messages-inner" id="cartNotificationInner">
+    </div>
+
+</div>
 <script>document.documentElement.classList.add("js");</script>
  <div class="pdp">
      <!-- Breadcrumbs -->
@@ -1029,10 +1038,10 @@
                 </p>
                  <!-- Connect this form to your existing cart endpoint. -->
                 <form method="post"
-                      action="#"
+                      action="{% url 'cart:add_to_cart' %}"
                       id="pdpCartForm">
                     {% csrf_token %}
-                    <input type="hidden" name="product_id" value="{{ product.pk }}">
+                    <input type="hidden" name="product_uuid" value="{{ product.uuid }}">
                     <input type="hidden" name="size" id="pdpSizeInput">
                     <input type="hidden" name="quantity" id="pdpQuantityInput" value="1">
                      <div class="pdp-actions">
@@ -1332,22 +1341,199 @@
     if (addButton) {
     addButton.disabled = true;
     }
-     if (cartForm) {
-        cartForm.addEventListener("submit", function (event) {
-            if (!selectedSize) {
-                event.preventDefault();
-                sizeError.classList.add("show");
-                sizeText.textContent = "Please select an available size.";
-                return;
+     
+if (cartForm) {
+
+    let cartRequestPending = false;
+
+    cartForm.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        if (cartRequestPending) return;
+
+        // Existing size validation
+        if (!selectedSize) {
+            sizeError.classList.add("show");
+            sizeText.textContent = "Please select an available size.";
+            return;
+        }
+
+        // Existing stock validation
+        if (quantity() > selectedStock || selectedStock <= 0) {
+            stockError.textContent =
+                "The selected quantity is not available in stock.";
+            stockError.classList.add("show");
+            return;
+        }
+
+        cartRequestPending = true;
+
+        const originalButtonHTML = addButton.innerHTML;
+
+        addButton.disabled = true;
+        addButton.textContent = "ADDING...";
+
+        try {
+
+            const formData = new FormData(cartForm);
+
+            const response = await fetch(cartForm.action, {
+                method: "POST",
+                body: formData,
+                credentials: "same-origin",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            const contentType =
+                response.headers.get("content-type") || "";
+
+            if (!contentType.includes("application/json")) {
+                throw new Error(
+                    "Unable to add to cart. Please try again."
+                );
             }
-             if (quantity() > selectedStock || selectedStock <= 0) {
-                event.preventDefault();
-                stockError.textContent =
-                    "The selected quantity is not available in stock.";
-                stockError.classList.add("show");
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                    return;
+                }
+
+                throw new Error(
+                    data.message || "Unable to add product to cart."
+                );
             }
-        });
+
+function showCartMessage(message, type = "success") {
+
+    const container = document.getElementById(
+        "cartNotificationContainer"
+    );
+
+    const inner = document.getElementById(
+        "cartNotificationInner"
+    );
+
+    if (!container || !inner) return;
+
+    // Clear previous notification
+    inner.innerHTML = "";
+
+    const notification = document.createElement("div");
+
+    notification.className = `site-message ${type}`;
+    notification.setAttribute("role", "alert");
+
+    const icon = document.createElement("span");
+    icon.className = "site-message-icon";
+    icon.setAttribute("aria-hidden", "true");
+
+    icon.innerHTML = type === "success"
+        ? '<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>'
+        : '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>';
+
+    const text = document.createElement("span");
+    text.className = "site-message-text";
+    text.textContent = message;
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "site-message-close";
+    closeButton.setAttribute("aria-label", "Close message");
+
+    closeButton.innerHTML =
+        '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+
+    const progress = document.createElement("div");
+    progress.className = "site-message-progress";
+    progress.setAttribute("aria-hidden", "true");
+
+    notification.append(icon, text, closeButton, progress);
+    inner.appendChild(notification);
+
+    container.style.display = "block";
+
+    let dismissTimer;
+
+    function dismissMessage() {
+        clearTimeout(dismissTimer);
+
+        notification.classList.add("is-dismissing");
+
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+
+            if (!inner.children.length) {
+                container.style.display = "none";
+            }
+        }, 350);
     }
+
+    closeButton.addEventListener("click", dismissMessage);
+
+    dismissTimer = setTimeout(dismissMessage, 5000);
+}
+
+
+            // Update existing navbar cart counter
+            if (typeof window.updateCartCount === "function") {
+                window.updateCartCount(data.cart_count);
+            } else if (
+                typeof window.refreshCartCount === "function"
+            ) {
+                window.refreshCartCount();
+            }
+
+            // Sync wishlist navbar if your existing
+            // backend removes the item from wishlist
+            if (
+                typeof window.refreshWishlistStatus === "function"
+            ) {
+                window.refreshWishlistStatus();
+            }
+            showCartMessage(
+                data.message || "Product added to cart successfully.",
+                "success"
+            );
+
+        } catch (error) {
+
+            showCartMessage(
+            error.message || "Unable to add product to cart.",
+            "error"
+        );
+
+        } finally {
+
+            cartRequestPending = false;
+
+            addButton.innerHTML = originalButtonHTML;
+
+            // Preserve existing size/stock button behavior
+            addButton.disabled =
+                !selectedSize || selectedStock <= 0;
+        }
+        const wishlistBadge = document.getElementById(
+    "navbarWishlistCount"
+);
+
+if (wishlistBadge && data.wishlist_count !== undefined) {
+    wishlistBadge.textContent = data.wishlist_count;
+    wishlistBadge.style.display =
+        data.wishlist_count > 0 ? "grid" : "none";
+}
+
+    });
+}
+
  })();
  /* ---------- Visual effects only (no effect on the logic above) ---------- */
 (function () {

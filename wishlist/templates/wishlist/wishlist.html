@@ -144,7 +144,44 @@
     cursor: pointer;
     transition: all .2s ease;
 }
+.wishlist-size-select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #d8c9bd;
+    background: #fff;
+    color: #33251f;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+}
 
+.wishlist-size-select:focus {
+    border-color: #b85c28;
+}
+
+.wishlist-cart-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.wishlist-cart-btn:disabled:hover {
+    background: transparent;
+    color: #b85c28;
+}
+
+.wishlist-cart-message {
+    font-size: 12px;
+    margin: 4px 0 0;
+}
+
+.wishlist-cart-message.error {
+    color: #c0392b;
+}
+
+.wishlist-cart-message.success {
+    color: #287a45;
+}
 .wishlist-cart-btn:hover {
     background: #b85c28;
     color: #fff;
@@ -291,9 +328,54 @@
                                     VIEW PRODUCT
                                 </a>
 
-                                <button type="button" class="wishlist-cart-btn">
-                                    ADD TO CART
-                                </button>
+                                {% if product.is_active and product.category.is_active %}
+
+                                <select
+                                    class="wishlist-size-select"
+                                    id="size-{{ product.uuid }}"
+                                    aria-label="Select size for {{ product.name }}"
+                                >
+                                    <option value="">Select Size</option>
+
+                                    {% for variant in product.variants.all %}
+
+                                        <option
+                                            value="{{ variant.size }}"
+                                            {% if variant.stock <= 0 %}disabled{% endif %}
+                                        >
+                                            UK {{ variant.size }}
+
+                                            {% if variant.stock <= 0 %}
+                                                - Out of Stock
+                                            {% endif %}
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                    <button
+                                        type="button"
+                                        class="wishlist-cart-btn"
+                                        data-product-id="{{ product.id }}"
+                                        data-product-uuid="{{ product.uuid }}"
+                                        data-add-url="{% url 'cart:add_to_cart' %}"
+                                        {% if product.total_stock <= 0 %}disabled{% endif %}
+                                    >
+                                        ADD TO CART
+                                    </button>
+
+                                {% else %}
+
+                                    <button
+                                        type="button"
+                                        class="wishlist-cart-btn"
+                                        disabled
+                                    >
+                                        CURRENTLY UNAVAILABLE
+                                    </button>
+
+                                {% endif %}
 
                             </div>
 
@@ -382,6 +464,167 @@ document.addEventListener("click", function(event) {
         }
     }, 400);
 });
+
+document.addEventListener("click", async function(event) {
+
+    const button = event.target.closest(
+        ".wishlist-cart-btn[data-product-id]"
+    );
+
+    if (!button) return;
+
+    event.preventDefault();
+
+    if (button.disabled) return;
+
+    // Existing wishlist product ID
+    const productId = button.dataset.productId;
+
+    // Product UUID for cart backend
+    const productUUID = button.dataset.productUuid;
+
+    const card = button.closest(".wishlist-card");
+
+    const sizeSelect = document.getElementById(
+        `size-${productUUID}`
+    );
+
+    // Validate selected size
+    if (!sizeSelect || !sizeSelect.value) {
+        alert("Please select a size.");
+        return;
+    }
+
+    button.disabled = true;
+
+    const originalText = button.textContent;
+    button.textContent = "ADDING...";
+
+    try {
+
+        const formData = new URLSearchParams();
+
+        // Cart backend uses Product UUID
+        formData.append(
+            "product_uuid",
+            productUUID
+        );
+
+        formData.append(
+            "size",
+            sizeSelect.value
+        );
+
+        const response = await fetch(
+            button.dataset.addUrl,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/x-www-form-urlencoded",
+
+                    "X-CSRFToken": getCartCSRFToken()
+                },
+
+                credentials: "same-origin",
+
+                body: formData.toString()
+            }
+        );
+
+        // Handle login redirects
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            alert(
+                data.message || "Unable to add product to cart."
+            );
+            return;
+        }
+
+        // Update wishlist navbar count
+        const wishlistCountElement = document.getElementById(
+            "navbarWishlistCount"
+        );
+
+        if (wishlistCountElement) {
+            wishlistCountElement.textContent =
+                data.wishlist_count;
+        }
+
+        // Update cart navbar count
+        const cartCountElement = document.getElementById(
+            "navbarCartCount"
+        );
+
+       if (typeof window.updateCartCount === "function") {
+            window.updateCartCount(data.cart_count);
+        }
+
+        // Remove matching wishlist card using product ID
+        const wishlistCard = document.querySelector(
+            `.wishlist-card[data-wishlist-product="${productId}"]`
+        );
+
+        if (wishlistCard) {
+            wishlistCard.remove();
+        }
+
+        // Check whether wishlist is empty
+        const grid = document.getElementById(
+            "wishlistGrid"
+        );
+
+        if (grid && grid.children.length === 0) {
+            window.location.reload();
+            return;
+        }
+
+        alert(data.message);
+
+    } catch (error) {
+
+        console.error("Add to cart error:", error);
+
+        alert(
+            "Something went wrong. Please try again."
+        );
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = originalText;
+
+    }
+});
+
+
+function getCartCSRFToken() {
+
+    const name = "csrftoken=";
+
+    const cookies = document.cookie.split(";");
+
+    for (let cookie of cookies) {
+
+        cookie = cookie.trim();
+
+        if (cookie.startsWith(name)) {
+            return decodeURIComponent(
+                cookie.substring(name.length)
+            );
+        }
+    }
+
+    return "";
+}
+
 </script>
 
 {% endblock %}
