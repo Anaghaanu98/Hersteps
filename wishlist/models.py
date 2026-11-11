@@ -9,7 +9,7 @@ class Wishlist(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="wishlist_items"
+        related_name="wishlist_items" 
     )
 
     product = models.ForeignKey(
@@ -24,7 +24,7 @@ class Wishlist(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "product"],
-                name="unique_user_wishlist_product"
+                name="unique_user_wishlist_product"                                                                                                                                                          
             )
         ]
         ordering = ["-created_at"]
