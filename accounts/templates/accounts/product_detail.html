@@ -1296,15 +1296,23 @@
      function quantity() {
         return parseInt(qtyInput.value || "1", 10);
     }
-     function updateQuantity(value) {
-        const max = selectedStock > 0 ? selectedStock : 1;
-        const next = Math.max(1, Math.min(value, max));
-        qtyInput.value = String(next);
-        qtyDisplay.value = String(next);
-        qtyMinus.disabled = next <= 1;
-        qtyPlus.disabled = next >= max;
-        stockError.classList.remove("show");
-    }
+    function updateQuantity(value) {
+
+    // Maximum 4 units when selected variant stock is below 10
+    const maxAllowed = selectedStock > 0
+        ? (selectedStock < 10 ? Math.min(4, selectedStock) : selectedStock)
+        : 1;
+
+    const next = Math.max(1, Math.min(value, maxAllowed));
+
+    qtyInput.value = String(next);
+    qtyDisplay.value = String(next);
+
+    qtyMinus.disabled = next <= 1;
+    qtyPlus.disabled = next >= maxAllowed;
+
+    stockError.classList.remove("show");
+}
      sizeButtons.forEach(function (button) {
         button.addEventListener("click", function () {
             if (button.disabled) return;
@@ -1329,88 +1337,34 @@
             updateQuantity(quantity() - 1);
         });
         qtyPlus.addEventListener("click", function () {
-            if (quantity() >= selectedStock) {
-                stockError.textContent = "Only " + selectedStock +
-                    " units are available in this size.";
-                stockError.classList.add("show");
-                return;
-            }
-            updateQuantity(quantity() + 1);
-        });
+
+    const maxAllowed = selectedStock > 0
+        ? (selectedStock < 10 ? Math.min(4, selectedStock) : selectedStock)
+        : 1;
+
+    if (quantity() >= maxAllowed) {
+
+        if (selectedStock < 10 && selectedStock > 4) {
+            stockError.textContent =
+                "You can add a maximum of 4 units of UK size " +
+                selectedSize + " to your cart.";
+        } else {
+            stockError.textContent =
+                "Only " + selectedStock +
+                " units are available in this size.";
+        }
+
+        stockError.classList.add("show");
+        return;
+    }
+
+    updateQuantity(quantity() + 1);
+});
     }
     if (addButton) {
     addButton.disabled = true;
     }
-     
-if (cartForm) {
-
-    let cartRequestPending = false;
-
-    cartForm.addEventListener("submit", async function (event) {
-
-        event.preventDefault();
-
-        if (cartRequestPending) return;
-
-        // Existing size validation
-        if (!selectedSize) {
-            sizeError.classList.add("show");
-            sizeText.textContent = "Please select an available size.";
-            return;
-        }
-
-        // Existing stock validation
-        if (quantity() > selectedStock || selectedStock <= 0) {
-            stockError.textContent =
-                "The selected quantity is not available in stock.";
-            stockError.classList.add("show");
-            return;
-        }
-
-        cartRequestPending = true;
-
-        const originalButtonHTML = addButton.innerHTML;
-
-        addButton.disabled = true;
-        addButton.textContent = "ADDING...";
-
-        try {
-
-            const formData = new FormData(cartForm);
-
-            const response = await fetch(cartForm.action, {
-                method: "POST",
-                body: formData,
-                credentials: "same-origin",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            });
-
-            const contentType =
-                response.headers.get("content-type") || "";
-
-            if (!contentType.includes("application/json")) {
-                throw new Error(
-                    "Unable to add to cart. Please try again."
-                );
-            }
-
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                    return;
-                }
-
-                throw new Error(
-                    data.message || "Unable to add product to cart."
-                );
-            }
-
-function showCartMessage(message, type = "success") {
+    function showCartMessage(message, type = "success") {
 
     const container = document.getElementById(
         "cartNotificationContainer"
@@ -1481,6 +1435,84 @@ function showCartMessage(message, type = "success") {
 
     dismissTimer = setTimeout(dismissMessage, 5000);
 }
+if (cartForm) {
+
+    let cartRequestPending = false;
+
+    cartForm.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        if (cartRequestPending) return;
+
+        // Existing size validation
+        if (!selectedSize) {
+            sizeError.classList.add("show");
+            sizeText.textContent = "Please select an available size.";
+            return;
+        }
+
+        // Existing stock validation
+        if (quantity() > selectedStock || selectedStock <= 0) {
+            stockError.textContent =
+                "The selected quantity is not available in stock.";
+            stockError.classList.add("show");
+            return;
+        }
+        // Validate maximum quantity for low-stock variants
+if (selectedStock < 10 && quantity() > 4) {
+
+    stockError.textContent =
+        "You can add a maximum of 4 units of UK size " +
+        selectedSize + " to your cart.";
+
+    stockError.classList.add("show");
+    return;
+}
+        cartRequestPending = true;
+
+        const originalButtonHTML = addButton.innerHTML;
+
+        addButton.disabled = true;
+        addButton.textContent = "ADDING...";
+
+        try {
+
+            const formData = new FormData(cartForm);
+
+            const response = await fetch(cartForm.action, {
+                method: "POST",
+                body: formData,
+                credentials: "same-origin",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            const contentType =
+                response.headers.get("content-type") || "";
+
+            if (!contentType.includes("application/json")) {
+                throw new Error(
+                    "Unable to add to cart. Please try again."
+                );
+            }
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                    return;
+                }
+
+                throw new Error(
+                    data.message || "Unable to add product to cart."
+                );
+            }
+
+
 
 
             // Update existing navbar cart counter
@@ -1503,6 +1535,15 @@ function showCartMessage(message, type = "success") {
                 data.message || "Product added to cart successfully.",
                 "success"
             );
+            const wishlistBadge = document.getElementById(
+    "navbarWishlistCount"
+);
+
+if (wishlistBadge && data.wishlist_count !== undefined) {
+    wishlistBadge.textContent = data.wishlist_count;
+    wishlistBadge.style.display =
+        data.wishlist_count > 0 ? "grid" : "none";
+}
 
         } catch (error) {
 
@@ -1521,15 +1562,7 @@ function showCartMessage(message, type = "success") {
             addButton.disabled =
                 !selectedSize || selectedStock <= 0;
         }
-        const wishlistBadge = document.getElementById(
-    "navbarWishlistCount"
-);
-
-if (wishlistBadge && data.wishlist_count !== undefined) {
-    wishlistBadge.textContent = data.wishlist_count;
-    wishlistBadge.style.display =
-        data.wishlist_count > 0 ? "grid" : "none";
-}
+        
 
     });
 }
