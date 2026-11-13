@@ -11,7 +11,8 @@ from admin_panel.models import ProductVariant
 from wishlist.models import Wishlist
 from .models import Cart
 from django.shortcuts import get_object_or_404
-
+from django.shortcuts import redirect
+from django.contrib import messages
 from wishlist.models import Wishlist
 
 
@@ -88,6 +89,19 @@ def add_to_cart(request):
             }, status=404)
 
         product = variant.product
+        # Check latest stock after admin updates
+        if variant.stock <= 0:
+
+         return JsonResponse({
+          "success": False,
+            "stock_unavailable": True,
+            "available_stock": 0,
+            "message": (
+                f"Size UK {variant.size} is unavailable. "
+                "Please select another size, move this product "
+                "to your wishlist, or remove it to proceed to checkout."
+            )
+         }, status=400)
 
         # Check blocked products/categories
         if (
@@ -115,7 +129,21 @@ def add_to_cart(request):
                     "in this size."
                 )
             }, status=400)
+        # Maximum 4 units when variant stock is below 10
+        max_allowed_quantity = (
+            min(4, variant.stock)
+            if variant.stock < 10
+            else variant.stock
+        )
 
+        if requested_quantity > max_allowed_quantity:
+         return JsonResponse({
+         "success": False,
+         "message": (
+            f"You can add a maximum of {max_allowed_quantity} "
+            f"units of UK size {variant.size} to your cart."
+         )
+         }, status=400)
         # Add variant to cart
         cart_item, created = Cart.objects.get_or_create(
             user=request.user,
@@ -147,7 +175,16 @@ def add_to_cart(request):
                         f"{cart_item.quantity} in your cart."
                     )
                 }, status=400)
-
+            # Check maximum quantity including existing cart items
+            if new_quantity > max_allowed_quantity:
+             return JsonResponse({
+              "success": False,
+               "message": (
+                f"You can add a maximum of {max_allowed_quantity} "
+                f"units of UK size {variant.size}. "
+                f"You already have {cart_item.quantity} in your cart."
+             )
+             }, status=400)
             Cart.objects.filter(
                 pk=cart_item.pk
             ).update(
@@ -167,6 +204,7 @@ def add_to_cart(request):
             .aggregate(total=Sum("quantity"))["total"]
             or 0
         )
+        
 
         # Calculate updated wishlist count
         wishlist_count = Wishlist.objects.filter(
@@ -233,11 +271,21 @@ def cart_page(request):
         item.quantity
         for item in cart_items
     )
+    has_invalid_items = any(
+        not item.variant.product.is_active
+        or not item.variant.product.category.is_active
+        or item.variant.stock <= 0
+        or item.quantity > item.variant.stock
+        or (item.variant.stock < 10 and item.quantity > 4)
+        for item in cart_items
+    )
 
+    can_checkout = bool(cart_count) and not has_invalid_items
     context = {
         "cart_items": cart_items,
         "cart_count": cart_count,
         "subtotal": subtotal,
+        "can_checkout": can_checkout,
     }
 
     return render(
@@ -251,7 +299,7 @@ def get_cart_totals(user):
     cart_items = (
         Cart.objects
         .filter(user=user)
-        .select_related("variant__product")
+        .select_related("variant__product__category")
     )
 
     subtotal = sum(
@@ -266,11 +314,40 @@ def get_cart_totals(user):
         item.quantity
         for item in cart_items
     )
+    # Check whether any cart variant is out of stock
+    has_out_of_stock_items = any(
+        item.variant.stock <= 0
+        for item in cart_items
+    )
 
+    # Also check whether requested quantities exceed stock
+    has_insufficient_stock_items = any(
+        item.quantity > item.variant.stock
+        or (item.variant.stock < 10 and item.quantity > 4)
+        for item in cart_items
+    )
+    # Check whether any product or category is blocked
+    has_unavailable_products = any(
+        not item.variant.product.is_active
+        or not item.variant.product.category.is_active
+        for item in cart_items
+)
+    can_checkout = (
+        bool(cart_count)
+        and not has_out_of_stock_items
+        and not has_insufficient_stock_items
+        and not has_unavailable_products
+    )
+    
     return {
+        
         "cart_count": cart_count,
         "subtotal": str(subtotal),
-    }
+        "has_out_of_stock_items": has_out_of_stock_items,
+        "has_insufficient_stock_items": has_insufficient_stock_items,
+        "can_checkout": can_checkout,
+    } 
+
 
 
 @login_required(login_url="login")
@@ -295,11 +372,30 @@ def update_cart_quantity(request):
             user=request.user
         )
 
-        variant = ProductVariant.objects.select_for_update().get(
-            pk=cart_item.variant_id
+        # Fetch the latest stock from database
+        variant = (
+            ProductVariant.objects
+            .select_for_update()
+            .select_related("product__category")
+            .get(pk=cart_item.variant_id)
         )
 
         product = variant.product
+
+        # IMPORTANT: Check stock before increase OR decrease
+        if variant.stock <= 0:
+
+            return JsonResponse({
+                "success": False,
+                "stock_unavailable": True,
+                "available_stock": 0,
+                "message": (
+                    f"Size UK {variant.size} is currently unavailable. "
+                    "Please select another size, move this product "
+                    "to your wishlist, or remove it from your cart "
+                    "to proceed to checkout."
+                )
+            }, status=400)
 
         if not product.is_active or not product.category.is_active:
             return JsonResponse({
@@ -310,9 +406,19 @@ def update_cart_quantity(request):
         if action == "increase":
 
             if cart_item.quantity >= variant.stock:
-                return JsonResponse({
+               return JsonResponse({
                     "success": False,
                     "message": "Maximum available stock reached."
+                }, status=400)
+
+            # Restrict quantity to 4 when variant stock is below 10
+            if variant.stock < 10 and cart_item.quantity >= 4:
+                return JsonResponse({
+                    "success": False,
+                    "message": (
+                        f"You can add a maximum of 4 units "
+                        f"of UK size {variant.size} to your cart."
+                    )
                 }, status=400)
 
             cart_item.quantity += 1
@@ -322,12 +428,17 @@ def update_cart_quantity(request):
             if cart_item.quantity <= 1:
                 return JsonResponse({
                     "success": False,
-                    "message": "Minimum quantity is 1. Use Remove to delete this item."
+                    "message": (
+                        "Minimum quantity is 1. "
+                        "Use Remove to delete this item."
+                    )
                 }, status=400)
 
             cart_item.quantity -= 1
 
-        cart_item.save(update_fields=["quantity", "updated_at"])
+        cart_item.save(
+            update_fields=["quantity", "updated_at"]
+        )
 
         totals = get_cart_totals(request.user)
 
@@ -347,10 +458,8 @@ def change_cart_size(request):
     new_size = request.POST.get("size")
 
     if new_size not in ProductVariant.SizeChoices.values:
-        return JsonResponse({
-            "success": False,
-            "message": "Invalid product size."
-        }, status=400)
+        messages.error(request, "Invalid product size.")
+        return redirect("cart:page")
 
     with transaction.atomic():
 
@@ -364,10 +473,11 @@ def change_cart_size(request):
         product = cart_item.variant.product
 
         if not product.is_active or not product.category.is_active:
-            return JsonResponse({
-                "success": False,
-                "message": "This product is currently unavailable."
-            }, status=403)
+            messages.error(
+                request,
+                "This product is currently unavailable."
+            )
+            return redirect("cart:page")
 
         new_variant = (
             ProductVariant.objects.select_for_update()
@@ -376,19 +486,14 @@ def change_cart_size(request):
         )
 
         if not new_variant:
-            return JsonResponse({
-                "success": False,
-                "message": "Selected size is unavailable."
-            }, status=404)
+            messages.error(
+                request,
+                "Selected size is unavailable."
+            )
+            return redirect("cart:page")
 
         if cart_item.variant_id == new_variant.id:
-            return JsonResponse({
-                "success": True,
-                "message": "Size unchanged.",
-                "merged": False,
-                "quantity": cart_item.quantity,
-                **get_cart_totals(request.user)
-            })
+            return redirect("cart:page")
 
         existing_item = (
             Cart.objects.select_for_update()
@@ -402,14 +507,20 @@ def change_cart_size(request):
             combined_quantity += existing_item.quantity
 
         if combined_quantity > new_variant.stock:
-            return JsonResponse({
-                "success": False,
-                "message": (
-                    f"Only {new_variant.stock} units are available "
-                    f"for UK size {new_size}."
-                )
-            }, status=400)
-
+            messages.error(
+                request,
+                f"Only {new_variant.stock} units are available "
+                f"for UK size {new_size}."
+            )
+            return redirect("cart:page")
+        # Restrict quantity when changing to a low-stock variant
+        if new_variant.stock < 10 and combined_quantity > 4:
+           messages.error(
+                request,
+                f"You can add a maximum of 4 units "
+                f"of UK size {new_size} to your cart."
+            )
+           return redirect("cart:page")
         if existing_item:
 
             existing_item.quantity = combined_quantity
@@ -418,7 +529,6 @@ def change_cart_size(request):
             )
 
             cart_item.delete()
-            merged = True
 
         else:
 
@@ -427,20 +537,12 @@ def change_cart_size(request):
                 update_fields=["variant", "updated_at"]
             )
 
-            merged = False
+    messages.success(
+        request,
+        "Product size updated successfully."
+    )
 
-        totals = get_cart_totals(request.user)
-
-    return JsonResponse({
-        "success": True,
-        "message": "Product size updated.",
-        "merged": merged,
-        "quantity": combined_quantity,
-        "size": new_size,
-        **totals,
-        "cart_uuid": str(cart_item.uuid),
-        "target_cart_uuid": str(existing_item.uuid) if existing_item else None
-    })
+    return redirect("cart:page")
 
 @login_required(login_url="login")
 @require_POST
@@ -463,7 +565,8 @@ def remove_cart_item(request):
     return JsonResponse({
         "success": True,
         "message": "Product removed from cart.",
-        **totals
+        "cart_count": totals["cart_count"],
+        "subtotal": str(totals["subtotal"]),
     })
 
 @login_required(login_url="login")
