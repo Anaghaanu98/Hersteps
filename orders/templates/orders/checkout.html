@@ -1,0 +1,1101 @@
+{% extends "accounts/base.html" %}
+{% block title %}Checkout | HerSteps{% endblock %}
+{% block page_class %}page--full{% endblock %}
+
+{% block content %}
+<style>
+/* ==========================================================
+   PAGE LAYOUT
+   ========================================================== */
+.checkout-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 46px 32px 85px;
+  color: var(--text);
+}
+
+.checkout-page h1 {
+  font-family: var(--font-serif);
+  font-size: 46px;
+  text-align: left;
+  margin: 12px 0 30px;
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.42fr) minmax(320px, 1fr);
+  gap: 34px;
+  align-items: start;
+}
+
+.checkout-left {
+  display: grid;
+  gap: 30px;
+}
+
+/* ==========================================================
+   BREADCRUMBS
+   ========================================================== */
+.checkout-crumbs {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.checkout-crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.checkout-crumbs a:hover {
+  color: var(--orange);
+}
+
+/* ==========================================================
+   CARD (shared by both steps and the summary)
+   ========================================================== */
+.checkout-card {
+  background: #fff0e5;
+  border: 1px solid #f0e1d8;
+  border-radius: 14px;
+  padding: 35px 36px;
+  box-shadow: 0 5px 18px rgba(70, 42, 25, .04);
+}
+
+.checkout-card h2 {
+  font-family: var(--font-serif);
+  font-size: 29px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.checkout-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #e9d9ce;
+  padding-bottom: 21px;
+  margin-bottom: 25px;
+}
+
+.checkout-heading-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.checkout-step {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.checkout-muted {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.checkout-text-link {
+  color: var(--orange);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.checkout-text-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================
+   STEP 1: DELIVERY ADDRESS
+   ========================================================== */
+.checkout-address-list {
+  display: grid;
+  gap: 12px;
+}
+
+.checkout-address-option {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: #fffaf7;
+  border: 1.5px solid #eadbd0;
+  border-radius: 13px;
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+
+.checkout-address-option:has(input:checked) {
+  border: 2px solid var(--orange);
+  padding: 19.5px;
+  background: white;
+}
+
+/* Radio inputs (address + payment) */
+.checkout-address-option input,
+.checkout-payment-option input {
+  accent-color: var(--orange);
+  margin-top: 4px;
+  flex: none;
+  width: 17px;
+  height: 17px;
+}
+
+.checkout-address-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.checkout-address-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.checkout-default-tag {
+  display: inline-block;
+  border: 1px solid #eed4c4;
+  background: #fff0e5;
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin-left: 8px;
+  color: var(--orange);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+.checkout-address-detail {
+  color: #76665c;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 7px 0 0;
+}
+
+.checkout-edit {
+  font-size: 12px;
+  color: #897d75;
+  text-decoration: none;
+  border: 1px solid #eadbd0;
+  border-radius: 5px;
+  padding: 7px 10px;
+  background: #fff8f4;
+}
+
+.checkout-edit:hover {
+  color: var(--orange);
+}
+
+.checkout-address-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-top: 21px;
+  flex-wrap: wrap;
+}
+
+.checkout-empty-address {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   STEP 2: PAYMENT METHOD
+   ========================================================== */
+.checkout-payment-list {
+  display: grid;
+  gap: 12px;
+}
+
+.checkout-payment-option {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 19px;
+  background: #fffaf7;
+  border: 1.5px solid #eadbd0;
+  border-radius: 13px;
+}
+
+.checkout-payment-option.active {
+  border: 2px solid var(--orange);
+  background: #fff;
+  padding: 18.5px;
+}
+
+.checkout-payment-option.unavailable {
+  opacity: .65;
+}
+
+.checkout-payment-info {
+  flex: 1;
+}
+
+.checkout-payment-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.checkout-payment-description {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-top: 4px;
+}
+
+.checkout-payment-tag {
+  font-size: 10px;
+  color: var(--orange);
+  background: #fff0e5;
+  border: 1px solid #eed4c4;
+  border-radius: 5px;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
+.checkout-secure {
+  margin: 18px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.checkout-secure i {
+  color: var(--orange);
+  margin-right: 7px;
+}
+
+/* ==========================================================
+   ORDER SUMMARY (right column)
+   ========================================================== */
+.checkout-summary {
+  position: sticky;
+  top: 100px;
+}
+
+.checkout-summary h2 {
+  border-bottom: 1px solid #e9d9ce;
+  padding-bottom: 23px;
+  margin-bottom: 24px;
+}
+
+/* Items */
+.checkout-items {
+  display: grid;
+  gap: 21px;
+}
+
+.checkout-item {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
+  gap: 15px;
+  align-items: center;
+}
+
+.checkout-item-image {
+  width: 86px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 9px;
+  background: #f4e5dc;
+}
+
+.checkout-item-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.checkout-item-name {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.checkout-item-meta {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-top: 4px;
+}
+
+.checkout-item-price {
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Coupon */
+.checkout-coupon {
+  margin: 27px 0 23px;
+  padding-top: 23px;
+  border-top: 1px solid #e9d9ce;
+}
+
+.checkout-coupon-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.checkout-coupon-row {
+  display: flex;
+  gap: 8px;
+}
+
+.checkout-coupon-row input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #e8d9ce;
+  background: #fffaf7;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: inherit;
+}
+
+.checkout-coupon-row button {
+  border: 0;
+  border-radius: 8px;
+  background: #d6b9a5;
+  color: white;
+  padding: 0 16px;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+.checkout-coupon-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 7px;
+}
+
+/* Totals */
+.checkout-totals {
+  display: grid;
+  gap: 16px;
+  padding-top: 23px;
+  border-top: 1px solid #e9d9ce;
+}
+
+.checkout-total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.checkout-total-row strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.checkout-free {
+  color: #28784a !important;
+}
+
+.checkout-grand-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e9d9ce;
+  margin-top: 6px;
+  padding-top: 25px;
+}
+
+.checkout-grand-total span:first-child {
+  font-family: var(--font-serif);
+  font-size: 25px;
+}
+
+.checkout-grand-total strong {
+  font-family: var(--font-serif);
+  font-size: 35px;
+  color: var(--heading);
+}
+
+/* Place order button */
+.checkout-order-btn {
+  width: 100%;
+  padding: 18px 20px;
+  margin-top: 22px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--orange);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.checkout-order-btn:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+.checkout-pending-note {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* NEW DELIVERY ADDRESS */
+
+.checkout-new-address {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e9d9ce;
+}
+
+.checkout-new-address[hidden],
+.checkout-address-type[hidden] {
+    display: none;
+}
+
+.checkout-new-address h3 {
+    font-family: var(--font-serif);
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+.checkout-address-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 22px;
+}
+
+.checkout-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.checkout-form-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.checkout-form-group input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #eadbd0;
+    border-radius: 8px;
+    background: #fffaf7;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.checkout-form-group input:focus {
+    outline: none;
+    border-color: var(--orange);
+}
+
+.checkout-field-error {
+    color: #c0392b;
+    font-size: 11px;
+}
+
+.checkout-save-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 23px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.checkout-save-option input,
+.checkout-address-type input {
+    accent-color: var(--orange);
+}
+
+.checkout-address-type {
+    margin-top: 18px;
+    font-size: 13px;
+}
+
+.checkout-address-type p {
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.checkout-address-type label {
+    margin-right: 20px;
+}
+
+.checkout-confirm-address {
+    margin-top: 25px;
+    padding: 14px 22px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.checkout-confirm-address:hover {
+    background: var(--brown);
+}
+
+.checkout-address-success {
+    margin-top: 14px;
+    color: #28784a;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+@media (max-width: 600px) {
+    .checkout-address-fields {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+@media (max-width: 950px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-summary {
+    position: static;
+  }
+
+  .checkout-page {
+    padding: 35px 24px 65px;
+  }
+}
+
+@media (max-width: 600px) {
+  .checkout-page {
+    padding: 24px 14px 50px;
+  }
+
+  .checkout-page h1 {
+    font-size: 38px;
+  }
+
+  .checkout-card {
+    padding: 23px 18px;
+  }
+
+  .checkout-card h2 {
+    font-size: 25px;
+  }
+
+  .checkout-item {
+    grid-template-columns: 66px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .checkout-item-image {
+    width: 66px;
+    height: 72px;
+  }
+
+  .checkout-item-name {
+    font-size: 17px;
+  }
+
+  .checkout-item-price {
+    font-size: 12px;
+  }
+
+  .checkout-address-option {
+    padding: 14px;
+  }
+
+  .checkout-address-option:has(input:checked) {
+    padding: 13.5px;
+  }
+
+  .checkout-address-bottom {
+    align-items: flex-start;
+  }
+}
+</style>
+
+<div class="checkout-page">
+
+  <!-- Breadcrumbs -->
+  <nav class="checkout-crumbs" aria-label="Breadcrumb">
+    <a href="{% url 'home' %}">Home</a>
+    <span>/</span>
+    <a href="{% url 'cart:page' %}">Cart</a>
+    <span>/</span>
+    <span>Checkout</span>
+  </nav>
+
+  <h1>Checkout</h1>
+
+  <div class="checkout-layout">
+
+    <!-- ================= LEFT COLUMN ================= -->
+    <div class="checkout-left">
+
+      
+<!-- Step 1: Delivery Address -->
+<section class="checkout-card">
+
+    <div class="checkout-card-heading">
+        <div class="checkout-heading-title">
+            <span class="checkout-step">1</span>
+            <h2>Delivery Address</h2>
+        </div>
+    </div>
+
+    <form method="post"
+          action="{% url 'orders:checkout' %}"
+          id="checkoutAddressForm"
+          novalidate>
+
+        {% csrf_token %}
+
+        <input type="hidden"
+               name="action"
+               id="addressAction"
+               value="select_saved">
+
+        <!-- SAVED ADDRESSES -->
+
+        <div class="checkout-address-list">
+
+            {% for address in addresses %}
+
+            <label class="checkout-address-option">
+
+                <input
+                    type="radio"
+                    name="address_id"
+                    value="{{ address.id }}"
+                    {% if address_mode == 'saved' and address.id == selected_address_id %}
+                        checked
+                    {% endif %}
+                    onchange="selectSavedAddress()">
+
+                <div class="checkout-address-info">
+
+                    <span class="checkout-address-name">
+                        {{ address.full_name }}
+                    </span>
+
+                    {% if address.is_default %}
+                        <span class="checkout-default-tag">
+                            DEFAULT
+                        </span>
+                    {% endif %}
+
+                    <p class="checkout-address-detail">
+                        {{ address.house_name }},
+                        {{ address.locality }},
+                        {{ address.city }},
+                        {{ address.state }} -
+                        {{ address.pincode }}
+                    </p>
+
+                    <p class="checkout-address-detail">
+                        Phone: {{ address.phone }}
+                    </p>
+
+                </div>
+
+            </label>
+
+            {% endfor %}
+
+<!-- CONFIRMED NEW DELIVERY ADDRESS -->
+
+{% if new_delivery_address %}
+
+<label class="checkout-address-option">
+
+    <input
+        type="radio"
+        name="address_choice"
+        value="new"
+        {% if address_mode == 'new' %}checked{% endif %}
+        onchange="selectConfirmedNewAddress()">
+
+    <div class="checkout-address-info">
+
+        <span class="checkout-address-name">
+            {{ new_delivery_address.full_name }}
+        </span>
+
+        <span class="checkout-default-tag">
+            NEW ADDRESS
+        </span>
+
+        <p class="checkout-address-detail">
+            {{ new_delivery_address.house_name }},
+            {{ new_delivery_address.locality }},
+            {{ new_delivery_address.city }},
+            {{ new_delivery_address.state }} -
+            {{ new_delivery_address.pincode }}
+        </p>
+
+        <p class="checkout-address-detail">
+            Phone: {{ new_delivery_address.phone }}
+        </p>
+
+    </div>
+
+    <button
+        type="button"
+        class="checkout-edit"
+        onclick="event.preventDefault(); event.stopPropagation(); editNewAddress();">
+        Edit
+    </button>
+
+</label>
+
+{% endif %}
+
+
+            <!-- NEW ADDRESS OPTION -->
+
+            <label class="checkout-address-option">
+
+    <input
+        type="radio"
+        name="address_choice"
+        value="add_new"
+        onchange="showNewAddressForm()">
+
+    <div class="checkout-address-info">
+        <span class="checkout-address-name">
+            + Use Another Delivery Address
+        </span>
+
+        <p class="checkout-address-detail">
+            Enter a different delivery address for this order.
+        </p>
+    </div>
+
+</label>
+        </div>
+
+        <!-- NEW DELIVERY ADDRESS FORM -->
+
+        <div
+    id="newAddressFields"
+    class="checkout-new-address"
+    {% if address_mode != 'new' or new_address_confirmed and not checkout_address_form.errors %}
+        hidden
+    {% endif %}>
+
+            <h3>New Delivery Address</h3>
+
+            <p class="checkout-muted">
+                Enter the address where you want your order delivered.
+            </p>
+
+            <div class="checkout-address-fields">
+
+                {% for field in checkout_address_form %}
+
+                <div class="checkout-form-group">
+
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% for error in field.errors %}
+                        <small class="checkout-field-error">
+                            {{ error }}
+                        </small>
+                    {% endfor %}
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- SAVE ADDRESS CHECKBOX -->
+
+            <label class="checkout-save-option">
+
+                <input
+                    type="checkbox"
+                    name="save_address"
+                    id="saveAddressCheckbox"
+                    value="1"
+                    {% if save_address %}checked{% endif %}
+                    onchange="toggleAddressType()">
+
+                Save this address for future orders
+
+            </label>
+
+            <!-- ADDRESS TYPE -->
+
+            <div
+                id="addressTypeFields"
+                class="checkout-address-type"
+                {% if not save_address %}hidden{% endif %}>
+
+                <p>Save address as</p>
+
+                <label>
+                    <input
+                        type="radio"
+                        name="address_type"
+                        value="home"
+                        {% if new_address_type == 'home' %}checked{% endif %}>
+                    Home
+                </label>
+
+                <label>
+                    <input
+                        type="radio"
+                        name="address_type"
+                        value="work"
+                        {% if new_address_type == 'work' %}checked{% endif %}>
+                    Work
+                </label>
+
+            </div>
+
+            <button
+                type="submit"
+                class="checkout-confirm-address"
+                onclick="document.getElementById('addressAction').value='save_new_address'">
+
+                Confirm Delivery Address
+
+            </button>
+
+            {% if new_address_confirmed and not checkout_address_form.errors %}
+                <p class="checkout-address-success">
+                    Delivery address confirmed for checkout.
+                </p>
+            {% endif %}
+
+        </div>
+
+    </form>
+
+    <div class="checkout-address-bottom">
+        <span class="checkout-muted">
+            Delivery time confirmed after dispatch
+        </span>
+    </div>
+
+</section>
+
+
+      <!-- Step 2: Payment Method -->
+      <section class="checkout-card">
+        <div class="checkout-card-heading">
+          <div class="checkout-heading-title">
+            <span class="checkout-step">2</span>
+            <h2>Payment Method</h2>
+          </div>
+          <span class="checkout-muted">Select one method</span>
+        </div>
+
+        <div class="checkout-payment-list">
+
+          <!-- Razorpay (coming soon) -->
+          <div class="checkout-payment-option unavailable">
+            <input type="radio" disabled aria-label="Razorpay unavailable">
+            <div class="checkout-payment-info">
+              <div class="checkout-payment-title">Razorpay</div>
+              <div class="checkout-payment-description">UPI, credit / debit cards, net banking</div>
+            </div>
+            <span class="checkout-payment-tag">Coming Soon</span>
+          </div>
+
+          <!-- Wallet (coming soon) -->
+          <div class="checkout-payment-option unavailable">
+            <input type="radio" disabled aria-label="Wallet unavailable">
+            <div class="checkout-payment-info">
+              <div class="checkout-payment-title">Wallet</div>
+              <div class="checkout-payment-description">Pay using supported digital wallets</div>
+            </div>
+            <span class="checkout-payment-tag">Coming Soon</span>
+          </div>
+
+          <!-- Cash on Delivery (active) -->
+          <div class="checkout-payment-option active">
+            <input type="radio" checked aria-label="Cash on Delivery">
+            <div class="checkout-payment-info">
+              <div class="checkout-payment-title">Cash on Delivery</div>
+              <div class="checkout-payment-description">Pay when your order arrives</div>
+            </div>
+            <span class="checkout-payment-tag">Pay at Door</span>
+          </div>
+
+        </div>
+
+        <p class="checkout-secure">
+          <i class="fa-solid fa-shield-halved"></i> Your order details are handled securely.
+        </p>
+      </section>
+
+    </div>
+
+    <!-- ================= RIGHT COLUMN: ORDER SUMMARY ================= -->
+    <aside class="checkout-card checkout-summary">
+      <h2>Order Summary</h2>
+
+      <!-- Cart items -->
+      <div class="checkout-items">
+        {% for item in cart_items %}
+        <div class="checkout-item">
+          {% with image=item.variant.product.images.first %}
+            {% if image %}
+              <img class="checkout-item-image"
+                   src="{{ image.image.url }}"
+                   alt="{{ item.variant.product.name }}">
+            {% else %}
+              <div class="checkout-item-image checkout-item-placeholder">
+                <i class="fa-solid fa-shoe-prints"></i>
+              </div>
+            {% endif %}
+          {% endwith %}
+
+          <div>
+            <div class="checkout-item-name">{{ item.variant.product.name }}</div>
+            <div class="checkout-item-meta">
+              UK {{ item.variant.size }}<br>
+              Qty: {{ item.quantity }}
+            </div>
+          </div>
+
+          <div class="checkout-item-price">₹{{ item.item_total|floatformat:2 }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Coupon (disabled) -->
+      <div class="checkout-coupon">
+        <div class="checkout-coupon-label">Have a coupon?</div>
+        <div class="checkout-coupon-row">
+          <input type="text" placeholder="Enter coupon code" disabled aria-label="Coupon code">
+          <button type="button" disabled>Apply</button>
+        </div>
+        <div class="checkout-coupon-note">Coupons will be available soon.</div>
+      </div>
+
+      <!-- Totals -->
+      <div class="checkout-totals">
+        <div class="checkout-total-row">
+          <span>Subtotal</span>
+          <strong>₹{{ subtotal|floatformat:2 }}</strong>
+        </div>
+
+        <div class="checkout-total-row">
+          <span>Delivery</span>
+          {% if shipping_charge == 0 %}
+            <strong class="checkout-free">FREE</strong>
+          {% else %}
+            <strong>₹{{ shipping_charge|floatformat:2 }}</strong>
+          {% endif %}
+        </div>
+
+        <div class="checkout-total-row">
+          <span>Coupon discount</span>
+          <strong>− ₹{{ discount|floatformat:2 }}</strong>
+        </div>
+      </div>
+
+      <div class="checkout-grand-total">
+        <span>Total</span>
+        <strong>₹{{ total_amount|floatformat:2 }}</strong>
+      </div>
+
+      {% if address_mode == 'saved' and not selected_address_id %}
+    <p class="checkout-pending-note">
+        Please select a delivery address.
+    </p>
+{% elif address_mode == 'new' and not new_address_confirmed %}
+    <p class="checkout-pending-note">
+        Please confirm your new delivery address.
+    </p>
+{% endif %}
+      <form method="POST" action="{% url 'orders:place_order' %}">
+    {% csrf_token %}
+
+    <button type="submit" class="checkout-order-btn">
+        Place Order
+    </button>
+</form>
+
+    </aside>
+
+  </div>
+</div>
+
+<script>
+    function selectSavedAddress() {
+        document.getElementById("addressAction").value = "select_saved";
+        document.getElementById("checkoutAddressForm").requestSubmit();
+    }
+
+    function showNewAddressForm() {
+        document.getElementById("newAddressFields").hidden = false;
+
+        document.querySelectorAll('input[name="address_id"]').forEach(
+            radio => radio.checked = false
+        );
+    }
+
+    function toggleAddressType() {
+        const checkbox = document.getElementById("saveAddressCheckbox");
+        const addressTypeFields = document.getElementById("addressTypeFields");
+
+        addressTypeFields.hidden = !checkbox.checked;
+    }
+  function selectConfirmedNewAddress() {
+
+    // Set the action to select the confirmed new address
+    document.getElementById("addressAction").value = "select_new";
+
+    // Submit the existing checkout address form
+    document.getElementById("checkoutAddressForm").requestSubmit();
+
+}
+
+function editNewAddress() {
+    document.getElementById("newAddressFields").hidden = false;
+
+    document.querySelectorAll('input[name="address_choice"]').forEach(
+        radio => radio.checked = false
+    );
+}
+</script>
+
+{% endblock %}

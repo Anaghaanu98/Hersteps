@@ -1381,8 +1381,10 @@
     type="button"
     id="proceedCheckoutBtn"
     class="cart-checkout-btn"
+    data-checkout-url="{% url 'orders:checkout' %}"
     aria-disabled="{% if not can_checkout %}true{% else %}false{% endif %}"
 >
+
     Proceed to Checkout
 </button>
             <p
@@ -1776,13 +1778,13 @@ const proceedCheckoutBtn = document.getElementById(
 if (proceedCheckoutBtn) {
 
     proceedCheckoutBtn.addEventListener("click", function (event) {
-
+    
         if (hasBlockedCartProducts()) {
             event.preventDefault();
             showUnavailableModal();
             return;
         }
-
+        window.location.href = this.dataset.checkoutUrl;
         // Preserve the existing checkout restriction for stock issues
         const hasInvalidItems = Array.from(
             cartItemsContainer.querySelectorAll(".cart-item")

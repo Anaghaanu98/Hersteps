@@ -25,4 +25,5 @@ urlpatterns = [
     path('admin-panel/',include("admin_panel.urls")),
     path("wishlist/", include("wishlist.urls")),
     path("cart/", include("cart.urls")),
+    path("orders/", include("orders.urls")),
 ]

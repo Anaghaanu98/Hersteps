@@ -1,0 +1,100 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}My Orders | HerSteps{% endblock %}
+
+{% block content %}
+<style>
+.orders-page {
+    max-width: 1150px;
+    margin: 0 auto;
+    padding: 45px 25px 80px;
+}
+.orders-page h1 {
+    font-family: var(--font-serif);
+    font-size: 44px;
+    margin-bottom: 30px;
+}
+.orders-table-wrap {
+    overflow-x: auto;
+    background: #fffaf7;
+    border: 1px solid #f0e1d8;
+    border-radius: 14px;
+}
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+.orders-table th,
+.orders-table td {
+    padding: 18px;
+    border-bottom: 1px solid #f0e1d8;
+}
+.orders-table th {
+    background: #fff0e5;
+    font-size: 13px;
+}
+.order-status {
+    color: #99420a;
+    font-weight: 700;
+}
+.orders-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 25px;
+}
+.orders-pagination a {
+    color: var(--brown);
+    font-weight: 700;
+}
+</style>
+
+<div class="orders-page">
+    <h1>My Orders</h1>
+
+    {% if orders %}
+    <div class="orders-table-wrap">
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.order_id }}</td>
+                    <td>{{ order.created_at|date:"d M Y" }}</td>
+                    <td>₹{{ order.total_amount|floatformat:2 }}</td>
+                    <td>{{ order.get_payment_method_display }}</td>
+                    <td class="order-status">
+                        {{ order.get_order_status_display }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="orders-pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+    {% else %}
+        <p>You haven't placed any orders yet.</p>
+        <a href="{% url 'home' %}">Continue Shopping</a>
+    {% endif %}
+</div>
+{% endblock %}
