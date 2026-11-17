@@ -4,32 +4,270 @@
 {% block nav_active %}orders{% endblock %}
 {% block breadcrumb %}Order Management{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Scoped to this page; uses the theme variables and shared classes from admin_base.html */
+
+    /* ---------- Toolbar ---------- */
+    .om-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+    .om-search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 260px;
+        max-width: 640px;
+        margin: 0;
+    }
+    .om-search-field { position: relative; flex: 1; }
+    .om-search-field .icon {
+        position: absolute;
+        top: 50%;
+        left: 16px;
+        width: 18px;
+        height: 18px;
+        transform: translateY(-50%);
+        color: var(--soft);
+        pointer-events: none;
+    }
+    .om-search-field .form-input {
+        height: 48px;
+        padding-left: 46px;
+        border-radius: 999px;
+        background: #fff;
+    }
+    .om-search .btn { min-height: 48px; border-radius: 999px; padding: 0 26px; }
+    .om-clear {
+        display: inline-flex;
+        align-items: center;
+        min-height: 48px;
+        padding: 0 6px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: color .2s ease;
+    }
+    .om-clear:hover { color: var(--primary); }
+
+    .om-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: var(--tint);
+        color: var(--primary);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .om-count strong { font-family: var(--heading); font-size: 15px; }
+
+    /* ---------- Table ---------- */
+    .om-card { padding: 28px; }
+    .om-table td { vertical-align: middle; }
+    .om-id {
+        color: var(--ink);
+        font-weight: 700;
+        letter-spacing: .2px;
+        white-space: nowrap;
+    }
+    .om-customer { display: flex; align-items: center; gap: 14px; min-width: 220px; }
+    .om-avatar {
+        width: 40px;
+        height: 40px;
+        flex: none;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--tint) 0%, var(--tint-2) 100%);
+        color: var(--primary);
+        font-family: var(--heading);
+        font-size: 15px;
+        font-weight: 700;
+    }
+    .om-customer strong { display: block; font-weight: 600; color: var(--ink); }
+    .om-date { color: var(--muted); white-space: nowrap; }
+    .om-total {
+        font-family: var(--heading);
+        font-weight: 700;
+        letter-spacing: -.3px;
+        white-space: nowrap;
+    }
+    .om-payment { color: var(--muted); }
+
+    /* ---------- Status pill ---------- */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        background: var(--tint);
+        color: var(--primary-dark);
+    }
+    .status-pill::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+    .status-pill[data-status*="pending"] { background: #eff0f6; color: #5d6280; }
+    .status-pill[data-status*="confirm"],
+    .status-pill[data-status*="process"] { background: var(--tint); color: var(--primary-dark); }
+    .status-pill[data-status*="ship"],
+    .status-pill[data-status*="out"],
+    .status-pill[data-status*="transit"] { background: #e0f2fe; color: #075985; }
+    .status-pill[data-status="delivered"] { background: #e3f8f1; color: #0b7a5c; }
+    .status-pill[data-status*="cancel"],
+    .status-pill[data-status*="fail"] { background: #ffe5e7; color: #c0282f; }
+    .status-pill[data-status*="return"],
+    .status-pill[data-status*="refund"] { background: #fff1d6; color: #9a6400; }
+
+    /* ---------- Empty row ---------- */
+    .om-empty-cell { padding: 56px 20px !important; text-align: center; color: var(--muted); }
+    .om-empty-icon {
+        width: 60px;
+        height: 60px;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 14px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--tint) 0%, var(--tint-2) 100%);
+        color: var(--primary);
+    }
+    .om-empty-icon .icon { width: 26px; height: 26px; }
+    .om-empty-text { margin: 0; font-size: 15.5px; font-weight: 500; }
+
+    /* ---------- Pagination ---------- */
+    .om-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 14px;
+    }
+    .om-pagination a,
+    .om-pagination .is-disabled {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 0 22px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--primary);
+        font-weight: 600;
+        transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+    .om-pagination a:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px -12px rgba(91, 80, 240, .8);
+    }
+    .om-pagination a:focus-visible { outline: 3px solid rgba(139, 124, 255, .5); outline-offset: 2px; }
+    .om-pagination .is-disabled { opacity: .45; pointer-events: none; }
+    .om-pagination .page-count { font-weight: 600; white-space: nowrap; }
+
+    /* ---------- Mobile: rows become cards ---------- */
+    @media (max-width: 720px) {
+        .om-card { padding: 18px; }
+        .om-toolbar { flex-direction: column; align-items: stretch; }
+        .om-search { max-width: none; min-width: 0; }
+        .om-count { align-self: flex-start; }
+
+        .om-table, .om-table tbody, .om-table tr, .om-table td { display: block; width: 100%; }
+        .om-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+        .om-table tbody tr {
+            margin-bottom: 14px;
+            padding: 6px 16px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 10px 24px -18px rgba(40, 40, 120, .3);
+        }
+        .om-table tbody td {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 13px 0;
+            border-bottom: 1px solid #eff0f8;
+            text-align: right;
+        }
+        .om-table tbody tr:last-child td { border-bottom: 1px solid #eff0f8; }
+        .om-table tbody tr td:last-child { border-bottom: 0; }
+        .om-table tbody tr:hover td { background: transparent; }
+        .om-table tbody td[data-label]::before {
+            content: attr(data-label);
+            color: var(--muted);
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+        .om-customer { min-width: 0; text-align: left; }
+        .om-table tbody tr.om-empty-row { padding: 0; border: 0; box-shadow: none; background: transparent; }
+        .om-table tbody tr.om-empty-row td { display: block; text-align: center; border: 0; }
+        .om-pagination { gap: 10px; }
+        .om-pagination a,
+        .om-pagination .is-disabled { padding: 0 16px; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <header class="page-head">
     <div>
+        <p class="page-eyebrow">Sales</p>
         <h1 class="page-title">Order Management</h1>
         <p class="page-subtitle">View all customer orders.</p>
     </div>
 </header>
 
-<section class="card">
+<section class="card om-card">
 
-    <form method="get" style="margin-bottom:25px;">
-        <input
-            type="search"
-            name="q"
-            value="{{ search_query }}"
-            placeholder="Search order ID, customer or email"
-            class="form-input"
-        >
-        <button type="submit" class="btn btn-primary" style="margin-top:12px;">
-            Search
-        </button>
-    </form>
+    <div class="om-toolbar">
+        <form method="get" class="om-search">
+            <div class="om-search-field">
+                <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ search_query }}"
+                    placeholder="Search order ID, customer or email"
+                    class="form-input"
+                    aria-label="Search orders"
+                >
+            </div>
+            <button type="submit" class="btn btn-primary">
+                Search
+            </button>
+            {% if search_query %}
+                <a href="?" class="om-clear">Clear</a>
+            {% endif %}
+        </form>
+
+        <span class="om-count"><strong>{{ page_obj.paginator.count }}</strong> orders</span>
+    </div>
 
     <div class="table-wrap">
-        <table class="data-table">
+        <table class="data-table om-table">
             <thead>
                 <tr>
                     <th>Order ID</th>
@@ -38,44 +276,66 @@
                     <th>Total</th>
                     <th>Payment</th>
                     <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td>{{ order.order_id }}</td>
-                    <td>
-                        <strong>{{ order.full_name }}</strong>
-                        <span class="cell-sub">{{ order.user.email }}</span>
+                    <td class="om-id" data-label="Order ID">{{ order.order_id }}</td>
+                    <td data-label="Customer">
+                        <div class="om-customer">
+                            <span class="om-avatar" aria-hidden="true">{{ order.full_name|first|upper }}</span>
+                            <div>
+                                <strong>{{ order.full_name }}</strong>
+                                <span class="cell-sub">{{ order.user.email }}</span>
+                            </div>
+                        </div>
                     </td>
-                    <td>{{ order.created_at|date:"d M Y" }}</td>
-                    <td>₹{{ order.total_amount|floatformat:2 }}</td>
-                    <td>{{ order.get_payment_method_display }}</td>
-                    <td>
-                        <span class="pill pill-warn">
+                    <td class="om-date" data-label="Date">{{ order.created_at|date:"d M Y" }}</td>
+                    <td class="om-total" data-label="Total">₹{{ order.total_amount|floatformat:2 }}</td>
+                    <td class="om-payment" data-label="Payment">{{ order.get_payment_method_display }}</td>
+                    <td data-label="Status">
+                        <span class="pill status-pill" data-status="{{ order.order_status|lower }}">
                             {{ order.get_order_status_display }}
                         </span>
                     </td>
+                    <td data-label="Action">
+                        <a href="#"
+                        class="btn btn-primary"
+                        style="white-space: nowrap;">
+                            View Details
+                        </a>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr>
-                    <td colspan="6">No orders found.</td>
+                <tr class="om-empty-row">
+                    <td colspan="7" class="om-empty-cell">
+                        <div class="om-empty-icon" aria-hidden="true">
+                            <svg class="icon"><use href="#i-orders"/></svg>
+                        </div>
+                        <p class="om-empty-text">No orders found.</p>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <div style="display:flex;gap:18px;justify-content:center;margin-top:25px;">
+    <div class="om-pagination">
         {% if page_obj.has_previous %}
-            <a href="?q={{ search_query|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a>
+            <a href="?q={{ search_query|urlencode }}&page={{ page_obj.previous_page_number }}">← Previous</a>
+        {% else %}
+            <span class="is-disabled" aria-disabled="true">← Previous</span>
         {% endif %}
 
-        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <span class="page-count">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
 
         {% if page_obj.has_next %}
-            <a href="?q={{ search_query|urlencode }}&page={{ page_obj.next_page_number }}">Next</a>
+            <a href="?q={{ search_query|urlencode }}&page={{ page_obj.next_page_number }}">Next →</a>
+        {% else %}
+            <span class="is-disabled" aria-disabled="true">Next →</span>
         {% endif %}
     </div>
 
