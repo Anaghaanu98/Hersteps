@@ -24,8 +24,6 @@ def add_to_cart(request):
 
     product_uuid = request.POST.get("product_uuid")
     size = request.POST.get("size")
-
-    # Default to 1 for existing wishlist functionality
     quantity_value = request.POST.get("quantity", "1")
 
     # Validate required fields
@@ -129,7 +127,7 @@ def add_to_cart(request):
                     "in this size."
                 )
             }, status=400)
-        # Maximum 4 units when variant stock is below 10
+        
         max_allowed_quantity = (
             min(4, variant.stock)
             if variant.stock < 10

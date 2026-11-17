@@ -2,56 +2,303 @@
 
 {% block title %}My Orders | HerSteps{% endblock %}
 
-{% block content %}
-<style>
-.orders-page {
-    max-width: 1150px;
-    margin: 0 auto;
-    padding: 45px 25px 80px;
-}
-.orders-page h1 {
-    font-family: var(--font-serif);
-    font-size: 44px;
-    margin-bottom: 30px;
-}
-.orders-table-wrap {
-    overflow-x: auto;
-    background: #fffaf7;
-    border: 1px solid #f0e1d8;
-    border-radius: 14px;
-}
-.orders-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-.orders-table th,
-.orders-table td {
-    padding: 18px;
-    border-bottom: 1px solid #f0e1d8;
-}
-.orders-table th {
-    background: #fff0e5;
-    font-size: 13px;
-}
-.order-status {
-    color: #99420a;
-    font-weight: 700;
-}
-.orders-pagination {
-    display: flex;
-    justify-content: center;
-    gap: 18px;
-    margin-top: 25px;
-}
-.orders-pagination a {
-    color: var(--brown);
-    font-weight: 700;
-}
-</style>
+{# Full-width page: lets the content below control its own width instead of the centred auth layout #}
+{% block page_class %}page--full{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* All styles are scoped to .orders-page and use the theme variables from base.html */
+    .orders-page {
+        width: 100%;
+        max-width: 1150px;
+        margin: 0 auto;
+        padding: 48px 28px 88px;
+        animation: fadeUp .5s ease both;
+    }
+
+    /* ---------- Heading ---------- */
+    .orders-head { margin-bottom: 32px; }
+    .orders-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+    .orders-eyebrow::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--brown);
+    }
+    .orders-page h1 {
+        margin: 0;
+        text-align: left;
+        font-family: var(--font-serif);
+        font-weight: 600;
+        font-size: 48px;
+        line-height: 1.05;
+        letter-spacing: -.3px;
+        color: var(--heading);
+    }
+    .orders-sub {
+        margin: 10px 0 0;
+        color: var(--body-soft);
+        font-size: 15px;
+        line-height: 1.65;
+    }
+
+    /* ---------- Table card ---------- */
+    .orders-table-wrap {
+        overflow-x: auto;
+        background: #fff;
+        border: 1px solid rgba(240, 225, 216, .7);
+        border-radius: 22px;
+        box-shadow:
+            0 1px 2px rgba(70, 42, 25, .04),
+            0 18px 40px -12px rgba(70, 42, 25, .16);
+    }
+    .orders-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        text-align: left;
+        font-size: 15px;
+        color: var(--text);
+    }
+    .orders-table th,
+    .orders-table td { padding: 20px 26px; }
+    .orders-table th {
+        background: var(--peach);
+        border-bottom: 1px solid var(--border);
+        color: #5a463b;
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .orders-table td {
+        border-bottom: 1px solid #f7ece4;
+        vertical-align: middle;
+        transition: background .2s ease;
+    }
+    .orders-table tbody tr:last-child td { border-bottom: 0; }
+    .orders-table tbody tr:hover td { background: #fffaf6; }
+
+    .order-id { color: var(--heading); font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
+    .order-date { color: var(--body-soft); white-space: nowrap; }
+    .order-total {
+        color: var(--heading);
+        font-family: var(--font-serif);
+        font-size: 23px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .order-payment { color: var(--body-soft); }
+
+    /* ---------- Status pill ---------- */
+    .order-status { color: var(--brown); font-weight: 700; }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: #f1ece8;
+        color: var(--body-soft);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .status-pill::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+    .status-pill[data-status*="pending"] { background: #f1ece8; color: var(--body-soft); }
+    .status-pill[data-status*="confirm"],
+    .status-pill[data-status*="process"] { background: #ffe6d6; color: var(--brown); }
+    .status-pill[data-status*="ship"],
+    .status-pill[data-status*="out"],
+    .status-pill[data-status*="transit"] { background: #e8eef8; color: #2f4f87; }
+    .status-pill[data-status="delivered"] { background: #ecfdf5; color: #065f46; }
+    .status-pill[data-status*="cancel"],
+    .status-pill[data-status*="fail"] { background: #fef2f2; color: #991b1b; }
+    .status-pill[data-status*="return"],
+    .status-pill[data-status*="refund"] { background: #fff9ea; color: #78350f; }
+
+    /* ---------- Pagination ---------- */
+    .orders-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        margin-top: 30px;
+        color: var(--body-soft);
+        font-size: 14px;
+    }
+    .orders-pagination a,
+    .orders-pagination .is-disabled {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 0 22px;
+        border-radius: 999px;
+        background: var(--field-bg);
+        color: var(--brown);
+        font-weight: 700;
+        text-decoration: none;
+        transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+    .orders-pagination a:hover {
+        background: var(--brown);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 18px -10px rgba(153, 66, 10, .6);
+    }
+    .orders-pagination a:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
+    .orders-pagination .is-disabled { opacity: .4; pointer-events: none; }
+    .orders-pagination .page-count { font-weight: 600; white-space: nowrap; }
+
+    /* ---------- Empty state ---------- */
+    .orders-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 64px 28px;
+        text-align: center;
+        background: #fff;
+        border: 1px solid rgba(240, 225, 216, .7);
+        border-radius: 22px;
+        box-shadow:
+            0 1px 2px rgba(70, 42, 25, .04),
+            0 18px 40px -12px rgba(70, 42, 25, .16);
+    }
+    .orders-empty-icon {
+        width: 68px;
+        height: 68px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 18px;
+        border-radius: 22px;
+        background: #f8e4d4;
+        color: var(--brown);
+    }
+    .orders-empty-icon svg {
+        width: 30px;
+        height: 30px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+    .orders-empty p { margin: 0 0 22px; color: var(--body-soft); font-size: 16px; }
+    .orders-empty a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 54px;
+        padding: 0 32px;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, #a8480d 0%, var(--brown-dark) 100%);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 10px 20px -8px rgba(153, 66, 10, .55);
+        transition: transform .2s ease, box-shadow .25s ease;
+    }
+    .order-view-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: var(--brown);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .2s ease;
+}
+
+.order-view-btn:hover {
+    background: var(--brown-dark);
+    color: #fff;
+}
+    .orders-empty a:hover { transform: translateY(-2px); box-shadow: 0 14px 26px -8px rgba(153, 66, 10, .6); }
+    .orders-empty a:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
+
+    /* ---------- Tablet / mobile: rows become cards ---------- */
+    @media (max-width: 900px) {
+        .orders-page { padding: 36px 20px 72px; }
+        .orders-page h1 { font-size: 40px; }
+    }
+    @media (max-width: 720px) {
+        .orders-page { padding: 28px 14px 64px; }
+        .orders-page h1 { font-size: 36px; }
+
+        .orders-table-wrap { background: transparent; border: 0; box-shadow: none; overflow: visible; }
+        .orders-table, .orders-table tbody, .orders-table tr, .orders-table td { display: block; width: 100%; }
+        .orders-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+
+        .orders-table tr {
+            margin-bottom: 14px;
+            padding: 6px 18px;
+            background: #fff;
+            border: 1px solid rgba(240, 225, 216, .7);
+            border-radius: 18px;
+            box-shadow: 0 10px 24px -16px rgba(70, 42, 25, .25);
+        }
+        .orders-table td {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 13px 0;
+            border-bottom: 1px solid #f7ece4;
+            text-align: right;
+        }
+        .orders-table tbody tr:last-child td { border-bottom: 1px solid #f7ece4; }
+        .orders-table tr td:last-child { border-bottom: 0; }
+        .orders-table tbody tr:hover td { background: transparent; }
+        .orders-table td::before {
+            content: attr(data-label);
+            color: var(--muted);
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+        .order-total { font-size: 21px; }
+
+        .orders-pagination { gap: 10px; }
+        .orders-pagination a,
+        .orders-pagination .is-disabled { padding: 0 16px; }
+        .orders-empty { padding: 48px 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="orders-page">
-    <h1>My Orders</h1>
+    <div class="orders-head">
+        <p class="orders-eyebrow">Your account</p>
+        <h1>My Orders</h1>
+        <p class="orders-sub">Track your purchases and see where every pair is.</p>
+    </div>
 
     {% if orders %}
     <div class="orders-table-wrap">
@@ -63,19 +310,26 @@
                     <th>Total</th>
                     <th>Payment</th>
                     <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td>{{ order.order_id }}</td>
-                    <td>{{ order.created_at|date:"d M Y" }}</td>
-                    <td>₹{{ order.total_amount|floatformat:2 }}</td>
-                    <td>{{ order.get_payment_method_display }}</td>
-                    <td class="order-status">
-                        {{ order.get_order_status_display }}
+                    <td class="order-id" data-label="Order ID">{{ order.order_id }}</td>
+                    <td class="order-date" data-label="Date">{{ order.created_at|date:"d M Y" }}</td>
+                    <td class="order-total" data-label="Total">₹{{ order.total_amount|floatformat:2 }}</td>
+                    <td class="order-payment" data-label="Payment">{{ order.get_payment_method_display }}</td>
+                    <td class="order-status" data-label="Status">
+                        <span class="status-pill" data-status="{{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
                     </td>
-                </tr>
+                    <td data-label="Action">
+                    <a href="#"
+                    class="order-view-btn">
+                        View Details
+                    </a>
+                </td>
+                 </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -83,18 +337,27 @@
 
     <div class="orders-pagination">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            <a href="?page={{ page_obj.previous_page_number }}">← Previous</a>
+        {% else %}
+            <span class="is-disabled" aria-disabled="true">← Previous</span>
         {% endif %}
 
-        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <span class="page-count">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+            <a href="?page={{ page_obj.next_page_number }}">Next →</a>
+        {% else %}
+            <span class="is-disabled" aria-disabled="true">Next →</span>
         {% endif %}
     </div>
     {% else %}
+    <div class="orders-empty">
+        <span class="orders-empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </span>
         <p>You haven't placed any orders yet.</p>
         <a href="{% url 'home' %}">Continue Shopping</a>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
