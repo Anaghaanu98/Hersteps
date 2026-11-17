@@ -32,11 +32,45 @@
         {{ order.get_order_status_display }}
     </p>
 
+    <div style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+">
+
+    <!-- View Orders -->
+    <a href="{% url 'orders:order_list' %}"
+       style="
+           display: inline-block;
+           padding: 14px 28px;
+           background: #99420a;
+           color: white;
+           border-radius: 10px;
+           text-decoration: none;
+           font-weight: 600;
+       ">
+        View Orders
+    </a>
+
+    <!-- Continue Shopping -->
     <a href="{% url 'home' %}"
-       style="display:inline-block;margin-top:25px;padding:14px 28px;background:#99420a;color:white;border-radius:10px;text-decoration:none;">
+       style="
+           display: inline-block;
+           padding: 14px 28px;
+           background: #fff;
+           color: #99420a;
+           border: 1px solid #99420a;
+           border-radius: 10px;
+           text-decoration: none;
+           font-weight: 600;
+       ">
         Continue Shopping
     </a>
 
+</div>
 </div>
 
 {% endblock %}

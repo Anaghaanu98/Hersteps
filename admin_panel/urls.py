@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import admin_views,categories_views,products_views,banner_views
+from .views import admin_views,categories_views,products_views,banner_views,orders_views
 app_name='admin_panel'
 urlpatterns = [
     path('',admin_views.admin_login_view,name='admin_login'),
@@ -22,6 +22,8 @@ urlpatterns = [
     path("products/toggle-status/<uuid:product_uuid>/",products_views.toggle_product_status,name="toggle_product_status"),
     path("products/<str:product_uuid>/variants/edit/",products_views.edit_product_variants,name="edit_product_variants",),
     path('users/<int:user_id>/toggle-status/',admin_views.toggle_user_status_view,name='toggle_user_status'),
+
+    path("orders/", orders_views.order_list, name="order_list"),
     path('logout/',admin_views.admin_logout_view,name='admin_logout')
 ]
 

@@ -736,7 +736,7 @@
 
                 <div class="nav-group">
                     <p class="nav-label">Sales</p>
-                    <a class="nav-link" data-nav="orders" href="{{ u_orders|default:'#' }}">
+                    <a class="nav-link" data-nav="orders" href="{% url 'admin_panel:order_list' %}">
                         <svg class="icon" aria-hidden="true"><use href="#i-orders"/></svg><span>Orders</span>
                     </a>
                     <a class="nav-link" data-nav="coupons" href="{{ u_coupons|default:'#' }}">

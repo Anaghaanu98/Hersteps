@@ -1,0 +1,84 @@
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}Order Management{% endblock %}
+{% block nav_active %}orders{% endblock %}
+{% block breadcrumb %}Order Management{% endblock %}
+
+{% block content %}
+
+<header class="page-head">
+    <div>
+        <h1 class="page-title">Order Management</h1>
+        <p class="page-subtitle">View all customer orders.</p>
+    </div>
+</header>
+
+<section class="card">
+
+    <form method="get" style="margin-bottom:25px;">
+        <input
+            type="search"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search order ID, customer or email"
+            class="form-input"
+        >
+        <button type="submit" class="btn btn-primary" style="margin-top:12px;">
+            Search
+        </button>
+    </form>
+
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.order_id }}</td>
+                    <td>
+                        <strong>{{ order.full_name }}</strong>
+                        <span class="cell-sub">{{ order.user.email }}</span>
+                    </td>
+                    <td>{{ order.created_at|date:"d M Y" }}</td>
+                    <td>₹{{ order.total_amount|floatformat:2 }}</td>
+                    <td>{{ order.get_payment_method_display }}</td>
+                    <td>
+                        <span class="pill pill-warn">
+                            {{ order.get_order_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No orders found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="display:flex;gap:18px;justify-content:center;margin-top:25px;">
+        {% if page_obj.has_previous %}
+            <a href="?q={{ search_query|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?q={{ search_query|urlencode }}&page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+
+</section>
+
+{% endblock %}
