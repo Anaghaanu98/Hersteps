@@ -29,8 +29,6 @@ def checkout_view(request):
         .order_by("-created_at")
     )
 
-    # PREVENT CHECKOUT WITH EMPTY CART
-
     if not cart_items:
         messages.error(
             request,
@@ -38,7 +36,6 @@ def checkout_view(request):
         )
         return redirect("cart:page")
 
-    # VALIDATE PRODUCTS AND STOCK
 
     for item in cart_items:
 
@@ -56,6 +53,7 @@ def checkout_view(request):
             messages.error(
                 request,f"{product.category} category is currently unavailable."
             )
+            return redirect("cart:page")
 
         if variant.stock <= 0:
             messages.error(
@@ -72,7 +70,7 @@ def checkout_view(request):
             )
             return redirect("cart:page")
 
-        # Maintain existing cart quantity restriction
+       
         if variant.stock < 10 and item.quantity > 4:
             messages.error(
                 request,
@@ -81,26 +79,25 @@ def checkout_view(request):
             )
             return redirect("cart:page")
 
-        # Calculate individual item total
+        
         item.item_total = (
             product.price * item.quantity
         )
 
-    # CALCULATE SUBTOTAL
+    
 
     subtotal = sum(
         (item.item_total for item in cart_items),
         Decimal("0.00")
     )
 
-    # SHIPPING CALCULATION
 
     if subtotal >= Decimal("2500.00"):
         shipping_charge = Decimal("0.00")
     else:
         shipping_charge = Decimal("50.00")
 
-    # Coupon functionality will be implemented later
+    
     discount = Decimal("0.00")
 
     # FINAL PAYABLE AMOUNT
@@ -109,7 +106,7 @@ def checkout_view(request):
         subtotal + shipping_charge - discount
     )
 
-    # FETCH USER ADDRESSES
+    
 
     addresses = list(
         Address.objects.filter(
@@ -124,7 +121,7 @@ def checkout_view(request):
         (address for address in addresses if address.is_default),
         addresses[0] if addresses else None
     )
-
+    
     valid_address_ids = {address.id for address in addresses}
 
     selected_address_id = request.session.get("checkout_address_id")

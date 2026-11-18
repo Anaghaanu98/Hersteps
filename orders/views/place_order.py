@@ -23,7 +23,7 @@ def place_order(request):
     try:
         with transaction.atomic():
 
-            # 1. Validate delivery address
+            # Validate delivery address
             address_mode = request.session.get(
                 "checkout_address_mode", "saved"
             )
@@ -39,8 +39,7 @@ def place_order(request):
 
                 address_id = request.session.get("checkout_address_id")
 
-                # If no address was explicitly selected,
-                # use the user's default saved address.
+                
                 if not address_id:
                     default_address = (
                         Address.objects.filter(user=request.user)
@@ -85,7 +84,7 @@ def place_order(request):
                     "Please select a delivery address."
                 )
 
-            # 2. Lock cart rows
+            # Lock cart rows
             cart_items = list(
                 Cart.objects.select_for_update()
                 .filter(user=request.user)
@@ -95,7 +94,7 @@ def place_order(request):
             if not cart_items:
                 raise OrderValidationError("Your cart is empty.")
 
-            # 3. Lock product variants
+            # Lock product variants
             variant_ids = [item.variant_id for item in cart_items]
 
             variants = {
@@ -110,7 +109,7 @@ def place_order(request):
             subtotal = Decimal("0.00")
             order_items_data = []
 
-            # 4. Validate cart and calculate subtotal
+            # Validate cart and calculate subtotal
             for item in cart_items:
 
                 variant = variants.get(item.variant_id)
@@ -155,7 +154,7 @@ def place_order(request):
                     "item_total": item_total,
                 })
 
-            # 5. Recalculate totals
+            # Recalculate totals
             shipping_charge = (
                 Decimal("0.00")
                 if subtotal >= Decimal("2500.00")
@@ -165,7 +164,7 @@ def place_order(request):
             discount = Decimal("0.00")
             total_amount = subtotal + shipping_charge - discount
 
-            # 6. Optionally save new address
+            # Optionally save new address
             if (
                 address_mode == "new"
                 and request.session.get("checkout_save_address", False)
@@ -186,7 +185,7 @@ def place_order(request):
                     **delivery_address
                 )
 
-            # 7. Create order
+            # Create order
             order = Order.objects.create(
                 user=request.user,
                 address=saved_address,
@@ -200,13 +199,13 @@ def place_order(request):
                 order_status="placed",
             )
 
-            # 8. Create order items
+            # Create order items
             OrderItem.objects.bulk_create([
                 OrderItem(order=order, **data)
                 for data in order_items_data
             ])
 
-            # 9. Deduct stock
+            # Deduct stock
             for item in cart_items:
                 variant = variants[item.variant_id]
                 variant.stock -= item.quantity
@@ -216,7 +215,7 @@ def place_order(request):
                 ["stock"]
             )
 
-            # 10. Clear cart
+            #  Clear cart
             Cart.objects.filter(
                 pk__in=[item.pk for item in cart_items],
                 user=request.user
