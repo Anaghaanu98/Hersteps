@@ -163,7 +163,7 @@ def add_to_cart(request):
                 cart_item.quantity + requested_quantity
             )
 
-            # Prevent total cart quantity exceeding stock
+            
             if new_quantity > variant.stock:
                 return JsonResponse({
                     "success": False,
@@ -189,13 +189,13 @@ def add_to_cart(request):
                 quantity=F("quantity") + requested_quantity
             )
 
-        # Remove from wishlist only after successful cart addition
+        
         Wishlist.objects.filter(
             user=request.user,
             product=product
         ).delete()
 
-        # Calculate updated cart quantity
+        
         cart_count = (
             Cart.objects
             .filter(user=request.user)
@@ -204,7 +204,7 @@ def add_to_cart(request):
         )
         
 
-        # Calculate updated wishlist count
+        
         wishlist_count = Wishlist.objects.filter(
             user=request.user
         ).count()
@@ -238,60 +238,6 @@ def cart_count(request):
         "success": True,
         "count": count
     })
-
-@login_required(login_url="login")
-def cart_page(request):
-
-    cart_items = (
-        Cart.objects
-        .filter(user=request.user)
-        .select_related(
-            "variant",
-            "variant__product",
-            "variant__product__category"
-        )
-        .prefetch_related(
-            "variant__product__images",
-            "variant__product__variants"
-        )
-        .order_by("-created_at")
-    )
-
-    subtotal = sum(
-        (
-            item.variant.product.price * item.quantity
-            for item in cart_items
-        ),
-        Decimal("0.00")
-    )
-
-    cart_count = sum(
-        item.quantity
-        for item in cart_items
-    )
-    has_invalid_items = any(
-        not item.variant.product.is_active
-        or not item.variant.product.category.is_active
-        or item.variant.stock <= 0
-        or item.quantity > item.variant.stock
-        or (item.variant.stock < 10 and item.quantity > 4)
-        for item in cart_items
-    )
-
-    can_checkout = bool(cart_count) and not has_invalid_items
-    context = {
-        "cart_items": cart_items,
-        "cart_count": cart_count,
-        "subtotal": subtotal,
-        "can_checkout": can_checkout,
-    }
-
-    return render(
-        request,
-        "cart/cart.html",
-        context
-    )
-
 def get_cart_totals(user):
 
     cart_items = (
@@ -345,6 +291,61 @@ def get_cart_totals(user):
         "has_insufficient_stock_items": has_insufficient_stock_items,
         "can_checkout": can_checkout,
     } 
+
+@login_required(login_url="login")
+def cart_page(request):
+
+    cart_items = (
+        Cart.objects
+        .filter(user=request.user)
+        .select_related(
+            "variant",
+            "variant__product",
+            "variant__product__category"
+        )
+        .prefetch_related(
+            "variant__product__images",
+            "variant__product__variants"
+        )
+        .order_by("-created_at")
+    )
+    totals=get_cart_totals(request.user)
+
+    # subtotal = sum(
+    #     (
+    #         item.variant.product.price * item.quantity
+    #         for item in cart_items
+    #     ),
+    #     Decimal("0.00")
+    # )
+
+    # cart_count = sum(
+    #     item.quantity
+    #     for item in cart_items
+    # )
+    # has_invalid_items = any(
+    #     not item.variant.product.is_active
+    #     or not item.variant.product.category.is_active
+    #     or item.variant.stock <= 0
+    #     or item.quantity > item.variant.stock
+    #     or (item.variant.stock < 10 and item.quantity > 4)
+    #     for item in cart_items
+    # )
+
+    # can_checkout = bool(cart_count) and not has_invalid_items
+    context = {
+        "cart_items": cart_items,
+        "cart_count": totals["cart_count"],
+        "subtotal": totals["subtotal"],
+        "can_checkout": totals["can_checkout"],
+    }
+
+    return render(
+        request,
+        "cart/cart.html",
+        context
+    )
+
 
 
 
