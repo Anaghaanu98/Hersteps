@@ -45,12 +45,17 @@ def checkout_view(request):
         variant = item.variant
         product = variant.product
 
-        if not product.is_active or not product.category.is_active:
+        if not product.is_active :
             messages.error(
                 request,
-                f"{product.name} is currently unavailable."
+                f"{product.name} product is currently unavailable."
             )
             return redirect("cart:page")
+
+        if not product.category.is_active:
+            messages.error(
+                request,f"{product.category} category is currently unavailable."
+            )
 
         if variant.stock <= 0:
             messages.error(
