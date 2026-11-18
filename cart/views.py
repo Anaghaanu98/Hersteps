@@ -158,7 +158,7 @@ def add_to_cart(request):
                 .get(pk=cart_item.pk)
             )
 
-            # Existing quantity + newly requested quantity
+           
             new_quantity = (
                 cart_item.quantity + requested_quantity
             )
@@ -238,6 +238,8 @@ def cart_count(request):
         "success": True,
         "count": count
     })
+
+
 def get_cart_totals(user):
 
     cart_items = (
@@ -371,7 +373,7 @@ def update_cart_quantity(request):
             user=request.user
         )
 
-        # Fetch the latest stock from database
+        
         variant = (
             ProductVariant.objects
             .select_for_update()
@@ -381,7 +383,7 @@ def update_cart_quantity(request):
 
         product = variant.product
 
-        # IMPORTANT: Check stock before increase OR decrease
+        # Check stock before increase OR decrease
         if variant.stock <= 0:
 
             return JsonResponse({
@@ -410,7 +412,7 @@ def update_cart_quantity(request):
                     "message": "Maximum available stock reached."
                 }, status=400)
 
-            # Restrict quantity to 4 when variant stock is below 10
+            
             if variant.stock < 10 and cart_item.quantity >= 4:
                 return JsonResponse({
                     "success": False,
@@ -601,22 +603,19 @@ def move_to_wishlist(request):
 
         product = cart_item.variant.product
 
-        # Maintain the same product availability rule
-        # used in your existing wishlist toggle.
+       
         if not product.is_active or not product.category.is_active:
             return JsonResponse({
                 "success": False,
                 "message": "This product is currently unavailable."
             }, status=403)
 
-        # Avoid duplicate wishlist entries
+    
         Wishlist.objects.get_or_create(
             user=request.user,
             product=product
         )
 
-        # Remove the selected cart entry only after
-        # the wishlist operation succeeds.
         cart_item.delete()
 
         totals = get_cart_totals(request.user)
