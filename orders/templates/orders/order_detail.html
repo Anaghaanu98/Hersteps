@@ -1,0 +1,131 @@
+
+{% extends "accounts/base.html" %}
+
+{% block title %}Order Details | HerSteps{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <h2>Order Details</h2>
+
+    <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+    <p><strong>Order Date:</strong> {{ order.created_at|date:"d M Y, h:i A" }}</p>
+    <p><strong>Status:</strong> {{ order.get_order_status_display }}</p>
+    <p><strong>Payment:</strong> {{ order.get_payment_method_display }}</p>
+
+    <hr>
+
+    <h4>Delivery Address</h4>
+
+    <p>
+        {{ order.full_name }}<br>
+        {{ order.house_name }}, {{ order.locality }}<br>
+        {{ order.city }}, {{ order.state }} - {{ order.pincode }}<br>
+        Phone: {{ order.phone }}
+    </p>
+
+    <hr>
+
+    <h4>Ordered Products</h4>
+
+    {% for item in order.items.all %}
+
+    <div class="border rounded p-3 mb-3">
+
+        <h5>{{ item.product_name }}</h5>
+
+        <p>Size: UK {{ item.size }}</p>
+        <p>Quantity: {{ item.quantity }}</p>
+        <p>Price: ₹{{ item.price }}</p>
+        <p>Item Total: ₹{{ item.item_total }}</p>
+        <p>Status: {{ item.get_status_display }}</p>
+
+        {% if can_cancel and item.status == "active" %}
+
+        <form method="POST"
+              action="{% url 'orders:cancel_order_item' order.order_id item.id %}">
+
+            {% csrf_token %}
+
+            <textarea
+                name="cancellation_reason"
+                placeholder="Cancellation reason (optional)"
+                class="form-control mb-2"></textarea>
+
+            <button type="submit"
+                    class="btn btn-outline-danger"
+                    onclick="return confirm('Cancel this product?')">
+                Cancel Product
+            </button>
+
+        </form>
+
+        {% endif %}
+
+    </div>
+
+    {% endfor %}
+
+    <hr>
+
+    <h4>Order Summary</h4>
+
+    <p>Subtotal: ₹{{ order.subtotal }}</p>
+    <p>Discount: ₹{{ order.discount }}</p>
+    <p>Shipping: ₹{{ order.shipping_charge }}</p>
+
+    <h5>Total: ₹{{ order.total_amount }}</h5>
+
+    {% if can_cancel %}
+
+    <hr>
+
+    <h4>Cancel Entire Order</h4>
+
+    <form method="POST"
+          action="{% url 'orders:cancel_order' order.order_id %}">
+
+        {% csrf_token %}
+
+        <textarea
+            name="cancellation_reason"
+            placeholder="Cancellation reason (optional)"
+            class="form-control mb-2"></textarea>
+
+        <button type="submit"
+                class="btn btn-danger"
+                onclick="return confirm('Are you sure you want to cancel this order?')">
+            Cancel Order
+        </button>
+
+    </form>
+
+    {% endif %}
+
+    <hr>
+
+    <h4>Order Tracking</h4>
+
+    {% for history in order.status_history.all %}
+
+        <p>
+            {{ history.get_status_display }}
+            -
+            {{ history.changed_at|date:"d M Y, h:i A" }}
+        </p>
+
+    {% empty %}
+
+        <p>No tracking updates available.</p>
+
+    {% endfor %}
+
+    <a href="{% url 'orders:order_list' %}"
+       class="btn btn-secondary mt-3">
+        Back to My Orders
+    </a>
+
+</div>
+
+{% endblock %}

@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from admin_panel.models import ProductVariant
 from cart.models import Cart
 from my_accounts.models import Address
-from orders.models import Order, OrderItem
+from orders.models import Order, OrderItem,OrderStatusHistory
 
 
 class OrderValidationError(Exception):
@@ -196,8 +196,14 @@ def place_order(request):
                 total_amount=total_amount,
                 payment_method="cod",
                 payment_status="pending",
-                order_status="placed",
+                order_status="pending",
             )
+
+            OrderStatusHistory.objects.create(
+                    order=order,
+                    status="pending",
+                    changed_by=None
+                )
 
             # Create order items
             OrderItem.objects.bulk_create([
