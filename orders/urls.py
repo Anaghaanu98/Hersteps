@@ -17,4 +17,21 @@ urlpatterns = [
         name="order_success"
     ),
     path("my-orders/", user_orders.order_list, name="order_list"),
+    path(
+    "my-orders/<uuid:order_uuid>/",
+    user_orders.order_detail,
+    name="order_detail"
+),
+
+path(
+    "my-orders/<uuid:order_uuid>/cancel/",
+    user_orders.cancel_order,
+    name="cancel_order"
+),
+
+path(
+    "my-orders/<uuid:order_uuid>/items/<int:item_id>/cancel/",
+    user_orders.cancel_order_item,
+    name="cancel_order_item"
+),
 ]

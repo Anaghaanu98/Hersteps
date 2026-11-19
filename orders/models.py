@@ -9,9 +9,9 @@ from django.core.validators import MinValueValidator
 class Order(models.Model):
 
     ORDER_STATUS = [
-        ("placed", "Placed"),
-        ("confirmed", "Confirmed"),
+        ("pending", "Pending"),
         ("shipped", "Shipped"),
+        ("out_for_delivery", "Out for Delivery"),
         ("delivered", "Delivered"),
         ("cancelled", "Cancelled"),
     ]
@@ -98,9 +98,9 @@ class Order(models.Model):
     order_status = models.CharField(
         max_length=20,
         choices=ORDER_STATUS,
-        default="placed"
+        default="pending"
     )
-
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -146,9 +146,88 @@ class OrderItem(models.Model):
         max_digits=10,
         decimal_places=2
     )
+    ITEM_STATUS = [
+        ("active", "Active"),
+        ("cancelled", "Cancelled"),
+        ("return_requested", "Return Requested"),
+        ("returned", "Returned"),
+        ]
+    
+    status = models.CharField(
+            max_length=20,
+            choices=ITEM_STATUS,
+            default="active"
+        )
+    
+    cancellation_reason = models.TextField(
+            blank=True
+        )
+    
+    cancelled_at = models.DateTimeField(
+            null=True,
+            blank=True
+        )
 
     def __str__(self):
         return f"{self.product_name} - UK {self.size}"
+  
 
+class OrderStatusHistory(models.Model):
 
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="status_history"
+    )
 
+    status = models.CharField(
+        max_length=20,
+        choices=Order.ORDER_STATUS
+    )
+
+    changed_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+class ReturnRequest(models.Model):
+
+    RETURN_STATUS = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    order_item = models.OneToOneField(
+        OrderItem,
+        on_delete=models.PROTECT,
+        related_name="return_request"
+    )
+
+    reason = models.TextField()
+
+    status = models.CharField(
+        max_length=20,
+        choices=RETURN_STATUS,
+        default="pending"
+    )
+
+    requested_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    class Meta:
+        ordering = ["-requested_at"]
+
+    def __str__(self):
+        return f"Return Request - {self.order_item.product_name}"

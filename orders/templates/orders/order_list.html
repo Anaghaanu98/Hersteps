@@ -324,7 +324,7 @@
                         <span class="status-pill" data-status="{{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
                     </td>
                     <td data-label="Action">
-                    <a href="#"
+                    <a href="{% url 'orders:order_detail' order.order_id %}"
                     class="order-view-btn">
                         View Details
                     </a>
