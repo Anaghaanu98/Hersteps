@@ -289,6 +289,47 @@
         .orders-pagination .is-disabled { padding: 0 16px; }
         .orders-empty { padding: 48px 20px; }
     }
+
+/* User Order Search */
+
+.order-search-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.order-search-input {
+    flex: 1;
+    min-width: 220px;
+    padding: 13px 18px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 14px;
+    outline: none;
+}
+
+.order-search-input:focus {
+    border-color: var(--primary, #5b50f0);
+}
+
+.order-search-btn {
+    padding: 13px 24px;
+    border: none;
+    border-radius: 12px;
+    background: var(--primary, #5b50f0);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.order-search-clear {
+    color: var(--primary, #5b50f0);
+    font-weight: 600;
+    text-decoration: none;
+}
+
 </style>
 {% endblock %}
 
@@ -299,6 +340,30 @@
         <h1>My Orders</h1>
         <p class="orders-sub">Track your purchases and see where every pair is.</p>
     </div>
+    
+<form method="GET" class="order-search-form">
+
+    <input
+        type="search"
+        name="q"
+        value="{{ search_query }}"
+        placeholder="Search Order ID, product or status..."
+        class="order-search-input"
+        aria-label="Search my orders"
+    >
+
+    <button type="submit" class="order-search-btn">
+        Search
+    </button>
+
+    {% if search_query %}
+        <a href="{% url 'orders:order_list' %}"
+           class="order-search-clear">
+            Clear
+        </a>
+    {% endif %}
+
+</form>
 
     {% if orders %}
     <div class="orders-table-wrap">
@@ -337,7 +402,7 @@
 
     <div class="orders-pagination">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}">← Previous</a>
+            <a href="?q={{ search_query|urlencode }}&page={{ page_obj.previous_page_number }}">← Previous</a>
         {% else %}
             <span class="is-disabled" aria-disabled="true">← Previous</span>
         {% endif %}
@@ -345,7 +410,7 @@
         <span class="page-count">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">Next →</a>
+            <a href="?q={{ search_query|urlencode }}&page={{ page_obj.next_page_number }}"">Next →</a>
         {% else %}
             <span class="is-disabled" aria-disabled="true">Next →</span>
         {% endif %}
