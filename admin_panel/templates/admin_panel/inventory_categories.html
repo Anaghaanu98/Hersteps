@@ -1,0 +1,189 @@
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}Category Inventory | HerSteps{% endblock %}
+{% block nav_active %}inventory{% endblock %}
+{% block breadcrumb %}Category Inventory{% endblock %}
+
+{% block content %}
+<style>
+/* Scoped to this page; uses theme variables and shared classes from admin_base.html */
+.inv-category-page { color: var(--ink, #0f1224); }
+
+.inv-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 0 22px;
+    border-radius: 12px;
+    background: var(--tint, #eef0ff);
+    color: var(--primary, #5b50f0);
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform .2s ease, background .2s ease, box-shadow .25s ease;
+}
+
+.inv-back:hover {
+    background: var(--tint-2, #e2e5ff);
+    transform: translateX(-3px);
+}
+
+.inv-back:focus-visible { outline: 3px solid rgba(139, 124, 255, .5); outline-offset: 3px; }
+
+.inv-category-card {
+    background: var(--card, #fff);
+    border: 1px solid var(--line, #e7e9f3);
+    border-radius: var(--radius, 20px);
+    padding: 24px;
+    box-shadow: var(--shadow, 0 14px 34px -18px rgba(40, 40, 120, .22));
+    animation: invCatFadeUp .55s ease both;
+}
+
+.inv-category-table-wrap { overflow-x: auto; }
+
+.inv-category-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+}
+
+.inv-category-table th,
+.inv-category-table td {
+    padding: 17px 20px;
+    text-align: left;
+    border-bottom: 1px solid #eff0f8;
+}
+
+.inv-category-table th {
+    background: var(--tint, #eef0ff);
+    color: var(--muted, #5d6280);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.inv-category-table th:first-child { border-radius: 12px 0 0 12px; }
+.inv-category-table th:last-child { border-radius: 0 12px 12px 0; }
+
+.inv-category-table td {
+    font-size: 14.5px;
+    color: var(--muted, #5d6280);
+    transition: background .2s ease;
+}
+
+.inv-category-table tbody tr:hover td { background: #f9f9ff; }
+.inv-category-table tbody tr:last-child td { border-bottom: none; }
+
+.inv-category-name {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--ink, #0f1224);
+    font-weight: 600;
+}
+
+.inv-category-initial {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, var(--primary, #5b50f0) 0%, var(--primary-soft, #8b7cff) 100%);
+    color: #fff;
+    font-family: var(--heading, "Sora", sans-serif);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 10px 18px -10px rgba(91, 80, 240, .85);
+}
+
+.inv-category-count {
+    display: inline-flex;
+    align-items: center;
+    min-width: 40px;
+    justify-content: center;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--tint, #eef0ff);
+    color: var(--primary-dark, #4538d6);
+    font-weight: 700;
+}
+
+.inv-category-stock {
+    color: var(--ink, #0f1224);
+    font-family: var(--heading, "Sora", sans-serif);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+}
+
+@keyframes invCatFadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 600px) {
+    .inv-category-card { padding: 14px; }
+    .inv-category-table th,
+    .inv-category-table td { padding: 14px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .inv-category-card { animation: none !important; }
+    .inv-back { transition: none !important; }
+}
+</style>
+
+<div class="inv-category-page">
+
+    <header class="page-head">
+        <div>
+            <p class="page-eyebrow">Inventory</p>
+            <h1 class="page-title">Category Inventory</h1>
+            <p class="page-subtitle">Category-wise product count and stock information.</p>
+        </div>
+
+        <div class="page-actions">
+            <a class="inv-back"
+               href="{% url 'admin_panel:inventory_dashboard' %}">
+                ← Back to Inventory
+            </a>
+        </div>
+    </header>
+
+    <div class="inv-category-card">
+        <div class="inv-category-table-wrap">
+            <table class="inv-category-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Total Products</th>
+                        <th>Total Stock Units</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td class="inv-category-name">
+                            <span class="inv-category-initial" aria-hidden="true">{{ category.name|first|upper }}</span>
+                            {{ category.name }}
+                        </td>
+                        <td><span class="inv-category-count">{{ category.product_count }}</span></td>
+                        <td class="inv-category-stock">{{ category.total_stock }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align:center; padding:40px;">
+                            No categories found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

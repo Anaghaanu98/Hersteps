@@ -1,0 +1,365 @@
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}Inventory Dashboard | HerSteps{% endblock %}
+{% block nav_active %}inventory{% endblock %}
+{% block breadcrumb %}Inventory Management{% endblock %}
+
+{% block content %}
+<style>
+/* Scoped to this page; uses theme variables and shared classes from admin_base.html */
+.inv-page { color: var(--ink, #0f1224); }
+
+/* ---------- Stat cards ---------- */
+.inv-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    margin-bottom: 30px;
+}
+
+.inv-stat {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 26px;
+    background: var(--card, #fff);
+    border: 1px solid var(--line, #e7e9f3);
+    border-radius: var(--radius, 20px);
+    box-shadow: var(--shadow, 0 14px 34px -18px rgba(40, 40, 120, .22));
+    transition: transform .3s cubic-bezier(.2, .8, .2, 1), box-shadow .3s ease, border-color .3s ease;
+    animation: invFadeUp .55s ease both;
+}
+
+.inv-stat:nth-child(3n+2) { animation-delay: .06s; }
+.inv-stat:nth-child(3n+3) { animation-delay: .12s; }
+
+.inv-stat::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139, 124, 255, .22) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.inv-stat:hover {
+    transform: translateY(-5px);
+    border-color: #dcdffa;
+    box-shadow: 0 1px 2px rgba(20, 24, 60, .04), 0 26px 46px -22px rgba(70, 60, 200, .35);
+}
+
+.inv-stat-label {
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted, #5d6280);
+}
+
+.inv-stat-value {
+    margin-top: 0;
+    font-family: var(--heading, "Sora", sans-serif);
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.8px;
+}
+
+.inv-stat-icon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, var(--tint, #eef0ff) 0%, var(--tint-2, #e2e5ff) 100%);
+    color: var(--primary, #5b50f0);
+    transition: transform .3s ease;
+}
+
+.inv-stat:hover .inv-stat-icon { transform: rotate(-6deg) scale(1.08); }
+
+.inv-stat-icon svg {
+    width: 23px;
+    height: 23px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* warning + danger tones */
+.inv-stat--warn .inv-stat-icon { background: linear-gradient(135deg, #fff4dc, #ffe6b3); color: #b45309; }
+.inv-stat--warn::after { background: radial-gradient(circle, rgba(245, 158, 11, .22) 0%, transparent 70%); }
+.inv-stat--danger .inv-stat-icon { background: linear-gradient(135deg, #ffe9eb, #ffd2d6); color: #dc2626; }
+.inv-stat--danger::after { background: radial-gradient(circle, rgba(239, 68, 68, .22) 0%, transparent 70%); }
+
+/* ---------- Navigation cards ---------- */
+.inv-section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 18px;
+    font-family: var(--heading, "Sora", sans-serif);
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -.3px;
+}
+
+.inv-section-title::before {
+    content: "";
+    width: 5px;
+    height: 22px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, var(--primary, #5b50f0), var(--accent, #14c8b0));
+}
+
+.inv-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+}
+
+.inv-nav-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    background: var(--card, #fff);
+    border: 1px solid var(--line, #e7e9f3);
+    border-radius: var(--radius, 20px);
+    box-shadow: var(--shadow, 0 14px 34px -18px rgba(40, 40, 120, .22));
+    transition: transform .3s cubic-bezier(.2, .8, .2, 1), box-shadow .3s ease, border-color .3s ease;
+    animation: invFadeUp .6s .18s ease both;
+}
+
+.inv-nav-card:nth-child(2) { animation-delay: .26s; }
+
+.inv-nav-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary, #5b50f0), var(--accent, #14c8b0));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .4s ease;
+}
+
+.inv-nav-card:hover {
+    transform: translateY(-6px);
+    border-color: #dcdffa;
+    box-shadow: 0 1px 2px rgba(20, 24, 60, .04), 0 30px 50px -24px rgba(70, 60, 200, .4);
+}
+
+.inv-nav-card:hover::before { transform: scaleX(1); }
+
+.inv-nav-icon {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary, #5b50f0) 0%, var(--primary-soft, #8b7cff) 100%);
+    color: #fff;
+    box-shadow: 0 14px 24px -12px rgba(91, 80, 240, .85);
+    transition: transform .3s ease;
+}
+
+.inv-nav-card:hover .inv-nav-icon { transform: rotate(-6deg) scale(1.08); }
+
+.inv-nav-icon svg {
+    width: 25px;
+    height: 25px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.inv-nav-card h2 {
+    margin: 0 0 10px;
+    font-family: var(--heading, "Sora", sans-serif);
+    font-size: 23px;
+    font-weight: 600;
+    letter-spacing: -.4px;
+}
+
+.inv-nav-card p {
+    min-height: 44px;
+    margin: 0 0 22px;
+    color: var(--muted, #5d6280);
+    font-size: 14.5px;
+    line-height: 1.7;
+}
+
+.inv-link {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 22px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary, #5b50f0) 0%, #7a5cf5 100%);
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 14px 24px -12px rgba(91, 80, 240, .8), inset 0 1px 0 rgba(255, 255, 255, .2);
+    transition: transform .2s ease, box-shadow .25s ease, filter .2s ease;
+}
+
+.inv-link:hover {
+    opacity: 1;
+    filter: brightness(1.07);
+    transform: translateY(-2px);
+    box-shadow: 0 18px 28px -12px rgba(91, 80, 240, .9), inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+
+.inv-link:focus-visible { outline: 3px solid rgba(139, 124, 255, .5); outline-offset: 3px; }
+
+@keyframes invFadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 1100px) {
+    .inv-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 720px) {
+    .inv-links { grid-template-columns: 1fr; }
+    .inv-nav-card { padding: 24px; }
+    .inv-nav-card p { min-height: 0; }
+}
+
+@media (max-width: 550px) {
+    .inv-stats { grid-template-columns: 1fr; gap: 16px; }
+    .inv-stat { padding: 22px; }
+    .inv-stat-value { font-size: 32px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .inv-stat, .inv-nav-card { animation: none !important; }
+    .inv-stat, .inv-nav-card, .inv-stat-icon, .inv-nav-icon, .inv-nav-card::before { transition: none !important; }
+}
+</style>
+
+<div class="inv-page">
+
+    <header class="page-head">
+        <div>
+            <p class="page-eyebrow">Inventory</p>
+            <h1 class="page-title inv-title">Inventory Management</h1>
+            <p class="page-subtitle inv-subtitle">
+                Overview of categories, products and stock availability.
+            </p>
+        </div>
+    </header>
+
+    <div class="inv-stats">
+        <div class="inv-stat">
+            <div>
+                <div class="inv-stat-label">Total Categories</div>
+                <div class="inv-stat-value">{{ total_categories }}</div>
+            </div>
+            <span class="inv-stat-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            </span>
+        </div>
+        <div class="inv-stat">
+            <div>
+                <div class="inv-stat-label">Total Products</div>
+                <div class="inv-stat-value">{{ total_products }}</div>
+            </div>
+            <span class="inv-stat-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </span>
+        </div>
+        <div class="inv-stat">
+            <div>
+                <div class="inv-stat-label">Total Variants</div>
+                <div class="inv-stat-value">{{ total_variants }}</div>
+            </div>
+            <span class="inv-stat-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/><path d="m3 17.5 9 5 9-5"/></svg>
+            </span>
+        </div>
+        <div class="inv-stat">
+            <div>
+                <div class="inv-stat-label">Total Stock Units</div>
+                <div class="inv-stat-value">{{ total_stock }}</div>
+            </div>
+            <span class="inv-stat-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            </span>
+        </div>
+        <div class="inv-stat inv-stat--warn">
+            <div>
+                <div class="inv-stat-label">Low Stock Variants</div>
+                <div class="inv-stat-value" style="color:#b45309;">
+                    {{ low_stock_count }}
+                </div>
+            </div>
+            <span class="inv-stat-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+        </div>
+        <div class="inv-stat inv-stat--danger">
+            <div>
+                <div class="inv-stat-label">Out of Stock Variants</div>
+                <div class="inv-stat-value" style="color:#dc2626;">
+                    {{ out_of_stock_count }}
+                </div>
+            </div>
+            <span class="inv-stat-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+            </span>
+        </div>
+    </div>
+
+    <h2 class="inv-section-title">Explore inventory</h2>
+
+    <div class="inv-links">
+        <div class="inv-nav-card">
+            <span class="inv-nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            </span>
+            <h2>Category Inventory</h2>
+            <p>View categories, product counts and category-wise stock.</p>
+            <a class="inv-link"
+               href="{% url 'admin_panel:inventory_categories' %}">
+                View Categories →
+            </a>
+        </div>
+
+        <div class="inv-nav-card">
+            <span class="inv-nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </span>
+            <h2>Product Inventory</h2>
+            <p>View individual size variants, quantities and stock status.</p>
+            <a class="inv-link"
+               href="{% url 'admin_panel:inventory_products' %}">
+                View Products →
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

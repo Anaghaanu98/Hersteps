@@ -733,6 +733,14 @@
                     <a class="nav-link" data-nav="categories" href="{% url 'admin_panel:category_list'%}">
                         <svg class="icon" aria-hidden="true"><use href="#i-categories"/></svg><span>Categories</span>
                     </a>
+                    <a class="nav-link"
+                    data-nav="inventory"
+                    href="{% url 'admin_panel:inventory_dashboard' %}">
+                        <svg class="icon" aria-hidden="true">
+                            <use href="#i-products"></use>
+                        </svg>
+                        <span>Inventory</span>
+                    </a>
                 </div>
 
                 <div class="nav-group">

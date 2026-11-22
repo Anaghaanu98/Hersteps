@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import admin_views,categories_views,products_views,banner_views,orders_views,return_management
+from .views import admin_views,categories_views,products_views,banner_views,orders_views,return_management,inventory_views
 app_name='admin_panel'
 urlpatterns = [
     path('',admin_views.admin_login_view,name='admin_login'),
@@ -64,7 +64,25 @@ path(
     name="admin_cancel_order_item"
 ),
 
+
     path("orders/", orders_views.order_list, name="order_list"),
+    path(
+    "inventory/",
+    inventory_views.inventory_dashboard,
+    name="inventory_dashboard"
+),
+path(
+    "inventory/categories/",
+    inventory_views.inventory_categories,
+    name="inventory_categories"
+),
+
+path(
+    "inventory/products/",
+    inventory_views.inventory_products,
+    name="inventory_products"
+),
     path('logout/',admin_views.admin_logout_view,name='admin_logout')
+
 ]
 
