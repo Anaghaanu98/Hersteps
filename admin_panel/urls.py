@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import admin_views,categories_views,products_views,banner_views,orders_views
+from .views import admin_views,categories_views,products_views,banner_views,orders_views,return_management
 app_name='admin_panel'
 urlpatterns = [
     path('',admin_views.admin_login_view,name='admin_login'),
@@ -22,6 +22,47 @@ urlpatterns = [
     path("products/toggle-status/<uuid:product_uuid>/",products_views.toggle_product_status,name="toggle_product_status"),
     path("products/<str:product_uuid>/variants/edit/",products_views.edit_product_variants,name="edit_product_variants",),
     path('users/<int:user_id>/toggle-status/',admin_views.toggle_user_status_view,name='toggle_user_status'),
+
+    path(
+    "orders/",
+    orders_views.order_list,
+    name="order_list"
+),
+
+path(
+    "orders/<uuid:order_uuid>/",
+    orders_views.admin_order_detail,
+    name="order_detail"
+),
+
+path(
+    "orders/<uuid:order_uuid>/update-status/",
+    orders_views.admin_update_order_status,
+    name="update_order_status"
+),
+
+path(
+    "orders/<uuid:order_uuid>/cancel/",
+    orders_views.admin_cancel_order,
+    name="cancel_order"
+),
+path(
+    "return-requests/",
+    return_management.return_request_list,
+    name="return_request_list"
+),
+
+path(
+    "return-requests/<int:request_id>/review/",
+    return_management.admin_review_return,
+    name="review_return"
+),
+
+path(
+    "orders/<uuid:order_uuid>/items/<int:item_id>/cancel/",
+    orders_views.admin_cancel_order_item,
+    name="admin_cancel_order_item"
+),
 
     path("orders/", orders_views.order_list, name="order_list"),
     path('logout/',admin_views.admin_logout_view,name='admin_logout')

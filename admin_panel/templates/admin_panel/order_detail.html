@@ -1,0 +1,709 @@
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}Order Details{% endblock %}
+{% block nav_active %}orders{% endblock %}
+{% block breadcrumb %}Order Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Scoped to this page; uses theme variables and shared classes from admin_base.html */
+
+    .od-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 24px;
+        align-items: start;
+    }
+    .od-main, .od-side { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+    .od-side { position: sticky; top: calc(var(--topbar-h) + 12px); }
+    .od-layout .card { padding: 28px; animation: odFadeUp .55s ease both; }
+    .od-layout .card-head { margin-bottom: 20px; }
+
+    /* gradient accent bar before each card title */
+    .od-layout .card-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .od-layout .card-title::before {
+        content: "";
+        flex: none;
+        width: 5px;
+        height: 22px;
+        border-radius: 4px;
+        background: linear-gradient(180deg, var(--primary), var(--accent));
+    }
+
+    /* ---------- Page head ---------- */
+    .od-head-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .od-back { min-height: 44px; }
+
+    /* ---------- Status pills (same scheme as the order list) ---------- */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        background: var(--tint);
+        color: var(--primary-dark);
+        font-weight: 700;
+    }
+    .status-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .status-pill[data-status*="pending"] { background: #eff0f6; color: #5d6280; }
+    .status-pill[data-status*="confirm"],
+    .status-pill[data-status*="process"] { background: var(--tint); color: var(--primary-dark); }
+    .status-pill[data-status*="ship"],
+    .status-pill[data-status*="out"],
+    .status-pill[data-status*="transit"] { background: #e0f2fe; color: #075985; }
+    .status-pill[data-status="delivered"] { background: #e3f8f1; color: #0b7a5c; }
+    .status-pill[data-status*="cancel"],
+    .status-pill[data-status*="fail"] { background: #ffe5e7; color: #c0282f; }
+    .status-pill[data-status*="return"],
+    .status-pill[data-status*="refund"] { background: #fff1d6; color: #9a6400; }
+    .page-head .status-pill { padding: 9px 18px; font-size: 13.5px; box-shadow: 0 10px 20px -14px rgba(40, 40, 120, .5); }
+
+    /* ---------- Key/value info grid ---------- */
+    .od-info { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+    .od-info > div {
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #fafbff;
+        transition: border-color .2s ease, background .2s ease, transform .2s ease;
+    }
+    .od-info > div:hover { border-color: #dcdffa; background: #fff; transform: translateY(-2px); }
+    .od-info dt { margin: 0 0 5px; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: var(--muted); }
+    .od-info dd { margin: 0; font-weight: 600; color: var(--ink); word-break: break-word; }
+    .od-info .is-wide { grid-column: 1 / -1; }
+    .od-address { font-weight: 500; line-height: 1.7; }
+
+    /* ---------- Summary ---------- */
+    .od-sum-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; color: var(--muted); font-size: 14.5px; }
+    .od-sum-row + .od-sum-row { border-top: 1px dashed var(--line); }
+    .od-sum-row strong { color: var(--ink); font-weight: 600; }
+    .od-sum-total {
+        display: flex; justify-content: space-between; align-items: baseline;
+        margin-top: 12px; padding: 18px 20px;
+        border-radius: 16px;
+        background:
+            radial-gradient(180px 90px at 100% 0%, rgba(139, 124, 255, .25) 0%, transparent 70%),
+            var(--tint);
+        border: 1px solid #e1e4ff;
+    }
+    .od-sum-total span { font-weight: 600; color: var(--muted); }
+    .od-sum-total strong { font-family: var(--heading); font-size: 28px; letter-spacing: -.6px; color: var(--primary-dark); }
+
+    /* ---------- Actions ---------- */
+    .od-current { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding: 12px 14px; border-radius: 14px; background: #fafbff; border: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+    .od-form { display: flex; flex-direction: column; gap: 12px; }
+    .od-form select,
+    .od-form textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1.5px solid var(--line);
+        border-radius: 12px;
+        background: #fafbff;
+        font-family: inherit;
+        font-size: 14.5px;
+        color: var(--ink);
+        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .od-form select {
+        height: 48px;
+        padding: 0 42px 0 14px;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235b50f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+    }
+    .od-form textarea { min-height: 96px; resize: vertical; }
+    .od-form select:hover,
+    .od-form textarea:hover { border-color: #d3d6ee; }
+    .od-form select:focus,
+    .od-form textarea:focus { outline: none; background-color: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(91, 80, 240, .14); }
+    .od-form select:invalid { color: var(--muted); }
+    .od-form .btn { width: 100%; }
+    .od-note { margin: 0; padding: 14px 16px; border-radius: 12px; background: #f6f7fb; color: var(--muted); font-size: 14px; }
+
+    .btn-danger {
+        background: #fff;
+        color: #c0282f;
+        border-color: #f6c4c8;
+    }
+    .btn-danger:hover { background: #dc3545; border-color: #dc3545; color: #fff; box-shadow: 0 14px 24px -14px rgba(220, 53, 69, .8); }
+    .od-danger-card { border-color: #f9d6d9; position: relative; overflow: hidden; }
+    .od-danger-card::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ef4444, #f97316);
+    }
+    .od-layout .od-danger-card .card-title::before { background: linear-gradient(180deg, #ef4444, #f97316); }
+
+    /* ---------- Timeline (kept for compatibility) ---------- */
+    .od-timeline { list-style: none; margin: 0; padding: 0; }
+    .od-step { position: relative; display: flex; gap: 16px; padding-bottom: 22px; }
+    .od-step:last-child { padding-bottom: 0; }
+    .od-step::before {
+        content: ""; position: absolute; left: 6px; top: 18px; bottom: -2px;
+        width: 2px; background: var(--line);
+    }
+    .od-step:last-child::before { display: none; }
+    .od-dot {
+        position: relative; z-index: 1;
+        width: 14px; height: 14px; flex: none; margin-top: 4px;
+        border-radius: 50%; background: #fff; border: 3px solid var(--soft);
+    }
+    .od-step:first-child .od-dot { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(91, 80, 240, .16); }
+    .od-step-body strong { display: block; font-weight: 600; }
+    .od-step-body time, .od-step-body small { display: block; font-size: 13px; color: var(--muted); }
+    .od-step-body small { margin-top: 2px; }
+    .od-empty { margin: 0; color: var(--muted); }
+
+    /* ---------- Order Detail Product Items ---------- */
+    .order-item-with-image {
+        display: flex;
+        align-items: flex-start;
+        gap: 22px;
+        padding: 22px 0;
+        border-bottom: 1px dashed var(--line);
+    }
+    .order-item-with-image:first-of-type { padding-top: 0; }
+    .order-item-with-image:last-of-type { padding-bottom: 0; border-bottom: 0; }
+
+    .order-product-image {
+        width: 108px;
+        height: 120px;
+        flex-shrink: 0;
+        border-radius: 18px 18px 18px 40px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f1f2fb, #e6e9fb);
+        border: 1px solid var(--line);
+        box-shadow: 0 14px 24px -18px rgba(40, 40, 120, .5);
+        transition: border-radius .5s cubic-bezier(.2, .8, .2, 1);
+    }
+    .order-item-with-image:hover .order-product-image { border-radius: 40px 18px 18px 18px; }
+    .order-product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform .6s cubic-bezier(.2, .7, .2, 1);
+    }
+    .order-item-with-image:hover .order-product-image img { transform: scale(1.08); }
+
+    .order-product-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .order-product-info h4 {
+        margin: 0 0 12px;
+        font-family: var(--heading);
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: -.2px;
+        color: var(--ink);
+    }
+
+    /* Size / quantity / price as chips */
+    .order-product-info p {
+        margin: 5px 0;
+        font-size: 14px;
+        color: var(--muted);
+    }
+    .order-product-info p.od-chip-line {
+        display: inline-flex;
+        align-items: center;
+        margin: 0 8px 8px 0;
+        padding: 5px 13px;
+        border-radius: 999px;
+        background: var(--tint);
+        color: var(--primary-dark);
+        font-size: 12.5px;
+        font-weight: 600;
+    }
+    .order-product-info p.od-total-line {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin: 4px 0 8px;
+        font-weight: 600;
+        color: var(--muted);
+    }
+    .order-product-info p.od-total-line span {
+        font-family: var(--heading);
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -.4px;
+        color: var(--ink);
+    }
+    .order-product-info p.od-total-line span.od-cancelled-price { color: #9ca3af; }
+    .order-product-info p.od-status-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: #f6f7fb;
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .od-cancelled-price {
+        text-decoration: line-through;
+        text-decoration-thickness: 2px;
+        color: #9ca3af;
+    }
+    .od-cancelled-label {
+        color: #c0282f;
+        font-weight: 700;
+    }
+
+    /* Cancel product (per item) */
+    .admin-item-cancel {
+        margin-top: 16px;
+    }
+    .admin-item-cancel summary {
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        padding: 0 18px;
+        border: 1.5px solid #f6c4c8;
+        border-radius: 999px;
+        color: #c0282f;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        list-style: none;
+        transition: background .2s ease, transform .2s ease;
+    }
+    .admin-item-cancel summary::-webkit-details-marker { display: none; }
+    .admin-item-cancel summary:hover,
+    .admin-item-cancel[open] summary { background: #fff1f2; }
+    .admin-item-cancel summary:hover { transform: translateY(-1px); }
+    .admin-item-cancel summary:focus-visible { outline: 3px solid rgba(139, 124, 255, .5); outline-offset: 2px; }
+
+    .admin-item-cancel form {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 12px;
+        animation: odFadeUp .3s ease both;
+    }
+    .admin-item-cancel textarea {
+        width: 100%;
+        max-width: 420px;
+        padding: 12px;
+        border: 1.5px solid var(--line);
+        border-radius: 12px;
+        font-family: inherit;
+    }
+    .admin-item-cancel button {
+        min-height: 44px;
+        padding: 0 22px;
+        background: #dc2626;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-family: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 12px 20px -12px rgba(220, 38, 38, .8);
+        transition: transform .2s ease, box-shadow .25s ease, filter .2s ease;
+    }
+    .admin-item-cancel button:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.06);
+        box-shadow: 0 16px 24px -12px rgba(220, 38, 38, .9);
+    }
+    .admin-item-cancel select {
+        width: 100%;
+        max-width: 420px;
+        min-height: 48px;
+        padding: 12px 42px 12px 14px;
+        border: 1.5px solid var(--line);
+        border-radius: 12px;
+        background-color: #fafbff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235b50f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        color: var(--ink);
+        font-family: inherit;
+        font-size: 14.5px;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+    }
+    .admin-item-cancel select:hover { border-color: #d3d6ee; }
+    .admin-item-cancel select:focus {
+        outline: none;
+        background-color: #fff;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(91, 80, 240, .14);
+    }
+    .admin-item-cancel select:invalid {
+        color: var(--muted);
+    }
+
+    .no-product-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: var(--soft);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    /* Amount payable highlight in Order Information */
+    .od-payable-value { font-family: var(--heading); font-size: 24px; letter-spacing: -.5px; }
+
+    @keyframes odFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1100px) {
+        .od-layout { grid-template-columns: 1fr; }
+        .od-side { position: static; }
+    }
+    @media (max-width: 720px) {
+        .od-layout .card { padding: 20px; }
+        .od-info { grid-template-columns: 1fr; }
+        .order-item-with-image { align-items: flex-start; gap: 14px; }
+        .order-product-image { width: 80px; height: 92px; border-radius: 14px 14px 14px 30px; }
+        .order-item-with-image:hover .order-product-image { border-radius: 30px 14px 14px 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .od-layout .card, .admin-item-cancel form { animation: none !important; }
+        .order-product-image, .order-product-image img { transition: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<header class="page-head">
+    <div>
+        <p class="page-eyebrow">Sales</p>
+        <h1 class="page-title">Order {{ order.order_id }}</h1>
+        <p class="page-subtitle">Placed on {{ order.created_at|date:"d M Y, h:i A" }}</p>
+    </div>
+    <div class="page-actions od-head-meta">
+        <span class="pill status-pill" data-status="{{ order.order_status|lower }}">{{ order.get_order_status_display }}</span>
+        <a href="{% url 'admin_panel:order_list' %}" class="btn btn-ghost od-back">Back to Orders</a>
+    </div>
+</header>
+
+<div class="od-layout">
+
+    <!-- ================= Main column ================= -->
+    <div class="od-main">
+
+        <section class="card">
+            <div class="card-head">
+                <h2 class="card-title">Ordered Products</h2>
+            </div>
+
+            {% for item in order.items.all %}
+            
+<div class="order-item-with-image">
+
+    <div class="order-product-image">
+
+        {% with product_image=item.product.images.first %}
+            {% if product_image %}
+                <img
+                    src="{{ product_image.image.url }}"
+                    alt="{{ item.product_name }}"
+                    loading="lazy"
+                >
+            {% else %}
+                <div class="no-product-image">
+                    No Image
+                </div>
+            {% endif %}
+        {% endwith %}
+
+    </div>
+
+    <div class="order-product-info">
+
+        <h4>{{ item.product_name }}</h4>
+
+        <p class="od-chip-line">Size: UK {{ item.size }}</p>
+        <p class="od-chip-line">Quantity: {{ item.quantity }}</p>
+        
+<p class="od-chip-line">Price: ₹{{ item.price }}</p>
+
+<p class="od-total-line">
+    Total:
+    <span class="{% if item.status == 'cancelled' %}od-cancelled-price{% endif %}">
+        ₹{{ item.item_total }}
+    </span>
+</p>
+
+
+<p class="od-status-line">
+    Status:
+
+    {% if item.status == "cancelled" %}
+
+        <span class="od-cancelled-label">
+            {% if item.cancelled_by_id and item.cancelled_by.is_staff and item.cancelled_by_id != order.user_id %}
+                Cancelled by Admin
+            {% elif item.cancelled_by_id %}
+                Cancelled by Customer
+            {% else %}
+                Cancelled
+            {% endif %}
+        </span>
+
+    {% else %}
+        {{ item.get_status_display }}
+    {% endif %}
+</p>
+
+
+        
+{% if can_cancel and item.status == "active" %}
+
+<details class="admin-item-cancel">
+    <summary>Cancel Product</summary>
+
+    <form method="POST"
+          action="{% url 'admin_panel:admin_cancel_order_item' order.order_id item.id %}">
+
+        {% csrf_token %}
+
+
+            <select name="cancellation_reason" required>
+                <option value="" selected disabled>
+                    Select cancellation reason
+                </option>
+                <option value="Product out of stock">
+                    Product out of stock
+                </option>
+                <option value="Product damaged or failed quality check">
+                    Product damaged or failed quality check
+                </option>
+                <option value="Unable to fulfill the order">
+                    Unable to fulfill the order
+                </option>
+                <option value="Delivery service unavailable">
+                    Delivery service unavailable
+                </option>
+            </select>
+
+        <button type="submit"
+                onclick="return confirm('Cancel this product?')">
+            Confirm Cancellation
+        </button>
+
+    </form>
+</details>
+
+{% endif %}
+
+    </div>
+
+</div>
+
+            {% endfor %}
+        </section>
+
+        <section class="card">
+            <div class="card-head">
+                <h2 class="card-title">Customer &amp; Delivery</h2>
+            </div>
+
+            <dl class="od-info">
+                <div>
+                    <dt>Name</dt>
+                    <dd>{{ order.full_name }}</dd>
+                </div>
+                <div>
+                    <dt>Phone</dt>
+                    <dd>{{ order.phone }}</dd>
+                </div>
+                <div class="is-wide">
+                    <dt>Email</dt>
+                    <dd>{{ order.user.email }}</dd>
+                </div>
+                <div class="is-wide">
+                    <dt>Address</dt>
+                    <dd class="od-address">
+                        {{ order.house_name }},
+                        {{ order.locality }}<br>
+                        {{ order.city }},
+                        {{ order.state }} -
+                        {{ order.pincode }}
+                    </dd>
+                </div>
+            </dl>
+        </section>
+
+        
+    </div>
+
+    <!-- ================= Side column ================= -->
+    <aside class="od-side">
+
+        <section class="card">
+            <div class="card-head">
+                <h2 class="card-title">Order Information</h2>
+            </div>
+
+            <dl class="od-info">
+                <div class="is-wide">
+                    <dt>Order ID</dt>
+                    <dd>{{ order.order_id }}</dd>
+                </div>
+                <div>
+                    <dt>Status</dt>
+                    <dd>{{ order.get_order_status_display }}</dd>
+                </div>
+                <div>
+                    <dt>Date</dt>
+                    <dd>{{ order.created_at|date:"d M Y, h:i A" }}</dd>
+                </div>
+                <div>
+                    <dt>Payment Method</dt>
+                    <dd>{{ order.get_payment_method_display }}</dd>
+                </div>
+                <div>
+                    <dt>Payment Status</dt>
+                    <dd>{{ order.get_payment_status_display }}</dd>
+                </div>
+
+            {% if has_cancelled_items %}
+            <div class="is-wide">
+                <dt>Amount Payable</dt>
+                <dd class="od-payable-value" style="color:#0b7a5c;">
+                    ₹{{ order.total_amount }}
+                </dd>
+            </div>
+            {% endif %}
+
+            </dl>
+        </section>
+
+        <section class="card">
+            <div class="card-head">
+                <h2 class="card-title">Order Summary</h2>
+            </div>
+
+            <div class="od-sum-row"><span>Subtotal</span><strong>₹{{ order.subtotal }}</strong></div>
+            <div class="od-sum-row"><span>Discount</span><strong>₹{{ order.discount }}</strong></div>
+            <div class="od-sum-row"><span>Shipping</span><strong>₹{{ order.shipping_charge }}</strong></div>
+
+            
+            <div class="od-sum-total">
+                <span>
+                    {% if has_cancelled_items %}
+                        Amount Payable
+                    {% else %}
+                        Total
+                    {% endif %}
+                </span>
+                <strong>₹{{ order.total_amount }}</strong>
+            </div>
+
+        </section>
+
+        <section class="card">
+            <div class="card-head">
+                <h2 class="card-title">Update Order Status</h2>
+            </div>
+
+            <div class="od-current">
+                <span>Current Status</span>
+                <strong class="pill status-pill" data-status="{{ order.order_status|lower }}">{{ order.get_order_status_display }}</strong>
+            </div>
+
+            {% if next_status %}
+
+            <form method="POST"
+                  class="od-form"
+                  action="{% url 'admin_panel:update_order_status' order.order_id %}">
+
+                {% csrf_token %}
+
+                <select name="order_status" required aria-label="New order status">
+                    {% for value, label in status_choices %}
+                        {% if value != "cancelled" %}
+                        <option value="{{ value }}"
+                            {% if value != next_status %}disabled{% endif %}
+                            {% if value == next_status %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="btn btn-primary">Update Status</button>
+
+            </form>
+
+            {% else %}
+
+            <p class="od-note">No further status updates are available.</p>
+
+            {% endif %}
+        </section>
+
+        {% if can_cancel %}
+        <section class="card od-danger-card">
+            <div class="card-head">
+                <h2 class="card-title">Cancel Order</h2>
+            </div>
+
+            <form method="POST"
+                  class="od-form"
+                  action="{% url 'admin_panel:cancel_order' order.order_id %}">
+
+                {% csrf_token %}
+
+                
+                <select name="cancellation_reason" required>
+                    <option value="" selected disabled>
+                        Select cancellation reason
+                    </option>
+                    <option value="Product out of stock">
+                        Product out of stock
+                    </option>
+                    <option value="Product damaged or failed quality check">
+                        Product damaged or failed quality check
+                    </option>
+                    <option value="Unable to fulfill the order">
+                        Unable to fulfill the order
+                    </option>
+                    <option value="Delivery service unavailable">
+                        Delivery service unavailable
+                    </option>
+                </select>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-danger cancel-button"
+                    onclick="return confirm('Are you sure you want to cancel this order?')">
+                    Cancel Order
+                </button>
+
+            </form>
+        </section>
+        {% endif %}
+
+    </aside>
+
+</div>
+
+{% endblock %}

@@ -1,6 +1,6 @@
 
 from django.urls import path
-from orders.views import checkout,place_order,user_orders
+from orders.views import checkout,place_order,user_orders,invoice
 
 app_name = "orders"
 
@@ -34,4 +34,17 @@ path(
     user_orders.cancel_order_item,
     name="cancel_order_item"
 ),
+path(
+    "my-orders/<uuid:order_uuid>/items/<int:item_id>/return/",
+    user_orders.request_return,
+    name="request_return"
+),
+
+path(
+    "my-orders/<uuid:order_uuid>/invoice/",
+    invoice.download_invoice,
+    name="download_invoice",
+),
+
 ]
+

@@ -1,0 +1,477 @@
+
+{% extends "admin_panel/admin_base.html" %}
+
+{% block title %}Return Requests{% endblock %}
+{% block breadcrumb %}Return Requests{% endblock %}
+
+{% block content %}
+
+<style>
+.return-page {
+    padding: 24px;
+}
+
+.return-filters {
+    margin: 20px 0;
+}
+
+.return-filters select {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.return-table-wrap {
+    overflow-x: auto;
+}
+
+.return-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.return-table th,
+.return-table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.return-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.return-actions button {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+}
+
+/* Return Confirmation Modal */
+
+.return-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 18, 36, 0.55);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.return-modal-overlay.active {
+    display: flex;
+}
+
+.return-modal {
+    background: #fff;
+    width: 100%;
+    max-width: 420px;
+    padding: 32px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+    animation: returnModalShow .2s ease;
+}
+
+.return-modal-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.return-modal-icon.approved {
+    background: #e5f7ee;
+    color: #16865b;
+}
+
+.return-modal-icon.rejected {
+    background: #fde8e9;
+    color: #c43d48;
+}
+
+.return-modal h2 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: #1f2937;
+}
+
+.return-modal p {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 26px;
+}
+
+.return-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.return-modal-actions button {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.return-modal-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+#returnModalConfirm.approved {
+    background: #16865b;
+    color: white;
+}
+
+#returnModalConfirm.rejected {
+    background: #c43d48;
+    color: white;
+}
+
+@keyframes returnModalShow {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.approve-btn {
+    background: #16865b;
+}
+
+.reject-btn {
+    background: #c43d48;
+}
+</style>
+
+<div class="return-page">
+
+    <header class="page-head">
+        <div>
+            <p class="page-eyebrow">Orders</p>
+            <h1 class="page-title">Return Requests</h1>
+            <p class="page-subtitle">
+                Review customer product return requests.
+            </p>
+        </div>
+    </header>
+
+    <section class="card" style="padding:24px;">
+
+        <form method="GET" class="return-filters">
+
+            <select name="status"
+                    onchange="this.form.requestSubmit()">
+
+                <option value="">All Requests</option>
+
+                {% for value, label in status_choices %}
+                <option value="{{ value }}"
+                    {% if selected_status == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+
+            </select>
+
+        </form>
+
+        <div class="return-table-wrap">
+
+            <table class="return-table">
+
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Reason</th>
+                        <th>Requested On</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for return_request in return_requests %}
+
+                    <tr>
+
+                        <td>
+                            {{ return_request.order_item.order.order_id }}
+                        </td>
+
+                        <td>
+                            {{ return_request.order_item.order.full_name }}
+                        </td>
+
+                        <td>
+                            {{ return_request.order_item.product_name }}
+                            <br>
+                            UK {{ return_request.order_item.size }}
+                        </td>
+
+                        <td>
+                            {{ return_request.order_item.quantity }}
+                        </td>
+
+                        <td>
+                            {{ return_request.reason }}
+                        </td>
+
+                        <td>
+                            {{ return_request.requested_at|date:"d M Y" }}
+                        </td>
+
+                        <td>
+                            {{ return_request.get_status_display }}
+                        </td>
+
+                        <td>
+
+                            {% if return_request.status == "pending" %}
+
+                            <div class="return-actions">
+
+                                <form method="POST"
+                                      action="{% url 'admin_panel:review_return' return_request.id %}">
+
+                                    {% csrf_token %}
+
+                                    <input type="hidden"
+                                           name="decision"
+                                           value="approved">
+
+                                    <button type="button"
+                                            class="approve-btn"
+                                            onclick="openReturnModal(this, 'approved')">
+                                        Approve
+                                    </button>
+
+                                </form>
+
+                                <form method="POST"
+                                      action="{% url 'admin_panel:review_return' return_request.id %}">
+
+                                    {% csrf_token %}
+
+                                    <input type="hidden"
+                                           name="decision"
+                                           value="rejected">
+
+                                    <button type="button"
+                                            class="reject-btn"
+                                            onclick="openReturnModal(this, 'rejected')">
+                                        Reject
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                            {% else %}
+
+                                Reviewed
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="8" style="text-align:center;padding:30px;">
+                            No return requests found.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div style="display:flex;gap:18px;justify-content:center;margin-top:24px;">
+
+            {% if page_obj.has_previous %}
+                <a href="?status={{ selected_status }}&page={{ page_obj.previous_page_number }}">
+                    Previous
+                </a>
+            {% endif %}
+
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?status={{ selected_status }}&page={{ page_obj.next_page_number }}">
+                    Next
+                </a>
+            {% endif %}
+
+        </div>
+
+    </section>
+
+</div>
+
+<!-- Return Confirmation Modal -->
+<div id="returnConfirmModal" class="return-modal-overlay">
+
+    <div class="return-modal">
+
+        <div class="return-modal-icon" id="returnModalIcon">
+            !
+        </div>
+
+        <h2 id="returnModalTitle">
+            Confirm Action
+        </h2>
+
+        <p id="returnModalMessage"></p>
+
+        <div class="return-modal-actions">
+
+            <button type="button"
+                    class="return-modal-cancel"
+                    onclick="closeReturnModal()">
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="returnModalConfirm"
+                    onclick="confirmReturnAction()">
+                Confirm
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+    let selectedReturnForm = null;
+
+    function openReturnModal(button, decision) {
+
+        selectedReturnForm = button.closest("form");
+
+        const modal = document.getElementById(
+            "returnConfirmModal"
+        );
+
+        const title = document.getElementById(
+            "returnModalTitle"
+        );
+
+        const message = document.getElementById(
+            "returnModalMessage"
+        );
+
+        const icon = document.getElementById(
+            "returnModalIcon"
+        );
+
+        const confirmBtn = document.getElementById(
+            "returnModalConfirm"
+        );
+
+        icon.className = "return-modal-icon " + decision;
+        confirmBtn.className = decision;
+
+        if (decision === "approved") {
+
+            title.textContent = "Approve Return Request?";
+
+            message.textContent =
+                "Are you sure you want to approve this return? " +
+                "The product stock will be restored.";
+
+            confirmBtn.textContent = "Confirm Approval";
+
+        } else {
+
+            title.textContent = "Reject Return Request?";
+
+            message.textContent =
+                "Are you sure you want to reject this return request? " +
+                "The customer will not be able to return this product through this request.";
+
+            confirmBtn.textContent = "Confirm Rejection";
+        }
+
+        modal.classList.add("active");
+    }
+
+    function closeReturnModal() {
+
+        document.getElementById(
+            "returnConfirmModal"
+        ).classList.remove("active");
+
+        selectedReturnForm = null;
+    }
+
+    function confirmReturnAction() {
+
+        if (selectedReturnForm) {
+            const form = selectedReturnForm;
+            selectedReturnForm = null;
+
+            document.getElementById(
+                "returnModalConfirm"
+            ).disabled = true;
+
+            form.requestSubmit();
+        }
+    }
+
+    // Close modal when clicking outside
+    document.getElementById(
+        "returnConfirmModal"
+    ).addEventListener("click", function(event) {
+
+        if (event.target === this) {
+            closeReturnModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener("keydown", function(event) {
+
+        if (event.key === "Escape") {
+            closeReturnModal();
+        }
+    });
+</script>
+
+{% endblock %}

@@ -146,6 +146,15 @@ class OrderItem(models.Model):
         max_digits=10,
         decimal_places=2
     )
+
+    cancelled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="cancelled_order_items"
+    )
+
     ITEM_STATUS = [
         ("active", "Active"),
         ("cancelled", "Cancelled"),
