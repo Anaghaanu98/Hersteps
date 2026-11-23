@@ -8,28 +8,68 @@
 <style>
     /* Scoped to this page; uses theme variables and shared classes from admin_base.html */
 
+    .om-page { position: relative; isolation: isolate; }
+    .om-page *, .om-page *::before, .om-page *::after { box-sizing: border-box; }
+
+    /* ---------- Liquid background blobs ---------- */
+    .om-liquid { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .om-liquid span {
+        position: absolute;
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        filter: blur(70px);
+        animation: omMorph 16s ease-in-out infinite, omDrift 22s ease-in-out infinite;
+    }
+    .om-liquid span:nth-child(1) { top: -30px; right: -50px; width: 320px; height: 320px; background: rgba(91, 80, 240, .20); }
+    .om-liquid span:nth-child(2) { top: 380px; left: -90px; width: 290px; height: 290px; background: rgba(139, 124, 255, .20); animation-delay: -6s, -9s; }
+    .om-liquid span:nth-child(3) { bottom: 40px; right: 10%; width: 240px; height: 240px; background: rgba(125, 211, 252, .22); animation-delay: -11s, -4s; }
+
+    /* ---------- Glass card ---------- */
+    .om-card {
+        position: relative;
+        overflow: hidden;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, .9);
+        border-radius: 28px;
+        background: linear-gradient(145deg, rgba(255, 255, 255, .88), rgba(246, 246, 255, .7));
+        -webkit-backdrop-filter: blur(18px) saturate(1.25);
+        backdrop-filter: blur(18px) saturate(1.25);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, .95),
+            0 1px 2px rgba(40, 40, 120, .05),
+            0 30px 56px -36px rgba(60, 50, 180, .45);
+    }
+    .om-card::before {   /* flowing liquid accent line */
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 4px;
+        background: linear-gradient(90deg, #8b7cff, var(--primary), #7dd3fc, var(--primary), #8b7cff);
+        background-size: 200% 100%;
+        animation: omFlow 6s linear infinite;
+    }
+
     /* ---------- Filter toolbar ---------- */
     .om-toolbar {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
         margin-bottom: 22px;
         padding: 14px;
-        background: var(--tint);
-        border: 1px solid #e1e4ff;
-        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(238, 240, 255, .9), rgba(232, 236, 255, .6));
+        border: 1px solid rgba(225, 228, 255, .95);
+        border-radius: 22px 30px 22px 30px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
     }
+    /* Search on its own row, then the three dropdowns and Clear in one aligned row */
     .om-filters {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-        flex: 1;
+        gap: 12px;
         margin: 0;
     }
-    .om-search-field { position: relative; flex: 1 1 280px; min-width: 220px; }
+    .om-search-field { position: relative; grid-column: 1 / -1; min-width: 0; }
     .om-search-field .icon {
         position: absolute;
         top: 50%;
@@ -39,88 +79,109 @@
         transform: translateY(-50%);
         color: var(--soft);
         pointer-events: none;
+        transition: color .2s ease;
     }
+    .om-search-field:focus-within .icon { color: var(--primary); }
     .om-search-field .form-input {
         height: 46px;
         padding-left: 44px;
-        border-radius: 12px;
-        background: #fff;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .92);
+        transition: box-shadow .25s ease, border-color .25s ease, transform .25s ease;
     }
+    .om-search-field .form-input:focus { transform: translateY(-1px); box-shadow: 0 12px 24px -14px rgba(91, 80, 240, .6); }
+
     .om-filters .om-select {
-        width: auto;
-        min-width: 150px;
+        width: 100%;
+        min-width: 0;
         height: 46px;
-        padding: 0 14px;
+        padding: 0 40px 0 18px;
         border: 1.5px solid var(--line);
-        border-radius: 12px;
-        background: #fff;
+        border-radius: 999px;
+        background-color: rgba(255, 255, 255, .92);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b50f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
         color: var(--ink);
         font-size: 13.5px;
         font-weight: 500;
         cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: border-color .2s ease, box-shadow .25s ease, transform .25s ease;
     }
+    .om-filters .om-select:hover { transform: translateY(-1px); border-color: #cfd3ff; }
     .om-filters .om-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(91, 80, 240, .14); }
     .om-clear {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         min-height: 46px;
-        padding: 0 12px;
+        padding: 0 14px;
+        border-radius: 999px;
         color: var(--muted);
         font-size: 14px;
         font-weight: 600;
         white-space: nowrap;
-        transition: color .2s ease;
+        transition: color .2s ease, background .2s ease;
     }
-    .om-clear:hover { color: var(--primary); }
+    .om-clear:hover { color: var(--primary); background: rgba(255, 255, 255, .8); }
 
     .om-count {
+        align-self: flex-start;
         display: inline-flex;
         align-items: baseline;
         gap: 6px;
-        padding: 10px 18px;
-        border-radius: 12px;
-        background: #fff;
+        padding: 10px 20px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .92);
         border: 1px solid var(--line);
         color: var(--muted);
         font-size: 13px;
         font-weight: 600;
         white-space: nowrap;
     }
-    .om-count strong { font-family: var(--heading); font-size: 18px; color: var(--ink); }
+    .om-count strong { font-family: var(--heading); font-size: 18px; color: var(--primary-dark); }
 
     /* ---------- Table ---------- */
-    .om-card { padding: 24px; }
     .om-table td { vertical-align: middle; }
+    .om-table thead th { white-space: nowrap; }
+    .om-table tbody tr { transition: background .25s ease; }
+    .om-table tbody tr:hover td { background: rgba(238, 240, 255, .55); }
+
+    /* Order ID stacks onto several lines instead of stretching the table */
     .om-id {
-        color: var(--primary-dark);
+        max-width: 160px;
+        color: #000;
         font-weight: 700;
         letter-spacing: .2px;
-        white-space: nowrap;
+        line-height: 1.45;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
-    .om-customer { display: flex; align-items: center; gap: 14px; min-width: 220px; }
-    .om-avatar {
-        width: 40px;
-        height: 40px;
-        flex: none;
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--tint) 0%, var(--tint-2) 100%);
-        color: var(--primary);
-        font-family: var(--heading);
-        font-size: 15px;
-        font-weight: 700;
-    }
+    .om-customer { display: flex; align-items: center; gap: 14px; min-width: 160px; }
     .om-customer strong { display: block; font-weight: 600; color: var(--ink); }
     .om-date { color: var(--muted); white-space: nowrap; }
     .om-total { font-family: var(--heading); font-weight: 700; letter-spacing: -.3px; white-space: nowrap; }
     .om-payment { color: var(--muted); }
 
     .om-view {
+        position: relative;
+        overflow: hidden;
         min-height: 38px;
-        padding: 0 16px;
+        padding: 0 18px;
+        border-radius: 999px;
         font-size: 13.5px;
         white-space: nowrap;
+        transition: transform .25s ease, box-shadow .25s ease, background .25s ease, color .25s ease, border-color .25s ease;
+    }
+    .om-view:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #8b7cff 0%, var(--primary) 100%);
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 14px 22px -12px rgba(91, 80, 240, .85);
     }
 
     /* ---------- Status pill ---------- */
@@ -136,8 +197,9 @@
         content: "";
         width: 7px;
         height: 7px;
-        border-radius: 50%;
+        border-radius: 58% 42% 55% 45% / 50% 55% 45% 50%;
         background: currentColor;
+        animation: omMorph 6s ease-in-out infinite;
     }
     .status-pill[data-status*="pending"] { background: #eff0f6; color: #5d6280; }
     .status-pill[data-status*="confirm"],
@@ -154,14 +216,15 @@
     /* ---------- Empty state ---------- */
     .om-empty-cell { padding: 56px 20px !important; text-align: center; color: var(--muted); }
     .om-empty-icon {
-        width: 60px;
-        height: 60px;
+        width: 64px;
+        height: 64px;
         display: grid;
         place-items: center;
         margin: 0 auto 14px;
-        border-radius: 18px;
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
         background: linear-gradient(135deg, var(--tint) 0%, var(--tint-2) 100%);
         color: var(--primary);
+        animation: omMorph 10s ease-in-out infinite;
     }
     .om-empty-icon .icon { width: 26px; height: 26px; }
     .om-empty-text { margin: 0; font-size: 15.5px; font-weight: 500; }
@@ -182,41 +245,49 @@
         align-items: center;
         gap: 8px;
         min-height: 42px;
-        padding: 0 20px;
+        padding: 0 22px;
         border: 1px solid var(--line);
-        border-radius: 12px;
-        background: #fff;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .92);
         color: var(--primary);
         font-weight: 600;
-        transition: background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+        transition: background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
     }
     .om-pagination a:hover {
-        background: var(--primary);
-        border-color: var(--primary);
+        background: linear-gradient(135deg, #8b7cff 0%, var(--primary) 100%);
+        border-color: transparent;
         color: #fff;
+        transform: translateY(-2px);
         box-shadow: 0 12px 20px -12px rgba(91, 80, 240, .8);
     }
     .om-pagination a:focus-visible { outline: 3px solid rgba(139, 124, 255, .5); outline-offset: 2px; }
     .om-pagination .is-disabled { opacity: .45; pointer-events: none; }
     .om-pagination .page-count { font-weight: 600; white-space: nowrap; }
 
+    /* ---------- Animations ---------- */
+    @keyframes omFlow { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+    @keyframes omMorph {
+        0%, 100% { border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%; }
+        50%      { border-radius: 36% 64% 58% 42% / 62% 38% 62% 38%; }
+    }
+    @keyframes omDrift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, 36px); } }
+
     /* ---------- Mobile: rows become cards ---------- */
     @media (max-width: 720px) {
-        .om-card { padding: 16px; }
-        .om-toolbar { flex-direction: column; align-items: stretch; padding: 12px; }
-        .om-filters { align-items: stretch; }
-        .om-search-field { flex-basis: 100%; min-width: 0; }
-        .om-filters .om-select { flex: 1 1 140px; min-width: 0; }
-        .om-count { align-self: flex-start; }
+        .om-card { padding: 16px; border-radius: 24px; }
+        .om-toolbar { padding: 12px; border-radius: 20px; }
+        .om-filters { grid-template-columns: 1fr; gap: 10px; }
+        .om-clear { background: rgba(255, 255, 255, .7); border: 1px solid var(--line); }
+        .om-liquid span { filter: blur(50px); }
 
         .om-table, .om-table tbody, .om-table tr, .om-table td { display: block; width: 100%; }
         .om-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
         .om-table tbody tr {
             margin-bottom: 14px;
             padding: 6px 16px;
-            background: #fff;
+            background: rgba(255, 255, 255, .85);
             border: 1px solid var(--line);
-            border-radius: 18px;
+            border-radius: 20px;
             box-shadow: 0 10px 24px -18px rgba(40, 40, 120, .3);
         }
         .om-table tbody td {
@@ -239,17 +310,26 @@
             text-align: left;
             text-transform: uppercase;
         }
-        .om-customer { min-width: 0; text-align: left; }
+        .om-id { max-width: none; }
+        .om-customer { min-width: 0; text-align: right; }
         .om-table tbody tr.om-empty-row { padding: 0; border: 0; box-shadow: none; background: transparent; }
         .om-table tbody tr.om-empty-row td { display: block; text-align: center; border: 0; }
         .om-pagination { gap: 10px; }
         .om-pagination a,
-        .om-pagination .is-disabled { padding: 0 14px; }
+        .om-pagination .is-disabled { padding: 0 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .om-liquid span, .om-card::before, .status-pill::before, .om-empty-icon { animation: none !important; }
+        .om-view, .om-pagination a, .om-filters .om-select, .om-search-field .form-input { transition: none !important; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
+
+<div class="om-page">
+
+<div class="om-liquid" aria-hidden="true"><span></span><span></span><span></span></div>
 
 <header class="page-head">
     <div>
@@ -293,11 +373,9 @@
             <!-- Payment Filter -->
             <select name="payment" class="form-input om-select" aria-label="Filter by payment" onchange="this.form.requestSubmit()">
                 <option value="">All Payments</option>
-                {% for value, label in payment_choices %}
-                <option value="{{ value }}" {% if selected_payment == value %}selected{% endif %}>
-                    {{ label }}
-                </option>
-                {% endfor %}
+                <option value="wallet" {% if selected_payment == "wallet" %}selected{% endif %}>Wallet</option>
+                <option value="razorpay" {% if selected_payment == "razorpay" %}selected{% endif %}>Razorpay</option>
+                <option value="cod" {% if selected_payment == "cod" %}selected{% endif %}>Cash on Delivery</option>
             </select>
 
             <!-- Sort -->
@@ -339,10 +417,8 @@
                     <td class="om-id" data-label="Order ID">{{ order.order_id }}</td>
                     <td data-label="Customer">
                         <div class="om-customer">
-                            
                             <div>
                                 <strong>{{ order.full_name }}</strong>
-                                <span class="cell-sub">{{ order.user.email }}</span>
                             </div>
                         </div>
                     </td>
@@ -395,5 +471,7 @@
     </div>
 
 </section>
+
+</div>
 
 {% endblock %}

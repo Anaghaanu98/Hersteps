@@ -8,52 +8,61 @@
 {% block extra_css %}
 <style>
     /* =====================================================
-       ORDER DETAILS
-       All styles are scoped to .od-page and use the theme
-       variables from base.html
+       ORDER DETAILS  ·  liquid glass layout
+       Scoped to .od-page, uses the theme variables from base.html
        ===================================================== */
     .od-page {
         position: relative;
+        isolation: isolate;
         width: 100%;
         max-width: 1180px;
         margin: 0 auto;
-        padding: 40px 28px 100px;
+        padding: 36px 28px 100px;
+        overflow-x: clip;
         animation: odFadeUp .5s ease both;
+
+        /* default status colours (overridden by [data-status] below) */
+        --c: #a8998f;
+        --c2: #d3c8bf;
+        --bg: #f1ece8;
+        --ink: #6b5b52;
     }
     .od-page *,
     .od-page *::before,
     .od-page *::after { box-sizing: border-box; }
     .od-page h1, .od-page h2, .od-page h3, .od-page p { margin: 0; }
 
-    /* soft liquid shapes behind the page */
-    .od-page::before,
-    .od-page::after {
-        content: "";
+    /* ---------- Dynamic status colours ---------- */
+    .od-page [data-status] { --c: #a8998f; --c2: #d3c8bf; --bg: #f1ece8; --ink: #6b5b52; }
+    .od-page [data-status*="confirm"],
+    .od-page [data-status*="process"] { --c: #c9652a; --c2: #eca06a; --bg: #ffe6d6; --ink: #99420a; }
+    .od-page [data-status*="ship"],
+    .od-page [data-status*="out"],
+    .od-page [data-status*="transit"] { --c: #3b6fc4; --c2: #84acec; --bg: #e8eef8; --ink: #2f4f87; }
+    .od-page [data-status="delivered"] { --c: #0f9d6b; --c2: #52d6a3; --bg: #ecfdf5; --ink: #065f46; }
+    .od-page [data-status*="return"],
+    .od-page [data-status*="refund"] { --c: #d98a1b; --c2: #f4c166; --bg: #fff9ea; --ink: #78350f; }
+    .od-page [data-status*="cancel"],
+    .od-page [data-status*="fail"] { --c: #e5484d; --c2: #f69a9d; --bg: #fef2f2; --ink: #991b1b; }
+
+    /* ---------- Liquid background blobs ---------- */
+    .od-liquid { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .od-liquid span {
         position: absolute;
-        z-index: -1;
         border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
         filter: blur(70px);
-        pointer-events: none;
+        animation: odMorph 16s ease-in-out infinite, odDrift 22s ease-in-out infinite;
     }
-    .od-page::before {
-        top: 20px; right: -60px;
-        width: 320px; height: 320px;
-        background: rgba(201, 101, 42, .20);
-        animation: odMorph 16s ease-in-out infinite, odDriftA 22s ease-in-out infinite;
-    }
-    .od-page::after {
-        top: 640px; left: -90px;
-        width: 300px; height: 300px;
-        background: rgba(153, 66, 10, .12);
-        animation: odMorph 19s ease-in-out infinite reverse, odDriftB 24s ease-in-out infinite;
-    }
+    .od-liquid span:nth-child(1) { top: 10px; right: -40px; width: 340px; height: 340px; background: rgba(201, 101, 42, .22); }
+    .od-liquid span:nth-child(2) { top: 520px; left: -80px; width: 300px; height: 300px; background: rgba(153, 66, 10, .14); animation-delay: -6s, -9s; }
+    .od-liquid span:nth-child(3) { bottom: 60px; right: 8%; width: 260px; height: 260px; background: rgba(255, 186, 140, .35); animation-delay: -11s, -4s; }
 
-    /* ---------- Heading ---------- */
+    /* ---------- Back link + hero ---------- */
     .od-back {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 22px;
+        margin-bottom: 20px;
         padding: 9px 18px;
         border: 1px solid rgba(255, 255, 255, .85);
         border-radius: 999px;
@@ -65,41 +74,11 @@
         font-weight: 700;
         text-decoration: none;
         box-shadow: 0 10px 22px -16px rgba(70, 42, 25, .5);
-        transition: color .2s ease, transform .25s ease, box-shadow .25s ease;
+        transition: color .2s ease, transform .25s ease;
     }
     .od-back:hover { color: var(--brown); transform: translateX(-4px); }
 
-    .od-head {
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 18px;
-        margin-bottom: 30px;
-        padding: 40px 44px;
-        border: 1px solid rgba(255, 255, 255, .85);
-        border-radius: 40px 60px 40px 60px;
-        background:
-            radial-gradient(420px 220px at 95% 0%, rgba(201, 101, 42, .22) 0%, transparent 70%),
-            radial-gradient(360px 220px at 0% 100%, rgba(153, 66, 10, .10) 0%, transparent 70%),
-            rgba(255, 240, 229, .85);
-        box-shadow:
-            0 30px 56px -34px rgba(70, 42, 25, .45),
-            inset 0 1px 0 rgba(255, 255, 255, .95);
-    }
-    .od-head::after {
-        content: "";
-        position: absolute;
-        right: -70px; bottom: -100px;
-        width: 260px; height: 260px;
-        border-radius: 50%;
-        border: 1px solid rgba(153, 66, 10, .16);
-        box-shadow: 0 0 0 36px rgba(153, 66, 10, .04), 0 0 0 72px rgba(153, 66, 10, .03);
-        pointer-events: none;
-    }
-    .od-head > * { position: relative; z-index: 1; }
+    .od-hero { margin-bottom: 24px; }
     .od-eyebrow {
         display: inline-flex;
         align-items: center;
@@ -126,54 +105,25 @@
         text-align: left;
         font-family: var(--font-serif);
         font-weight: 600;
-        font-size: clamp(38px, 4.6vw, 56px);
+        font-size: clamp(36px, 4.6vw, 54px);
         line-height: 1.05;
         letter-spacing: -.5px;
         color: var(--heading);
     }
-    .od-sub { margin-top: 10px; color: var(--body-soft); font-size: 15px; line-height: 1.65; overflow-wrap: anywhere; }
 
-    /* ---------- Status pill (same scheme as My Orders) ---------- */
-    .od-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 14px;
-        border-radius: 999px;
-        background: #f1ece8;
-        color: var(--body-soft);
-        font-size: 13px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-    .od-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-    .od-pill[data-status*="confirm"],
-    .od-pill[data-status*="process"] { background: #ffe6d6; color: var(--brown); }
-    .od-pill[data-status*="ship"],
-    .od-pill[data-status*="out"],
-    .od-pill[data-status*="transit"] { background: #e8eef8; color: #2f4f87; }
-    .od-pill[data-status="delivered"] { background: #ecfdf5; color: #065f46; }
-    .od-pill[data-status*="cancel"],
-    .od-pill[data-status*="fail"] { background: #fef2f2; color: #991b1b; }
-    .od-pill[data-status*="return"],
-    .od-pill[data-status*="refund"] { background: #fff9ea; color: #78350f; }
-    .od-pill--lg { padding: 10px 20px; font-size: 14px; box-shadow: 0 12px 22px -16px rgba(70, 42, 25, .5); }
-
-    /* ---------- Layout & cards ---------- */
-    .od-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 370px;
-        gap: 26px;
-        align-items: start;
-    }
-    .od-col { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
-    .od-side { position: sticky; top: calc(var(--header-h) + 20px); }
+    /* ---------- Glass cards ---------- */
     .od-card {
+        position: relative;
         padding: 30px;
-        background: #fff;
-        border: 1px solid var(--border);
+        border: 1px solid rgba(255, 255, 255, .9);
         border-radius: 32px;
-        box-shadow: 0 1px 2px rgba(70, 42, 25, .04), 0 26px 50px -34px rgba(70, 42, 25, .4);
+        background: linear-gradient(145deg, rgba(255, 255, 255, .86), rgba(255, 247, 241, .68));
+        -webkit-backdrop-filter: blur(18px) saturate(1.25);
+        backdrop-filter: blur(18px) saturate(1.25);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, .95),
+            0 1px 2px rgba(70, 42, 25, .04),
+            0 30px 56px -36px rgba(70, 42, 25, .45);
         animation: odFadeUp .6s ease both;
     }
     .od-card-title {
@@ -196,67 +146,258 @@
         background: linear-gradient(90deg, var(--orange), var(--brown));
     }
 
-    /* ---------- Order information (priority card) ---------- */
-    .od-info-card {
-        position: relative;
+    /* ---------- Status pill ---------- */
+    .od-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: var(--bg);
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .od-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    /* =====================================================
+       ORDER PROGRESS (top)
+       ===================================================== */
+    .od-track {
+        margin-bottom: 26px;
+        padding: 28px 30px 30px;
+        border-radius: 36px 56px 36px 56px;
         overflow: hidden;
+    }
+    .od-track::before {   /* dynamic status accent along the top edge */
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--c2), var(--c), var(--c2));
+        background-size: 200% 100%;
+        animation: odFlow 4s linear infinite;
+    }
+    .od-track::after {    /* soft status-coloured glow */
+        content: "";
+        position: absolute;
+        right: -80px; top: -90px;
+        width: 260px; height: 260px;
+        border-radius: 50%;
+        background: var(--c);
+        opacity: .13;
+        filter: blur(50px);
+        pointer-events: none;
+    }
+    .od-track-head {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 30px;
+    }
+    .od-track-head .od-card-title { margin: 0; }
+
+    .od-steps { position: relative; z-index: 1; display: flex; margin: 0; padding: 0; list-style: none; }
+    .od-step { position: relative; flex: 1 1 0; min-width: 0; padding: 0 6px; text-align: center; }
+
+    /* liquid connector coming into each step */
+    .od-step::before {
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: -50%;
+        width: 100%;
+        height: 6px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, var(--c2), var(--c), var(--c2));
+        background-size: 200% 100%;
+        animation: odFlow 3.2s linear infinite;
+    }
+    .od-step:first-child::before { display: none; }
+
+    .od-dot {
+        position: relative;
+        z-index: 1;
+        display: block;
+        width: 22px;
+        height: 22px;
+        margin: 0 auto;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        background: linear-gradient(135deg, var(--c2), var(--c));
+        box-shadow: 0 0 0 2px var(--c), 0 8px 14px -6px var(--c);
+    }
+    .od-dot::after {
+        content: "";
+        position: absolute;
+        inset: -7px;
+        border-radius: 50%;
+        border: 2px solid var(--c);
+        opacity: 0;
+    }
+    .od-step.is-current .od-dot { transform: scale(1.18); }
+    .od-step.is-current .od-dot::after { animation: odRing 1.8s ease-out infinite; }
+
+    .od-step-body { margin-top: 14px; }
+    .od-step strong { display: block; color: var(--heading); font-size: 14px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+    .od-step time { display: block; margin-top: 3px; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+    .od-step.is-current strong { color: var(--ink); }
+    .od-latest-tag {
+        display: inline-flex;
+        margin-top: 8px;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: var(--bg);
+        color: var(--ink);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .od-empty { color: var(--body-soft); }
+
+    /* =====================================================
+       ORDER INFORMATION (info + address + summary in one card)
+       ===================================================== */
+    .od-info-card {
+        margin-bottom: 26px;
         border-radius: 36px 56px 36px 56px;
         background:
-            radial-gradient(300px 180px at 100% 0%, rgba(201, 101, 42, .16) 0%, transparent 70%),
-            #fff;
+            radial-gradient(320px 200px at 100% 0%, rgba(201, 101, 42, .15) 0%, transparent 70%),
+            linear-gradient(145deg, rgba(255, 255, 255, .88), rgba(255, 247, 241, .7));
     }
-    .od-info { display: grid; gap: 16px; margin: 0; }
-    .od-info--grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
+    .od-info-grid { display: grid; grid-template-columns: 1.05fr 1.05fr 1fr; }
+    .od-block { min-width: 0; padding: 0 28px; }
+    .od-block:first-child { padding-left: 0; }
+    .od-block:last-child { padding-right: 0; }
+    .od-block + .od-block { border-left: 1px solid rgba(236, 217, 204, .9); }
+    .od-block-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        color: var(--brown);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
     }
-    .od-info--grid > div {
-        padding: 16px 18px;
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        background: rgba(255, 248, 244, .8);
-        transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    .od-block-title::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 58% 42% 55% 45% / 50% 55% 45% 50%;
+        background: linear-gradient(135deg, var(--orange), var(--brown));
+        animation: odMorph 8s ease-in-out infinite;
     }
-    .od-info--grid > div:hover {
-        transform: translateY(-3px);
-        border-color: #ecd2c0;
-        box-shadow: 0 16px 26px -20px rgba(70, 42, 25, .5);
+
+    .od-info { margin: 0; }
+    .od-info > div {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 13px 0;
+        border-bottom: 1px solid rgba(236, 217, 204, .8);
     }
+    .od-info > div:last-child { border-bottom: 0; }
     .od-info dt {
-        margin: 0 0 4px;
+        flex: none;
         color: var(--muted);
         font-size: 10.5px;
         font-weight: 700;
         letter-spacing: 1.3px;
         text-transform: uppercase;
     }
-    .od-info dd { margin: 0; color: var(--heading); font-weight: 700; font-size: 15px; word-break: break-word; }
-    .od-info dd.od-address { color: var(--text); font-weight: 500; line-height: 1.75; }
-    .od-info .od-payable {
-        grid-column: 1 / -1;
-        border-color: #bfe6d3;
-        background: linear-gradient(135deg, #f1fbf6, #e6f7ee);
-    }
-    .od-info .od-payable dd {
-        font-family: var(--font-serif);
-        font-size: 30px;
-        font-weight: 700;
-        line-height: 1.1;
-    }
+    .od-info dd { margin: 0; min-width: 0; color: var(--heading); font-size: 15px; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
 
-    /* ---------- Items ---------- */
+    .od-address-name { color: var(--heading); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .od-address-lines { color: var(--text); font-size: 14.5px; line-height: 1.75; overflow-wrap: anywhere; }
+    .od-address-phone {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(236, 217, 204, .8);
+    }
+    .od-address-phone span { color: var(--muted); font-size: 10.5px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; }
+    .od-address-phone strong { color: var(--heading); font-size: 15px; font-weight: 700; }
+
+    .od-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; color: var(--body-soft); font-size: 14px; }
+    .od-row strong { color: var(--heading); font-weight: 700; }
+    .od-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 16px 20px;
+        border-radius: 22px 30px 22px 30px;
+        background: var(--peach);
+    }
+    .od-total span { color: #5a463b; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    .od-total strong { font-family: var(--font-serif); font-size: 32px; font-weight: 700; line-height: 1.1; color: var(--brown); }
+    .od-total--payable { background: linear-gradient(135deg, #f1fbf6, #e1f6ec); border: 1px solid #bfe6d3; }
+    .od-total--payable strong { color: #16734b; }
+
+    .od-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; padding-top: 22px; border-top: 1px dashed #ecd9cc; }
+    .order-invoice-btn {
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 50px;
+        padding: 0 28px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #c9652a 0%, var(--brown) 100%);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: .6px;
+        text-decoration: none;
+        box-shadow: 0 18px 30px -14px rgba(201, 101, 42, .95);
+        transition: transform .3s ease, box-shadow .3s ease, border-radius .4s ease;
+    }
+    .order-invoice-btn::before {
+        content: "";
+        position: absolute;
+        top: 0; bottom: 0; left: -60%;
+        width: 40%;
+        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .4), transparent);
+        transform: skewX(-20deg);
+        animation: odSweep 4s 1.5s ease-in-out infinite;
+    }
+    .order-invoice-btn:hover { color: #fff; transform: translateY(-3px); box-shadow: 0 24px 36px -14px rgba(201, 101, 42, 1); }
+    .order-invoice-btn:focus-visible { outline: 3px solid #e6b894; outline-offset: 3px; }
+
+    /* =====================================================
+       ORDERED PRODUCTS
+       ===================================================== */
+    .od-items { display: flex; flex-direction: column; gap: 18px; }
     .od-item {
         display: grid;
-        grid-template-columns: 116px minmax(0, 1fr);
+        grid-template-columns: 120px minmax(0, 1fr);
         gap: 24px;
-        padding: 26px 0;
-        border-bottom: 1px dashed #ecd9cc;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, .9);
+        border-radius: 28px;
+        background: rgba(255, 248, 244, .65);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 18px 30px -26px rgba(70, 42, 25, .45);
+        transition: transform .3s ease, box-shadow .3s ease;
     }
-    .od-item:first-of-type { padding-top: 0; }
-    .od-item:last-of-type { padding-bottom: 0; border-bottom: 0; }
+    .od-item:hover { transform: translateY(-3px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 26px 38px -26px rgba(70, 42, 25, .55); }
     .od-img {
-        width: 116px;
-        height: 116px;
+        width: 120px;
+        height: 120px;
         overflow: hidden;
         border-radius: 20px 20px 20px 48px;
         background: linear-gradient(135deg, #f8eee8, #f3e3d8);
@@ -267,25 +408,10 @@
     .od-item:hover .od-img { border-radius: 48px 20px 20px 20px; }
     .od-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
     .od-item:hover .od-img img { transform: scale(1.08); }
-    .od-no-img {
-        width: 100%;
-        height: 100%;
-        display: grid;
-        place-items: center;
-        padding: 8px;
-        text-align: center;
-        color: #b5a79d;
-        font-size: 12px;
-        font-weight: 600;
-    }
+    .od-no-img { width: 100%; height: 100%; display: grid; place-items: center; padding: 8px; text-align: center; color: #b5a79d; font-size: 12px; font-weight: 600; }
+    .od-item-main { min-width: 0; }
     .od-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; flex-wrap: wrap; }
-    .od-item-name {
-        font-family: var(--font-serif);
-        font-size: 23px;
-        font-weight: 600;
-        line-height: 1.15;
-        color: var(--heading);
-    }
+    .od-item-name { font-family: var(--font-serif); font-size: 23px; font-weight: 600; line-height: 1.15; color: var(--heading); overflow-wrap: anywhere; }
     .od-item-total {
         padding: 6px 14px;
         border-radius: 999px;
@@ -296,20 +422,8 @@
         white-space: nowrap;
     }
     .od-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 14px; color: var(--body-soft); font-size: 14px; }
-    .od-chip {
-        padding: 4px 12px;
-        border-radius: 999px;
-        background: var(--peach);
-        color: var(--brown);
-        font-size: 12.5px;
-        font-weight: 700;
-    }
-    .od-price-cancelled {
-        text-decoration: line-through;
-        text-decoration-thickness: 2px;
-        color: #a8a29e;
-        opacity: .75;
-    }
+    .od-chip { padding: 4px 12px; border-radius: 999px; background: var(--peach); color: var(--brown); font-size: 12.5px; font-weight: 700; }
+    .od-price-cancelled { text-decoration: line-through; text-decoration-thickness: 2px; color: #a8a29e; opacity: .75; }
 
     /* ---------- Cancel / return controls ---------- */
     .od-cancel { margin-top: 16px; }
@@ -320,6 +434,7 @@
         padding: 0 20px;
         border: 1.5px solid #ecc5c0;
         border-radius: 999px;
+        background: rgba(255, 255, 255, .6);
         color: var(--danger);
         font-size: 13px;
         font-weight: 700;
@@ -335,30 +450,7 @@
     .od-return summary { border-color: rgba(153, 66, 10, .3); color: var(--brown); }
     .od-return summary:hover,
     .od-return[open] summary { background: var(--peach); }
-    .od-cancel-form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; animation: odFadeUp .3s ease both; }
-    .od-cancel-form textarea {
-        width: 100%;
-        min-height: 92px;
-        padding: 14px 18px;
-        resize: vertical;
-        border: 1.5px solid transparent;
-        border-radius: var(--radius);
-        background: var(--field-bg);
-        color: var(--text);
-        font-family: inherit;
-        font-size: 15px;
-        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
-    }
-    .od-cancel-form textarea::placeholder { color: #b5a79d; }
-    .od-cancel-form textarea:hover { background: #fceadd; }
-    .od-cancel-form textarea:focus {
-        outline: none;
-        background: #fff;
-        border-color: var(--brown);
-        box-shadow: 0 0 0 4px rgba(153, 66, 10, .12);
-    }
-
-    /* Cancellation and return reason dropdowns */
+    .od-cancel-form { display: flex; flex-direction: column; gap: 12px; max-width: 460px; margin-top: 14px; animation: odFadeUp .3s ease both; }
     .od-cancel-form select {
         width: 100%;
         min-height: 50px;
@@ -378,12 +470,7 @@
         transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
     .od-cancel-form select:hover { background-color: #fceadd; }
-    .od-cancel-form select:focus {
-        outline: none;
-        background-color: #fff;
-        border-color: var(--brown);
-        box-shadow: 0 0 0 4px rgba(153, 66, 10, .12);
-    }
+    .od-cancel-form select:focus { outline: none; background-color: #fff; border-color: var(--brown); box-shadow: 0 0 0 4px rgba(153, 66, 10, .12); }
     .od-cancel-form select:invalid { color: #9b8c82; }
     .od-cancel-form select option { color: var(--text); }
 
@@ -402,28 +489,10 @@
         cursor: pointer;
         transition: background .2s ease, color .2s ease, border-color .2s ease, transform .25s ease, box-shadow .25s ease;
     }
-    .od-btn-danger {
-        border: 1.5px solid #ecc5c0;
-        background: #fff;
-        color: var(--danger);
-    }
-    .od-btn-danger:hover {
-        background: var(--danger);
-        border-color: var(--danger);
-        color: #fff;
-        transform: translateY(-2px);
-        box-shadow: 0 14px 24px -12px rgba(163, 45, 34, .7);
-    }
-    .od-btn-return {
-        border: 0;
-        background: linear-gradient(135deg, #c9652a 0%, var(--brown) 100%);
-        color: #fff;
-        box-shadow: 0 16px 26px -14px rgba(201, 101, 42, .95);
-    }
-    .od-btn-return:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 22px 32px -14px rgba(201, 101, 42, 1);
-    }
+    .od-btn-danger { border: 1.5px solid #ecc5c0; background: #fff; color: var(--danger); }
+    .od-btn-danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; transform: translateY(-2px); box-shadow: 0 14px 24px -12px rgba(163, 45, 34, .7); }
+    .od-btn-return { border: 0; background: linear-gradient(135deg, #c9652a 0%, var(--brown) 100%); color: #fff; box-shadow: 0 16px 26px -14px rgba(201, 101, 42, .95); }
+    .od-btn-return:hover { transform: translateY(-2px); box-shadow: 0 22px 32px -14px rgba(201, 101, 42, 1); }
     .od-btn-danger:focus-visible,
     .od-btn-return:focus-visible { outline: 3px solid #e6b894; outline-offset: 2px; }
     .od-return-status {
@@ -439,174 +508,114 @@
         font-weight: 700;
     }
     .od-return-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-    .od-danger-card { border-color: #f1d4cf; }
-    .od-danger-card .od-note { margin-bottom: 16px; color: var(--body-soft); font-size: 14px; line-height: 1.6; }
-    .od-danger-card .od-btn-danger { width: 100%; }
 
-    /* ---------- Summary ---------- */
-    .od-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; color: var(--body-soft); font-size: 14px; }
-    .od-row strong { color: var(--heading); font-weight: 700; }
-    .od-total {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-top: 14px;
-        padding: 18px 20px;
-        border-radius: 22px;
-        background: var(--peach);
-    }
-    .od-total span { color: #5a463b; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
-    .od-total strong { font-family: var(--font-serif); font-size: 34px; font-weight: 700; color: var(--brown); }
-
-    /* ---------- Tracking timeline ---------- */
-    .od-timeline { list-style: none; margin: 0; padding: 0; }
-    .od-step { position: relative; display: flex; gap: 20px; padding-bottom: 28px; }
-    .od-step:last-child { padding-bottom: 0; }
-    .od-step::before {
-        content: "";
-        position: absolute;
-        left: 7px;
-        top: 22px;
-        bottom: -2px;
-        width: 2px;
-        background: repeating-linear-gradient(180deg, #e6d3c6 0 6px, transparent 6px 11px);
-    }
-    .od-step:last-child::before { display: none; }
-    .od-dot {
-        position: relative;
-        z-index: 1;
-        flex: none;
-        width: 16px;
-        height: 16px;
-        margin-top: 4px;
-        border-radius: 50%;
-        background: #e9c9b4;
-        border: 3px solid #fff;
-        box-shadow: 0 0 0 2px #e2b79c;
-    }
-    .od-step strong { display: block; color: var(--heading); font-weight: 700; }
-    .od-step time { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; }
-
-    /* Latest tracking step: red blinking marker (moves with every status change) */
-    .od-step.is-current .od-dot {
-        background: #e5484d;
-        box-shadow: 0 0 0 2px #e5484d;
-        animation: odBlink 1.4s ease-in-out infinite;
-    }
-    .od-step.is-current strong { color: #c0282f; }
-    .od-latest-tag {
-        display: inline-flex;
-        align-items: center;
-        margin-left: 10px;
-        padding: 2px 10px;
-        border-radius: 999px;
-        background: #fde8e6;
-        color: #c0282f;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        vertical-align: middle;
-        animation: odTagBlink 1.4s ease-in-out infinite;
-    }
-    .od-empty { color: var(--body-soft); }
-
-    /* ---------- Invoice download ---------- */
-    .od-invoice-card { text-align: left; padding: 22px; }
-    .od-invoice-btn {
-        position: relative;
-        overflow: hidden;
+    /* ---------- Custom cancellation confirmation modal ---------- */
+    .od-modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        padding: 20px;
+        background: rgba(35, 25, 21, .55);
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .25s ease, visibility .25s ease;
+    }
+    .od-modal-overlay.is-visible { opacity: 1; visibility: visible; }
+    .od-modal {
         width: 100%;
-        min-height: 54px;
-        padding: 12px 20px;
-        border-radius: 999px;
-        background: linear-gradient(135deg, #c9652a 0%, var(--brown) 100%);
-        color: #fff;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: .8px;
-        text-decoration: none;
-        box-shadow: 0 18px 30px -14px rgba(201, 101, 42, .95);
-        transition: transform .3s ease, box-shadow .3s ease;
+        max-width: 430px;
+        padding: 38px 30px;
+        border-radius: 28px;
+        background: #fff8f4;
+        border: 1px solid #f0e1d8;
+        text-align: center;
+        box-shadow: 0 25px 70px rgba(35, 25, 21, .25);
+        transform: translateY(15px) scale(.96);
+        transition: transform .25s ease;
     }
-    .od-invoice-btn::before {
-        content: "";
-        position: absolute;
-        top: 0; bottom: 0; left: -60%;
-        width: 40%;
-        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .4), transparent);
-        transform: skewX(-20deg);
-        animation: odSweep 4s 1.5s ease-in-out infinite;
-    }
-    .od-invoice-btn:hover {
-        color: #fff;
-        transform: translateY(-3px);
-        box-shadow: 0 24px 36px -14px rgba(201, 101, 42, 1);
-    }
-    .od-invoice-btn:focus-visible { outline: 3px solid #e6b894; outline-offset: 3px; }
-
-    .order-invoice-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 11px 20px;
-    border-radius: 999px;
-    background: #99420a;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.2s ease;
-}
-
-.order-invoice-btn:hover {
-    background: #8a3a07;
-    color: white;
-}
+    .od-modal-overlay.is-visible .od-modal { transform: translateY(0) scale(1); }
+    .od-modal-icon { width: 66px; height: 66px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #fef2f2; color: #a32d22; font-size: 27px; }
+    .od-modal h2 { margin: 0 0 12px; font-family: var(--font-serif); font-size: 32px; color: #231915; }
+    .od-modal p { margin: 0 0 28px; font-size: 14px; line-height: 1.7; color: #6b5b52; }
+    .od-modal-actions { display: flex; gap: 12px; }
+    .od-modal-actions button { flex: 1; min-height: 46px; padding: 10px 15px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s ease, transform .2s ease; }
+    .od-modal-back { border: 1px solid #e5d4c9; background: #fff; color: #342922; }
+    .od-modal-back:hover { background: #fff0e5; }
+    .od-modal-confirm { border: none; background: #a32d22; color: #fff; }
+    .od-modal-confirm:hover { background: #87231b; }
+    .od-modal-actions button:hover { transform: translateY(-2px); }
 
     /* ---------- Animations ---------- */
     @keyframes odFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-    @keyframes odBlink {
-        0%, 100% { box-shadow: 0 0 0 2px #e5484d, 0 0 0 2px rgba(229, 72, 77, .55); opacity: 1; }
-        50%      { box-shadow: 0 0 0 2px #e5484d, 0 0 0 11px rgba(229, 72, 77, 0); opacity: .55; }
-    }
-    @keyframes odTagBlink { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    @keyframes odFlow { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+    @keyframes odRing { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(1.5); opacity: 0; } }
     @keyframes odSweep { 0% { left: -60%; } 40%, 100% { left: 140%; } }
     @keyframes odMorph {
         0%, 100% { border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%; }
         50%      { border-radius: 36% 64% 58% 42% / 62% 38% 62% 38%; }
     }
-    @keyframes odDriftA { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(60px, 40px); } }
-    @keyframes odDriftB { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-50px, -40px); } }
+    @keyframes odDrift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, 36px); } }
 
     /* ---------- Responsive ---------- */
     @media (max-width: 960px) {
-        .od-layout { grid-template-columns: 1fr; }
-        .od-side { position: static; }
-        .od-head { padding: 34px 30px; }
+        .od-info-grid { grid-template-columns: 1fr; gap: 26px; }
+        .od-block,
+        .od-block:first-child,
+        .od-block:last-child { padding: 0; }
+        .od-block + .od-block { padding-top: 26px; border-left: 0; border-top: 1px dashed #ecd9cc; }
     }
+
+    /* progress bar turns vertical on tablets / phones */
+    @media (max-width: 720px) {
+        .od-track { padding: 24px 22px 26px; border-radius: 30px 44px 30px 44px; }
+        .od-track-head { margin-bottom: 24px; }
+        .od-steps { flex-direction: column; }
+        .od-step { display: flex; gap: 16px; flex: none; padding: 0 0 26px; text-align: left; }
+        .od-step:last-child { padding-bottom: 0; }
+        .od-step::before {
+            top: 26px;
+            bottom: -4px;
+            left: 9px;
+            width: 4px;
+            height: auto;
+            background: linear-gradient(180deg, var(--c), var(--c2));
+            background-size: 100% 200%;
+            animation: odFlowY 3.2s linear infinite;
+        }
+        .od-step:first-child::before { display: block; }
+        .od-step:last-child::before { display: none; }
+        .od-dot { flex: none; margin: 2px 0 0; }
+        .od-step-body { margin-top: 0; }
+        .od-step.is-current .od-dot { transform: none; }
+    }
+    @keyframes odFlowY { from { background-position: 0 0; } to { background-position: 0 200%; } }
+
     @media (max-width: 600px) {
-        .od-page { padding: 24px 14px 70px; }
-        .od-head { padding: 28px 22px; border-radius: 30px 44px 30px 44px; }
+        .od-page { padding: 22px 14px 70px; }
         .od-card { padding: 22px 20px; border-radius: 26px; }
         .od-info-card { border-radius: 30px 44px 30px 44px; }
         .od-card-title { font-size: 24px; }
-        .od-info--grid { grid-template-columns: 1fr; }
-        .od-item { grid-template-columns: 84px minmax(0, 1fr); gap: 16px; }
+        .od-item { grid-template-columns: 84px minmax(0, 1fr); gap: 16px; padding: 16px; border-radius: 24px; }
         .od-img { width: 84px; height: 84px; border-radius: 16px 16px 16px 34px; }
         .od-item:hover .od-img { border-radius: 34px 16px 16px 16px; }
         .od-item-name { font-size: 20px; }
-        .od-info .od-payable dd { font-size: 26px; }
+        .od-total strong { font-size: 27px; }
+        .od-actions .order-invoice-btn { width: 100%; }
+        .od-liquid span { filter: blur(50px); }
+        .od-modal { padding: 30px 22px; }
+    }
+    @media (max-width: 420px) {
+        .od-item { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) {
-        .od-page, .od-page::before, .od-page::after, .od-card, .od-cancel-form,
-        .od-step.is-current .od-dot, .od-latest-tag, .od-invoice-btn::before { animation: none !important; }
-        .od-img, .od-img img, .od-back, .od-invoice-btn { transition: none !important; }
+        .od-page, .od-card, .od-cancel-form, .od-liquid span, .od-track::before, .od-step::before,
+        .od-step.is-current .od-dot::after, .od-block-title::before, .order-invoice-btn::before { animation: none !important; }
+        .od-img, .od-img img, .od-back, .od-item, .order-invoice-btn { transition: none !important; }
     }
 </style>
 {% endblock %}
@@ -615,20 +624,59 @@
 
 <div class="od-page">
 
+    <div class="od-liquid" aria-hidden="true"><span></span><span></span><span></span></div>
+
     <a href="{% url 'orders:order_list' %}" class="od-back">← Back to My Orders</a>
 
+    
 
+    <!-- ================= ORDER PROGRESS (top) ================= -->
+    <section class="od-card od-track" data-status="{{ order.order_status|lower }}" aria-label="Order progress">
 
-    <div class="od-layout">
+        <div class="od-track-head">
+            <h2 class="od-card-title">Order Progress</h2>
 
-        <!-- ================= Main column ================= -->
-        <div class="od-col">
+            <span class="od-pill" data-status="{{ order.order_status|lower }}">
+                {% if cancelled_by_admin %}
+                    Cancelled by Admin
+                {% else %}
+                    {{ order.get_order_status_display }}
+                {% endif %}
+            </span>
+        </div>
 
-            <!-- ORDER INFORMATION (shown first) -->
-            <section class="od-card od-info-card">
-                <h2 class="od-card-title">Order Information</h2>
+        <ol class="od-steps">
+            {% for history in order.status_history.all %}
+            <li class="od-step{% if forloop.last %} is-current{% endif %}" data-status="{{ history.status|lower }}">
+                <span class="od-dot" aria-hidden="true"></span>
+                <div class="od-step-body">
+                    <strong>
+                        {% if history.status == "cancelled" and history.changed_by.is_staff and history.changed_by_id != order.user_id %}
+                            Cancelled by Admin
+                        {% else %}
+                            {{ history.get_status_display }}
+                        {% endif %}
+                    </strong>
+                    <time>{{ history.changed_at|date:"d M Y, h:i A" }}</time>
+                    {% if forloop.last %}<span class="od-latest-tag">Latest</span>{% endif %}
+                </div>
+            </li>
+            {% empty %}
+            <li class="od-empty"><p>No tracking updates available.</p></li>
+            {% endfor %}
+        </ol>
+    </section>
 
-                <dl class="od-info od-info--grid">
+    <!-- ================= ORDER INFORMATION (info + address + total) ================= -->
+    <section class="od-card od-info-card">
+       
+
+        <div class="od-info-grid">
+
+            <!-- Order details -->
+            <div class="od-block">
+                <h3 class="od-block-title">Order Details</h3>
+                <dl class="od-info">
                     <div>
                         <dt>Order ID</dt>
                         <dd>{{ order.order_id }}</dd>
@@ -639,248 +687,44 @@
                     </div>
                     <div>
                         <dt>Status</dt>
-                       <dd>
-    {% if cancelled_by_admin %}
-        Cancelled by Admin
-    {% else %}
-        {{ order.get_order_status_display }}
-    {% endif %}
-</dd>
+                        <dd>
+                            {% if cancelled_by_admin %}
+                                Cancelled by Admin
+                            {% else %}
+                                {{ order.get_order_status_display }}
+                            {% endif %}
+                        </dd>
                     </div>
                     <div>
                         <dt>Payment</dt>
                         <dd>{{ order.get_payment_method_display }}</dd>
                     </div>
-
-                    {% if has_cancelled_items %}
-
-                    <div class="od-payable">
-                        <dt>Amount Payable</dt>
-                        <dd style="color:#16734b;">
-                            ₹{{ order.total_amount }}
-                        </dd>
-                    </div>
-
-                    {% endif %}
                 </dl>
-
-            </section>
-
-
-<!-- ORDERED PRODUCTS (shown after the order information) -->
-<section class="od-card">
-    <h2 class="od-card-title">Ordered Products</h2>
-
-    {% for item in order.items.all %}
-
-    <article class="od-item">
-
-        <!-- Product Image -->
-        <div class="od-img">
-            {% with product_image=item.product.images.first %}
-                {% if product_image %}
-                    <img
-                        src="{{ product_image.image.url }}"
-                        alt="{{ item.product_name }}"
-                        loading="lazy"
-                    >
-                {% else %}
-                    <div class="od-no-img">No Image</div>
-                {% endif %}
-            {% endwith %}
-        </div>
-
-        <!-- Product Information -->
-        <div>
-            <div class="od-item-top">
-                <h3 class="od-item-name">
-                    {{ item.product_name }}
-                </h3>
-
-                
-                <span class="od-item-total
-                    {% if item.status == 'cancelled' %}od-price-cancelled{% endif %}">
-
-                    ₹{{ item.item_total }}
-
-                </span>
-
             </div>
 
-            <div class="od-meta">
-                <span class="od-chip">
-                    Size: UK {{ item.size }}
-                </span>
-
-                <span>Quantity: {{ item.quantity }}</span>
-                <span>Price: ₹{{ item.price }}</span>
+            <!-- Delivery address -->
+            <div class="od-block">
+                <h3 class="od-block-title">Delivery Address</h3>
+                <p class="od-address-name">{{ order.full_name }}</p>
+                <p class="od-address-lines">
+                    {{ order.house_name }}, {{ order.locality }}<br>
+                    {{ order.city }}, {{ order.state }} - {{ order.pincode }}
+                </p>
+                <div class="od-address-phone">
+                    <span>Phone</span>
+                    <strong>{{ order.phone }}</strong>
+                </div>
             </div>
 
-            
-<span class="od-pill"
-      data-status="{{ item.status|lower }}">
-
-    {% if item.status == "cancelled" %}
-
-        {% if item.cancelled_by_id and item.cancelled_by.is_staff and item.cancelled_by_id != order.user_id %}
-            Cancelled by Admin
-        {% elif item.cancelled_by_id %}
-            Cancelled by Customer
-        {% else %}
-            Cancelled
-        {% endif %}
-
-    {% else %}
-        {{ item.get_status_display }}
-    {% endif %}
-
-</span>
-
-
-            <!-- Existing Cancellation -->
-            {% if can_cancel and item.status == "active" %}
-
-            <details class="od-cancel">
-                <summary>Cancel Product</summary>
-
-                <form method="POST"
-                      class="od-cancel-form"
-                      action="{% url 'orders:cancel_order_item' order.order_id item.id %}">
-
-                    {% csrf_token %}
-
-                    <select name="cancellation_reason" required>
-                        <option value="" selected disabled>
-                            Select cancellation reason
-                        </option>
-                        <option value="Ordered by mistake">Ordered by mistake</option>
-                        <option value="Want to change size">Want to change size</option>
-                        <option value="Delivery taking too long">Delivery taking too long</option>
-                        <option value="No longer needed">No longer needed</option>
-                        <option value="Other">Other</option>
-                    </select>
-
-                    <button
-                        type="submit"
-                        class="od-btn-danger"
-                        onclick="return confirm('Cancel this product?')">
-                        Cancel Product
-                    </button>
-                </form>
-            </details>
-
-            {% endif %}
-
-            <!-- Return Request -->
-            {% if order.order_status == "delivered" %}
-
-                {% if item.status == "active" %}
-
-                    {% if not item.return_request %}
-
-                    <details class="od-cancel od-return">
-                        <summary>Request Return</summary>
-
-                        <form method="POST"
-                              class="od-cancel-form"
-                              action="{% url 'orders:request_return' order.order_id item.id %}">
-
-                            {% csrf_token %}
-
-                           
-                            <select name="reason" required>
-                                <option value="" selected disabled>
-                                    Select return reason
-                                </option>
-                                <option value="Wrong size received">Wrong size received</option>
-                                <option value="Product damaged or defective">Product damaged or defective</option>
-                                <option value="Wrong product delivered">Wrong product delivered</option>
-                                <option value="Product not as described">Product not as described</option>
-                                <option value="Quality not satisfactory">Quality not satisfactory</option>
-                                <option value="Other">Other</option>
-                            </select>
-
-                            <button type="submit"
-                                    class="od-btn-return">
-                                Submit Return Request
-                            </button>
-
-                        </form>
-                    </details>
-
-                    {% else %}
-
-                    <p class="od-return-status">
-                        Return Request:
-                        {{ item.return_request.get_status_display }}
-                    </p>
-
-                    {% endif %}
-
-                {% elif item.status == "return_requested" %}
-
-                    <p class="od-return-status">
-                        Return Request: Pending Approval
-                    </p>
-
-                {% elif item.status == "returned" %}
-
-                    <p class="od-return-status">
-                        Return Request: Approved
-                    </p>
-
-                {% endif %}
-
-            {% endif %}
-
-        </div>
-
-    </article>
-
-    {% endfor %}
-
-</section>
-
-
-            <section class="od-card">
-                <h2 class="od-card-title">Order Tracking</h2>
-
-                <ol class="od-timeline">
-                    {% for history in order.status_history.all %}
-                    <li class="od-step{% if forloop.last %} is-current{% endif %}">
-                        <span class="od-dot" aria-hidden="true"></span>
-                        <div>
-                            <strong>
-                {% if history.status == "cancelled" and history.changed_by.is_staff and history.changed_by_id != order.user_id %}
-                    Cancelled by Admin
-                {% else %}
-                    {{ history.get_status_display }}
-                {% endif %}
-                
-            </strong>
-                         <time>{{ history.changed_at|date:"d M Y, h:i A" }}</time>
-                        </div>
-                    </li>
-                    {% empty %}
-                    <li><p class="od-empty">No tracking updates available.</p></li>
-                    {% endfor %}
-                </ol>
-            </section>
-
-        </div>
-
-        <!-- ================= Side column ================= -->
-        <aside class="od-col od-side">
-
-            <section class="od-card">
-                <h2 class="od-card-title">Order Summary</h2>
+            <!-- Summary + total -->
+            <div class="od-block">
+                <h3 class="od-block-title">Order Summary</h3>
 
                 <div class="od-row"><span>Subtotal</span><strong>₹{{ order.subtotal }}</strong></div>
                 <div class="od-row"><span>Discount</span><strong>₹{{ order.discount }}</strong></div>
                 <div class="od-row"><span>Shipping</span><strong>₹{{ order.shipping_charge }}</strong></div>
 
-                
-                <div class="od-total">
+                <div class="od-total{% if has_cancelled_items %} od-total--payable{% endif %}">
                     <span>
                         {% if has_cancelled_items %}
                             Amount Payable
@@ -888,81 +732,308 @@
                             Total
                         {% endif %}
                     </span>
-
                     <strong>₹{{ order.total_amount }}</strong>
                 </div>
+            </div>
 
-            </section>
-            
-                <!-- Download Invoice -->
-                <section class="od-card od-invoice-card">
+        </div>
 
+        {% if order.order_status == "delivered" %}
+        <div class="od-actions">
+            <a href="{% url 'orders:download_invoice' order.order_id %}"
+               class="order-invoice-btn">
+                <i class="fa-solid fa-file-invoice"></i>
+                Download Invoice
+            </a>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- ================= ORDERED PRODUCTS ================= -->
+    <section class="od-card">
+        <h2 class="od-card-title">Ordered Products</h2>
+
+        <div class="od-items">
+            {% for item in order.items.all %}
+
+            <article class="od-item">
+
+                <!-- Product Image -->
+                <div class="od-img">
+                    {% with product_image=item.product.images.first %}
+                        {% if product_image %}
+                            <img
+                                src="{{ product_image.image.url }}"
+                                alt="{{ item.product_name }}"
+                                loading="lazy"
+                            >
+                        {% else %}
+                            <div class="od-no-img">No Image</div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+
+                <!-- Product Information -->
+                <div class="od-item-main">
+                    <div class="od-item-top">
+                        <h3 class="od-item-name">{{ item.product_name }}</h3>
+
+                        <span class="od-item-total
+                            {% if item.status == 'cancelled' %}od-price-cancelled{% endif %}">
+                            ₹{{ item.item_total }}
+                        </span>
+                    </div>
+
+                    <div class="od-meta">
+                        <span class="od-chip">Size: UK {{ item.size }}</span>
+                        <span>Quantity: {{ item.quantity }}</span>
+                        <span>Price: ₹{{ item.price }}</span>
+                    </div>
+
+                    <span class="od-pill" data-status="{{ item.status|lower }}">
+                        {% if item.status == "cancelled" %}
+
+                            {% if item.cancelled_by_id and item.cancelled_by.is_staff and item.cancelled_by_id != order.user_id %}
+                                Cancelled by Admin
+                            {% elif item.cancelled_by_id %}
+                                Cancelled by Customer
+                            {% else %}
+                                Cancelled
+                            {% endif %}
+
+                        {% else %}
+                            {{ item.get_status_display }}
+                        {% endif %}
+                    </span>
+
+                    <!-- Existing Cancellation -->
+                    {% if can_cancel and item.status == "active" %}
+
+                    <details class="od-cancel">
+                        <summary>Cancel Product</summary>
+
+                        <form method="POST"
+                              class="od-cancel-form"
+                              action="{% url 'orders:cancel_order_item' order.order_id item.id %}">
+
+                            {% csrf_token %}
+
+                            <select name="cancellation_reason" required>
+                                <option value="" selected disabled>
+                                    Select cancellation reason
+                                </option>
+                                <option value="Ordered by mistake">Ordered by mistake</option>
+                                <option value="Want to change size">Want to change size</option>
+                                <option value="Delivery taking too long">Delivery taking too long</option>
+                                <option value="No longer needed">No longer needed</option>
+                                <option value="Other">Other</option>
+                            </select>
+
+                            <button type="submit" class="od-btn-danger">
+                                Cancel Product
+                            </button>
+                        </form>
+                    </details>
+
+                    {% endif %}
+
+                    <!-- Return Request -->
                     {% if order.order_status == "delivered" %}
-                    <a href="{% url 'orders:download_invoice' order.order_id %}"
-                    class="order-invoice-btn">
-                        <i class="fa-solid fa-file-invoice"></i>
-                        Download Invoice
-                    </a>
-                {% endif %}
 
-                </section>
+                        {% if item.status == "active" %}
 
-            <section class="od-card">
-                <h2 class="od-card-title">Delivery Address</h2>
+                            {% if not item.return_request %}
 
-                <dl class="od-info">
-                    <div>
-                        <dd class="od-address">
-                            {{ order.full_name }}<br>
-                            {{ order.house_name }}, {{ order.locality }}<br>
-                            {{ order.city }}, {{ order.state }} - {{ order.pincode }}
-                        </dd>
-                    </div>
-                    <div>
-                        <dt>Phone</dt>
-                        <dd>{{ order.phone }}</dd>
-                    </div>
-                </dl>
-            </section>
+                            <details class="od-cancel od-return">
+                                <summary>Request Return</summary>
 
-            {% if can_cancel %}
+                                <form method="POST"
+                                      class="od-cancel-form"
+                                      action="{% url 'orders:request_return' order.order_id item.id %}">
 
-            <section class="od-card od-danger-card">
-                <h2 class="od-card-title">Cancel Entire Order</h2>
-                <p class="od-note">This cancels every product in the order.</p>
+                                    {% csrf_token %}
 
-                <form method="POST"
-                      class="od-cancel-form"
-                      action="{% url 'orders:cancel_order' order.order_id %}">
+                                    <select name="reason" required>
+                                        <option value="" selected disabled>
+                                            Select return reason
+                                        </option>
+                                        <option value="Wrong size received">Wrong size received</option>
+                                        <option value="Product damaged or defective">Product damaged or defective</option>
+                                        <option value="Wrong product delivered">Wrong product delivered</option>
+                                        <option value="Product not as described">Product not as described</option>
+                                        <option value="Quality not satisfactory">Quality not satisfactory</option>
+                                        <option value="Other">Other</option>
+                                    </select>
 
-                    {% csrf_token %}
+                                    <button type="submit" class="od-btn-return">
+                                        Submit Return Request
+                                    </button>
 
-                    <select name="cancellation_reason" required>
-                        <option value="" selected disabled>
-                            Select cancellation reason
-                        </option>
-                        <option value="Ordered by mistake">Ordered by mistake</option>
-                        <option value="Want to change size">Want to change size</option>
-                        <option value="Delivery taking too long">Delivery taking too long</option>
-                        <option value="No longer needed">No longer needed</option>
-                        <option value="Other">Other</option>
-                    </select>
+                                </form>
+                            </details>
 
-                    <button type="submit"
-                            class="od-btn-danger"
-                            onclick="return confirm('Are you sure you want to cancel this order?')">
-                        Cancel Order
-                    </button>
+                            {% else %}
 
-                </form>
-            </section>
+                            <p class="od-return-status">
+                                Return Request:
+                                {{ item.return_request.get_status_display }}
+                            </p>
 
-            {% endif %}
+                            {% endif %}
 
-        </aside>
+                        {% elif item.status == "return_requested" %}
+
+                            <p class="od-return-status">
+                                Return Request: Pending Approval
+                            </p>
+
+                        {% elif item.status == "returned" %}
+
+                            <p class="od-return-status">
+                                Return Request: Approved
+                            </p>
+
+                        {% endif %}
+
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+
+<!-- Custom Cancel Product Confirmation Popup -->
+<div class="od-modal-overlay" id="odCancelModal" aria-hidden="true">
+
+    <div class="od-modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="odCancelModalTitle"
+         aria-describedby="odCancelModalDescription">
+
+        <div class="od-modal-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+
+        <h2 id="odCancelModalTitle">Cancel Product?</h2>
+
+        <p id="odCancelModalDescription">
+            Are you sure you want to cancel this product?
+            This action cannot be undone.
+        </p>
+
+        <div class="od-modal-actions">
+
+            <button type="button"
+                    class="od-modal-back"
+                    id="odCancelBack">
+                Keep Product
+            </button>
+
+            <button type="button"
+                    class="od-modal-confirm"
+                    id="odCancelConfirm">
+                Yes, Cancel
+            </button>
+
+        </div>
 
     </div>
 
 </div>
 
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("odCancelModal");
+    const backBtn = document.getElementById("odCancelBack");
+    const confirmBtn = document.getElementById("odCancelConfirm");
+
+    let pendingForm = null;
+    let previousFocus = null;
+
+    function openModal(form) {
+        pendingForm = form;
+        previousFocus = document.activeElement;
+
+        modal.classList.add("is-visible");
+        modal.setAttribute("aria-hidden", "false");
+
+        document.body.style.overflow = "hidden";
+        backBtn.focus();
+    }
+
+    function closeModal() {
+        modal.classList.remove("is-visible");
+        modal.setAttribute("aria-hidden", "true");
+
+        document.body.style.overflow = "";
+
+        pendingForm = null;
+
+        if (previousFocus) {
+            previousFocus.focus();
+        }
+    }
+
+    // Intercept only product cancellation forms.
+    document.querySelectorAll(
+        ".od-cancel:not(.od-return) .od-cancel-form"
+    ).forEach(function (form) {
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            // Keep existing required-field validation.
+            if (!form.reportValidity()) {
+                return;
+            }
+
+            openModal(form);
+        });
+
+    });
+
+    // Cancel the confirmation.
+    backBtn.addEventListener("click", closeModal);
+
+    // Confirm and submit the original Django form.
+    confirmBtn.addEventListener("click", function () {
+
+        if (!pendingForm) return;
+
+        const form = pendingForm;
+
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Cancelling...";
+
+        // Submit the original form without triggering
+        // the confirmation event again.
+        form.submit();
+    });
+
+    // Close when clicking outside the popup.
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Close using Escape.
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" &&
+            modal.classList.contains("is-visible")) {
+            closeModal();
+        }
+    });
+
+});
+</script>
 {% endblock %}
