@@ -549,6 +549,26 @@
     }
     .od-invoice-btn:focus-visible { outline: 3px solid #e6b894; outline-offset: 3px; }
 
+    .order-invoice-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    background: #99420a;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.order-invoice-btn:hover {
+    background: #8a3a07;
+    color: white;
+}
+
     /* ---------- Animations ---------- */
     @keyframes odFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
     @keyframes odBlink {
@@ -597,22 +617,7 @@
 
     <a href="{% url 'orders:order_list' %}" class="od-back">← Back to My Orders</a>
 
-    <header class="od-head">
-        <div>
-            <p class="od-eyebrow">Your account</p>
-            <h1>Order Details</h1>
-            <p class="od-sub">
-                Order {{ order.order_id }} · Placed on {{ order.created_at|date:"d M Y, h:i A" }}
-            </p>
-        </div>
-        <span class="od-pill od-pill--lg" data-status="{{ order.order_status|lower }}">
-    {% if cancelled_by_admin %}
-        Cancelled by Admin
-    {% else %}
-        {{ order.get_order_status_display }}
-    {% endif %}
-</span>
-    </header>
+
 
     <div class="od-layout">
 
@@ -892,10 +897,13 @@
                 <!-- Download Invoice -->
                 <section class="od-card od-invoice-card">
 
+                    {% if order.order_status == "delivered" %}
                     <a href="{% url 'orders:download_invoice' order.order_id %}"
-                    class="od-invoice-btn">
-                        Download Invoice (PDF)
+                    class="order-invoice-btn">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        Download Invoice
                     </a>
+                {% endif %}
 
                 </section>
 

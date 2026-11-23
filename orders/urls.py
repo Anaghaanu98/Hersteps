@@ -39,11 +39,16 @@ path(
     user_orders.request_return,
     name="request_return"
 ),
-
 path(
     "my-orders/<uuid:order_uuid>/invoice/",
     invoice.download_invoice,
-    name="download_invoice",
+    name="download_invoice"
+),
+
+path(
+    "my-orders/<uuid:order_id>/purchase-order/",
+    invoice.download_purchase_order,
+    name="download_purchase_order"
 ),
 
 ]
