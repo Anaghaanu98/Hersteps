@@ -61,11 +61,22 @@ def order_list(request):
         )
     else:
         selected_status = ""
+    # PAYMENT METHOD FILTER
 
-    # Sorting
+    selected_payment = request.GET.get("payment", "").strip().lower()
+
+    valid_payment_methods = ["wallet", "razorpay", "cod"]
+
+    if selected_payment in valid_payment_methods:
+        orders = orders.filter(
+            payment_method=selected_payment
+        )
+    else:
+        selected_payment = ""
+        # Sorting
     selected_sort = request.GET.get(
-        "sort", "newest"
-    )
+            "sort", "newest"
+        )
 
     sort_options = {
         "newest": ("-created_at", "-pk"),
@@ -98,6 +109,7 @@ def order_list(request):
             "selected_status": selected_status,
             "selected_sort": selected_sort,
             "status_choices": Order.ORDER_STATUS,
+            "selected_payment": selected_payment,
         }
     )
 
