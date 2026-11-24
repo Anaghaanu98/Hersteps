@@ -10,11 +10,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
-from orders.services import (
-    cancel_order_items,
-    update_order_status,
-    OrderCancellationError,
-)
+from orders.services import (cancel_order_items,update_order_status,OrderCancellationError)
 from admin_panel.decorators import admin_required
 
 
@@ -61,8 +57,8 @@ def order_list(request):
         )
     else:
         selected_status = ""
-    # PAYMENT METHOD FILTER
 
+    # Payment method filter
     selected_payment = request.GET.get("payment", "").strip().lower()
 
     valid_payment_methods = ["wallet", "razorpay", "cod"]
@@ -73,7 +69,8 @@ def order_list(request):
         )
     else:
         selected_payment = ""
-        # Sorting
+
+    # Sorting
     selected_sort = request.GET.get(
             "sort", "newest"
         )
@@ -128,7 +125,6 @@ def admin_order_detail(request, order_uuid):
         order_id=order_uuid
     )
 
-    # Determine the next allowed status
     status_transitions = {
         "pending": "shipped",
         "shipped": "out_for_delivery",

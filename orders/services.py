@@ -19,10 +19,10 @@ class OrderCancellationError(Exception):
 @transaction.atomic
 def cancel_order_items(order_id, item_id=None, reason="",cancelled_by=None):
 
-    # Lock the order to prevent simultaneous cancellation
+    
     order = Order.objects.select_for_update().get(pk=order_id)
 
-    # Cancellation is allowed only before shipping
+   
     if order.order_status != "pending":
         raise OrderCancellationError(
             "This order can no longer be cancelled."
@@ -63,12 +63,12 @@ def cancel_order_items(order_id, item_id=None, reason="",cancelled_by=None):
                 "This product has already been cancelled."
             )
 
-    # Existing checkout currently has no discounts.
+    
     # Prevent incorrect recalculation if discounts are added.
-    if order.discount != Decimal("0.00"):
-        raise OrderCancellationError(
-            "Cancellation requires a discount adjustment."
-        )
+    # if order.discount != Decimal("0.00"):
+    #     raise OrderCancellationError(
+    #         "Cancellation requires a discount adjustment."
+    #     )
 
     # Lock variants in a consistent order
     variant_ids = sorted({

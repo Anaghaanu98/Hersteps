@@ -555,10 +555,15 @@ def download_purchase_order(request, order_id):
     elements.append(product_table)
     elements.append(Spacer(1, 25))
 
-    # TOTAL AMOUNT
+    # TOTAL AMOUNT - Include all items regardless of status
+    original_total = sum(
+        (item.item_total for item in order.items.all()),
+        Decimal("0.00")
+        )
+
     total_data = [[
         "TOTAL ORDER AMOUNT",
-        money(order.total_amount)
+        money(original_total)
     ]]
 
     total_table = Table(
